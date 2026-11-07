@@ -1,6 +1,6 @@
-# HCM-UTE Vị trí việc làm 360
+# HCM-UTE Vị trí việc làm
 
-Hệ thống **Vị trí việc làm 360** dành cho **51 đơn vị thuộc/trực thuộc Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)**, được xây dựng với đầy đủ tính năng nghiệp vụ của `vtvl.tranghoaivu.vn` và ngôn ngữ thiết kế giao diện hiện đại của hệ sinh thái HCM-UTE (`link.hcmute.edu.vn`).
+Hệ thống **Vị trí việc làm** dành cho **51 đơn vị thuộc/trực thuộc Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)**, được xây dựng với đầy đủ tính năng nghiệp vụ của `vtvl.tranghoaivu.vn` và ngôn ngữ thiết kế giao diện hiện đại của hệ sinh thái HCM-UTE (`link.hcmute.edu.vn`).
 
 ## 4 phân hệ chính trong quy trình 5 bước
 1. **Trang chủ điều phối (`/`)**: Quy trình 5 bước trực quan, thanh mốc thời gian nộp hồ sơ đếm ngược (Milestones), nơi nộp hồ sơ và nhật ký thao tác trên trình duyệt.

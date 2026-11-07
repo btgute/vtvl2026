@@ -1,6 +1,6 @@
 # Thiết kế Cơ sở dữ liệu quan hệ (Relational Database Schema — 22 bảng)
 
-Tài liệu này mô tả kiến trúc **Cơ sở dữ liệu quan hệ (PostgreSQL / Supabase)** của hệ thống **HCM-UTE VTVL 360** dành cho **Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)**, ánh xạ 1-1 với bộ 22 trang tính theo **Hướng dẫn số 07-HD/BTCTW**, **Nghị định số 232/2026/NĐ-CP**, **Thông tư số 31/2026/TT-BGDĐT** và **Hướng dẫn số 02 (`1907/HD-ĐHCNKT` ngày 17/6/2026 của Hiệu trưởng HCM-UTE)**.
+Tài liệu này mô tả kiến trúc **Cơ sở dữ liệu quan hệ (PostgreSQL / Supabase)** của hệ thống **HCM-UTE Vị trí việc làm** dành cho **Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)**, ánh xạ 1-1 với bộ 22 trang tính theo **Hướng dẫn số 07-HD/BTCTW**, **Nghị định số 232/2026/NĐ-CP**, **Thông tư số 31/2026/TT-BGDĐT** và **Hướng dẫn số 02 (`1907/HD-ĐHCNKT` ngày 17/6/2026 của Hiệu trưởng HCM-UTE)**.
 
 Tệp SQL khởi tạo: [`20261107_init_vtvl_hcmute.sql`](file:///Users/macaz/Documents/0. App/VTVL /supabase/migrations/20261107_init_vtvl_hcmute.sql)
 

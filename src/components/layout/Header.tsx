@@ -46,7 +46,7 @@ export function Header() {
         <div className="flex items-center gap-1 min-w-0">
           <Link
             href="/"
-            aria-label="Trang chủ hệ thống Vị trí việc làm 360 HCM-UTE"
+            aria-label="Trang chủ hệ thống Vị trí việc làm HCM-UTE"
             className="flex items-center gap-2.5 py-1 min-h-[44px] min-w-0"
           >
             <img
@@ -61,7 +61,7 @@ export function Header() {
             />
             <div className="border-l border-[var(--border)] pl-2.5 flex flex-col min-w-0">
               <span className="text-sm sm:text-base font-extrabold tracking-tight text-[var(--foreground)] leading-tight truncate">
-                Vị trí việc làm <span className="text-[var(--primary)]">360</span>
+                Vị trí việc làm
               </span>
               <span className="text-xs text-[var(--ink-muted)] font-medium hidden sm:inline truncate">
                 Đề án VTVL 2026–2030 · HCM-UTE

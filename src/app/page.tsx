@@ -79,7 +79,7 @@ export default function HomePage() {
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 sm:p-7 shadow-2xs space-y-5">
             <div className="space-y-1.5">
               <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-3 py-1 rounded-full">
-                Hệ thống Vị trí việc làm 360 — HCM-UTE
+                Hệ thống Vị trí việc làm — HCM-UTE
               </span>
               <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
                 Lập đề án vị trí việc làm của đơn vị

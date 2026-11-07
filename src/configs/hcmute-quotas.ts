@@ -166,7 +166,7 @@ export const TASK_TEMPLATES_BY_GROUP: Record<UnitGroupKind, JobTaskTemplate[]> =
       sourceHint: 'Hệ thống văn bản điều hành E-Office & phần mềm nghiệp vụ', defaultQtyPerYear: 80, defaultMinutesPerProduct: 1800,
       extraRelatedHoursYear: 160, timeBasisStatus: 'Có định mức',
       legalBasisHint: 'TT 27 Phụ lục I Hướng dẫn số 02 (1907/HD-ĐHCNKT) & Nghị định 232/2026/NĐ-CP', competencyLevel: 'Từ bậc 3 đến bậc 4 (Nhóm II — VTVL Chuyên môn, nghiệp vụ)',
-      digitalImpactStage: 'Số hóa biểu mẫu và tự động tổng hợp dữ liệu VTVL 360', digitalMinutesBefore: 1800, digitalMinutesAfter: 1560
+      digitalImpactStage: 'Số hóa biểu mẫu và tự động tổng hợp dữ liệu VTVL', digitalMinutesBefore: 1800, digitalMinutesAfter: 1560
     },
     {
       stt: 4, vtvlSuffix: 'CM-KTV-01', vtvlName: 'Kế toán viên / Thư viện viên / Y tế', frameworkTitle: 'Kế toán viên', vtvlGroup4: G2, defaultCareerLevel: 'Từ bậc 3 đến bậc 4', allowedCareerLevels: LVL_3_4, ngachCode: '06.031', method: 'PP2',

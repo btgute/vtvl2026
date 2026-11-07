@@ -31,7 +31,7 @@ function walkFiles(dir, extFilter = ['.ts', '.tsx']) {
 }
 
 console.log('================================================================');
-console.log(' BỘ KIỂM THỬ ĐƠN VỊ (UNIT TEST) — HCM-UTE VTVL 360 (2026–2030)');
+console.log(' BỘ KIỂM THỬ ĐƠN VỊ (UNIT TEST) — HCM-UTE VỊ TRÍ VIỆC LÀM (2026–2030)');
 console.log('================================================================');
 
 // 1. Kiểm tra quy chuẩn AGENTS.md, Skills và tài liệu kiến trúc CSDL

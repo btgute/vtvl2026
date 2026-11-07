@@ -122,7 +122,7 @@ export function appendHd07GuideAndRefSheets(
       opts.period, 'Toàn bộ 15 biểu', opts.unitCode,
       'Khởi tạo tệp đơn vị chuẩn HD 07-HD/BTCTW, NĐ 232/2026/NĐ-CP & TT 31/2026/TT-BGDĐT',
       'Mẫu gốc XXX', `${opts.unitCode}_K2526_v1_${compactDate}.xlsx`,
-      'Hệ thống VTVL 360 HCM-UTE', actorDisplay, opts.exportDate, 'v1'
+      'Hệ thống VTVL HCM-UTE', actorDisplay, opts.exportDate, 'v1'
     ]
   ]);
   XLSX.utils.book_append_sheet(wb, wsS, '15. S_NhatKy');

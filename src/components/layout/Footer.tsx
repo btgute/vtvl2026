@@ -157,7 +157,7 @@ export function Footer() {
           </Link>
           <div className="flex flex-wrap items-center gap-4 text-xs text-white/85">
             <span>
-              © 2026 Hệ thống Vị trí việc làm 360 — Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE).
+              © 2026 Hệ thống Vị trí việc làm — Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE).
             </span>
             <div className="flex items-center gap-3">
               <a
