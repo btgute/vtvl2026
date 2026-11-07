@@ -148,7 +148,7 @@ export default function RaSoatPage() {
                   <p>Hệ thống tự động nạp hồ sơ của đơn vị <strong>[{activeUnit.code}] {activeUnit.nameVi}</strong> đã thiết lập từ Bước 1–4 để đối soát 6 chỉ tiêu (A2↔A1, B1↔C1/C2, Cột R B1, B2_CT↔B1, D1↔C1, C3↔D2).</p>
                 </InfoTip>
               </div>
-              <button type="button" onClick={() => void handleAuditActiveUnit(activeUnit)} disabled={auditing} className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]/30 font-bold text-xs cursor-pointer transition-colors">
+              <button id="task-5-run" type="button" onClick={() => void handleAuditActiveUnit(activeUnit)} disabled={auditing} className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]/30 font-bold text-xs cursor-pointer transition-colors">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Kiểm tra lại hồ sơ [{activeUnit.code}]</span>
               </button>
@@ -174,7 +174,7 @@ export default function RaSoatPage() {
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-sm font-extrabold text-[var(--foreground)]">Tổng hợp kết quả thẩm định [{activeUnit.code}]</h3>
-                  <button type="button" onClick={handleExportAuditExcel} className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-xl bg-[var(--primary)] text-white font-semibold text-xs cursor-pointer">
+                  <button id="task-5-export" type="button" onClick={handleExportAuditExcel} className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-xl bg-[var(--primary)] text-white font-semibold text-xs cursor-pointer">
                     <Download className="w-3.5 h-3.5" />
                     <span>Xuất báo cáo thẩm định [{activeUnit.code}] (.xlsx)</span>
                   </button>
@@ -232,7 +232,7 @@ export default function RaSoatPage() {
                     </select>
                     <div className="relative">
                       <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--ink-subtle)]" />
-                      <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm mã, ô…" className="rounded-lg border border-[var(--border)] bg-[var(--background)] pl-7 pr-2.5 py-1 text-xs w-36 sm:w-44" />
+                      <input id="task-5-filter" type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm mã, ô…" className="rounded-lg border border-[var(--border)] bg-[var(--background)] pl-7 pr-2.5 py-1 text-xs w-36 sm:w-44" />
                     </div>
                   </div>
                 </div>

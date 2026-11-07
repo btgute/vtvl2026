@@ -158,8 +158,8 @@ export default function BamGioPage() {
                 </div>
               </div>
               <div className="sm:col-span-4">
-                <label className="block text-xs font-bold mb-1">Vị trí việc làm cụ thể tại [{unit.code}]</label>
-                <select value={selectedVtvlSuffix} onChange={(e) => setSelectedVtvlSuffix(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs sm:text-sm font-semibold">
+                <label htmlFor="task-3-vtvl" className="block text-xs font-bold mb-1">Vị trí việc làm cụ thể tại [{unit.code}]</label>
+                <select id="task-3-vtvl" value={selectedVtvlSuffix} onChange={(e) => setSelectedVtvlSuffix(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs sm:text-sm font-semibold">
                   {vtvlOptions.map((v) => <option key={v.suffix} value={v.suffix}>[{v.code}] {v.name} — {v.level}</option>)}
                 </select>
               </div>
@@ -191,7 +191,7 @@ export default function BamGioPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={() => setRunning(!running)} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-[var(--primary)] text-white text-xs font-bold cursor-pointer">
+                <button id="task-3-timer" type="button" onClick={() => setRunning(!running)} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-[var(--primary)] text-white text-xs font-bold cursor-pointer">
                   {running ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                   <span>{running ? 'Tạm dừng' : 'Bắt đầu đo'}</span>
                 </button>
@@ -212,8 +212,8 @@ export default function BamGioPage() {
                 <input type="date" value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs" />
               </div>
               <div>
-                <label className="block text-[11px] font-bold mb-1">Giờ bắt đầu</label>
-                <input type="time" value={manualStart} onChange={(e) => setManualStart(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs" />
+                <label htmlFor="task-3-manual" className="block text-[11px] font-bold mb-1">Giờ bắt đầu</label>
+                <input id="task-3-manual" type="time" value={manualStart} onChange={(e) => setManualStart(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs" />
               </div>
               <div>
                 <label className="block text-[11px] font-bold mb-1">Giờ kết thúc</label>
@@ -232,7 +232,7 @@ export default function BamGioPage() {
             <div className="pt-2 border-t border-[var(--border-subtle)] space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <strong className="text-xs sm:text-sm text-[var(--foreground)]">Nhật ký đã ghi tại [{unit.code}] ({sessions.length} bản ghi)</strong>
-                <button type="button" onClick={handleExport} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer shadow-2xs">
+                <button id="task-3-export" type="button" onClick={handleExport} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer shadow-2xs">
                   <Download className="w-3.5 h-3.5" />
                   <span>Xuất phiếu định mức [{unit.code}] (.xlsx) &amp; Đính kèm sang Bước 4</span>
                 </button>

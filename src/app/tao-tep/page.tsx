@@ -112,17 +112,16 @@ export default function TaoTepPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {UNIT_GROUPS.map((g) => (
-                  <button key={g.id} type="button" onClick={() => handleGroupChange(g.id)} className={`rounded-xl border px-3 py-2 text-left transition-all cursor-pointer ${kind === g.id ? 'border-[var(--primary)] bg-[var(--primary)]/[0.06] ring-1 ring-[var(--primary)]/20' : 'border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)]/40'}`}>
-                    <div className="font-bold text-xs text-[var(--foreground)]">{g.label}</div>
-                    <div className="text-[11px] text-[var(--ink-muted)] mt-0.5">{g.factsText}</div>
+                  <button key={g.id} type="button" title={g.factsText} onClick={() => handleGroupChange(g.id)} className={`rounded-xl border px-3 py-2 text-center transition-all cursor-pointer ${kind === g.id ? 'border-[var(--primary)] bg-[var(--primary)]/[0.08] font-extrabold text-[var(--primary)] ring-1 ring-[var(--primary)]/20' : 'border-[var(--border)] bg-[var(--background)] font-bold text-[var(--foreground)] hover:border-[var(--primary)]/40'}`}>
+                    <span className="text-xs">{g.label}</span>
                   </button>
                 ))}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                 <div className="sm:col-span-7">
-                  <label className="block text-xs font-bold text-[var(--foreground)] mb-1">Đơn vị thuộc HCM-UTE ({unitsOfGroup.length} đơn vị)</label>
-                  <select value={currentUnit.code} onChange={(e) => handleUnitChange(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs sm:text-sm font-semibold">
+                  <label htmlFor="task-1-unit" className="block text-xs font-bold text-[var(--foreground)] mb-1">Đơn vị thuộc HCM-UTE ({unitsOfGroup.length} đơn vị)</label>
+                  <select id="task-1-unit" value={currentUnit.code} onChange={(e) => handleUnitChange(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs sm:text-sm font-semibold">
                     {unitsOfGroup.map((u) => <option key={u.code} value={u.code}>[{u.code}] {u.nameVi}</option>)}
                   </select>
                 </div>
@@ -177,11 +176,11 @@ export default function TaoTepPage() {
                               <span className="text-[10px] text-[var(--ink-muted)]">Giới hạn: <strong className="text-[#ED1C24]">{n.defaultCareerLevel}</strong></span>
                             </td>
                             <td className="py-2 px-2.5">
-                              <input type="text" value={specificName} placeholder={formulaDefaultName} onChange={(e) => { const next = { ...customPositionNames, [n.code]: e.target.value }; setCustomPositionNames(next); saveActiveUnitSession({ customPositionNames: next }); if (result) setStale(true); }} className="w-full rounded-lg border border-[var(--border)] bg-[var(--sheet)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)] focus:border-[var(--primary)]" />
+                              <input data-task="task-1-name" type="text" value={specificName} placeholder={formulaDefaultName} onChange={(e) => { const next = { ...customPositionNames, [n.code]: e.target.value }; setCustomPositionNames(next); saveActiveUnitSession({ customPositionNames: next }); if (result) setStale(true); }} className="w-full rounded-lg border border-[var(--border)] bg-[var(--sheet)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)] focus:border-[var(--primary)]" />
                             </td>
                             <td className="py-2 px-2.5">
                               {allowedLevels.length > 1 ? (
-                                <select value={selectedLevel} onChange={(e) => { const next = { ...customCareerLevels, [n.code]: e.target.value }; setCustomCareerLevels(next); saveActiveUnitSession({ customCareerLevels: next }); if (result) setStale(true); }} className="w-full rounded-lg border border-[var(--primary)]/50 bg-[var(--sheet)] px-2 py-1 text-xs font-bold text-[var(--primary)]">
+                                <select data-task="task-1-level" value={selectedLevel} onChange={(e) => { const next = { ...customCareerLevels, [n.code]: e.target.value }; setCustomCareerLevels(next); saveActiveUnitSession({ customCareerLevels: next }); if (result) setStale(true); }} className="w-full rounded-lg border border-[var(--primary)]/50 bg-[var(--sheet)] px-2 py-1 text-xs font-bold text-[var(--primary)]">
                                   {allowedLevels.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}
                                 </select>
                               ) : (
@@ -189,7 +188,7 @@ export default function TaoTepPage() {
                               )}
                             </td>
                             <td className="py-2 px-2.5 text-right">
-                              <input type="number" min={0} max={200} value={val} onChange={(e) => { const next = { ...ngachOverrides, [n.code]: Math.max(0, parseInt(e.target.value || '0', 10)) }; setNgachOverrides(next); saveActiveUnitSession({ ngachOverrides: next }); if (result) setStale(true); }} className="w-15 text-right rounded-lg border border-[var(--border)] bg-[var(--sheet)] px-2 py-1 font-bold tabular-nums" />
+                              <input data-task="task-1-staff" type="number" min={0} max={200} value={val} onChange={(e) => { const next = { ...ngachOverrides, [n.code]: Math.max(0, parseInt(e.target.value || '0', 10)) }; setNgachOverrides(next); saveActiveUnitSession({ ngachOverrides: next }); if (result) setStale(true); }} className="w-15 text-right rounded-lg border border-[var(--border)] bg-[var(--sheet)] px-2 py-1 font-bold tabular-nums" />
                             </td>
                           </tr>
                         );
@@ -233,10 +232,10 @@ export default function TaoTepPage() {
 
               <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
                 <label className="flex items-center gap-2.5 text-xs font-semibold text-[var(--foreground)] cursor-pointer">
-                  <input type="checkbox" checked={includeZip} onChange={(e) => setIncludeZip(e.target.checked)} className="accent-[var(--primary)]" />
+                  <input id="task-2-zip" type="checkbox" checked={includeZip} onChange={(e) => setIncludeZip(e.target.checked)} className="accent-[var(--primary)]" />
                   <span>Kết xuất kèm gói tệp nén (.zip) chứa phiếu khảo sát theo từng vị trí của <strong>[{currentUnit.code}] {currentUnit.nameVi}</strong></span>
                 </label>
-                <button type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer">
+                <button id="task-2-export" type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer">
                   <FileSpreadsheet className="w-3.5 h-3.5" />
                   <span>{result && !stale ? 'Tạo lại bộ biểu' : `Khởi tạo bộ biểu ${currentUnit.code}`}</span>
                 </button>

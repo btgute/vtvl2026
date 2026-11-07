@@ -101,19 +101,15 @@ export default function HomePage() {
             <div className="divide-y divide-[var(--border-subtle)]">
               {SIDEBAR_FIVE_STEPS.map((s) => (
                 <div key={s.num} className="p-3.5 hover:bg-[var(--background)]/60 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <span className="w-7 h-7 rounded-lg bg-[#004776] text-white font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5 tabular-nums">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-7 h-7 rounded-lg bg-[#004776] text-white font-extrabold text-xs flex items-center justify-center shrink-0 tabular-nums">
                       {s.num}
                     </span>
-                    <div className="min-w-0">
-                      <div className="flex items-center">
-                        <h3 className="text-xs sm:text-sm font-bold text-[var(--foreground)]">{s.title}</h3>
-                        <InfoTip title={`Sản phẩm đầu ra Bước ${s.num}`}>
-                          <p className="font-mono text-[11px] text-[var(--primary)]">{STEP_OUTPUTS[s.num]}</p>
-                          <p>{s.shortDesc}</p>
-                        </InfoTip>
-                      </div>
-                      <p className="text-xs text-[var(--ink-muted)] truncate">{s.shortDesc}</p>
+                    <div className="flex items-center min-w-0">
+                      <h3 className="text-xs sm:text-sm font-bold text-[var(--foreground)]">{s.title}</h3>
+                      <InfoTip title={`Sản phẩm đầu ra Bước ${s.num}`}>
+                        <p className="font-mono text-[11px] text-[var(--primary)]">{STEP_OUTPUTS[s.num]}</p>
+                      </InfoTip>
                     </div>
                   </div>
                   <Link

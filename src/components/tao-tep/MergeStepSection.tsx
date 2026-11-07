@@ -141,6 +141,7 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
             4.1. Tệp gốc của đơn vị [{activeUnit.code}] (.xlsx)
           </label>
           <input
+            id="task-4-root"
             type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             onChange={(e) => {
@@ -177,6 +178,7 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
             4.2. Các phiếu khảo sát của [{activeUnit.code}] (.xlsx)
           </label>
           <input
+            id="task-4-forms"
             type="file"
             multiple
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -233,6 +235,7 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
 
       <div className="flex flex-wrap items-center gap-3">
         <button
+          id="task-4-merge"
           type="button"
           onClick={handleRunMerge}
           disabled={merging}
