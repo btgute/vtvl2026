@@ -191,17 +191,17 @@ export default function TaoTepPage() {
           <WorkflowSidebar activeStep={activeStep} errorStep={validationErrors.length > 0 && activeStep > 1 ? 1 : null} onSelectStep={(s) => { setActiveStep(s); persistState({ activeStep: s }); }} unitCode={currentUnit.code} />
         </div>
 
-        <div className="lg:col-span-9 space-y-5 min-w-0">
+        <div className="lg:col-span-9 space-y-6 min-w-0">
           {activeStep === 1 && (
-            <section className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-6 space-y-5 shadow-2xs">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
+            <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6 sm:space-y-7">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-bold text-sm flex items-center justify-center shrink-0">1</span>
-                  <div><h1 className="text-base sm:text-xl font-bold text-[var(--foreground)]">Giai đoạn 1/5 — Đề xuất vị trí việc làm</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code})</p></div>
+                  <span className="px-2.5 py-0.5 rounded-md bg-[var(--surface-tint)] text-[var(--primary)] font-bold text-xs shrink-0">Giai đoạn 1</span>
+                  <div><h1 className="text-base sm:text-xl font-bold text-[var(--foreground)]">Đề xuất vị trí việc làm</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code})</p></div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  {undoSnapshot && <button type="button" onClick={handleUndoSnapshot} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--primary)] bg-[var(--primary)]/10 text-xs sm:text-sm font-bold text-[var(--primary)] cursor-pointer"><Undo2 className="w-4 h-4" /><span>Phục hồi phiên bản trước</span></button>}
-                  <button type="button" onClick={() => setConfirmAction({ type: 'reset' })} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--fix)] text-xs sm:text-sm font-semibold text-[var(--foreground)] cursor-pointer"><RotateCcw className="w-4 h-4 text-[var(--fix)]" /><span>Khôi phục mặc định</span></button>
+                  {undoSnapshot && <button type="button" onClick={handleUndoSnapshot} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--primary)]/40 bg-[var(--surface-tint)] text-xs sm:text-sm font-bold text-[var(--primary)] cursor-pointer"><Undo2 className="w-4 h-4" /><span>Phục hồi phiên bản trước</span></button>}
+                  <button type="button" onClick={() => setConfirmAction({ type: 'reset' })} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--fix)] text-xs sm:text-sm font-semibold text-[var(--foreground)] cursor-pointer"><RotateCcw className="w-4 h-4 text-[var(--fix)]" /><span>Khôi phục mặc định</span></button>
                 </div>
               </div>
               {confirmAction && (
@@ -250,10 +250,10 @@ export default function TaoTepPage() {
             </section>
           )}
           {activeStep === 2 && (
-            <section className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-6 space-y-4 shadow-2xs">
+            <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
                 <h1 className="text-base sm:text-xl font-bold text-[var(--foreground)]">Giai đoạn 2/5 — Xuất bộ biểu gốc (4 tệp đầu ra)</h1>
-                <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Giai đoạn 1</span></button>
+                <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Giai đoạn 1</span></button>
               </div>
               <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} onCopied={(fn) => pushToast('success', `Đã sao chép tên tệp: ${fn}`)} />
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-b border-[var(--border-subtle)]">
@@ -263,7 +263,7 @@ export default function TaoTepPage() {
               {result ? <SplitResultBanner result={result} onDownload={triggerDownload} /> : <p className="py-4 text-sm text-[var(--ink-muted)]">Bấm <strong>Khởi tạo 4 tệp {currentUnit.code}</strong> để sinh Tệp đơn vị gốc, Tệp dự thảo ô cam gợi ý, Phiếu thu số liệu đầy đủ và Gói .zip từng vị trí.</p>}
               <RegenFormsFromUnitBox exportDate={customDate} includeZip={includeZip} onDownload={triggerDownload} />
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border-subtle)]">
-                <Link href="/bam-gio" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm font-semibold text-[var(--foreground)]"><Timer className="w-4 h-4 text-[var(--primary)]" /><span>Sang Giai đoạn 3: Đo định mức</span></Link>
+                <Link href="/bam-gio" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold text-[var(--foreground)]"><Timer className="w-4 h-4 text-[var(--primary)]" /><span>Sang Giai đoạn 3: Đo định mức</span></Link>
                 <button type="button" onClick={() => setActiveStep(4)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-[var(--primary)] text-white text-sm font-bold cursor-pointer"><span>Sang Giai đoạn 4: Gộp phiếu</span><ArrowRight className="w-4 h-4" /></button>
               </div>
             </section>
@@ -271,7 +271,7 @@ export default function TaoTepPage() {
           {activeStep === 4 && (
             <div className="space-y-4"><MergeStepSection unit={currentUnit} /><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => setActiveStep(2)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Giai đoạn 2</span></button><Link href="/ra-soat" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white text-sm font-bold shadow-2xs"><span>Sang Giai đoạn 5: Thẩm định hồ sơ</span><ArrowRight className="w-4 h-4" /></Link></div></div>
           )}
-          <details className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] overflow-hidden shadow-2xs">
+          <details className="surface-secondary rounded-xl overflow-hidden">
             <summary className="cursor-pointer px-5 min-h-[52px] text-sm font-bold text-[var(--foreground)] flex items-center justify-between"><span className="inline-flex items-center gap-2"><BookOpenCheck className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Tra cứu Khung 38 vị trí việc làm HCM-UTE &amp; Tải dự thảo Tờ trình [{currentUnit.code}]</span></span><span className="text-xs font-semibold text-[var(--primary)] shrink-0">Mở / Đóng</span></summary>
             <div className="p-4 border-t border-[var(--border-subtle)]"><Hd07OrderGuideCard unit={currentUnit} splitResult={result} /></div>
           </details>

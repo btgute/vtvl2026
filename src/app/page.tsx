@@ -88,9 +88,9 @@ export default function HomePage() {
           <WorkflowSidebar activeStep={currentStepNum} unitCode={activeUnit.code} />
         </div>
 
-        <div className="lg:col-span-9 space-y-5 min-w-0">
-          {/* Khối tổng quan chính — Giảm khung lồng nhau, dùng đường phân cách mảnh */}
-          <section className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-5 sm:p-7 shadow-2xs flex flex-col gap-5">
+        <div className="lg:col-span-9 space-y-6 min-w-0">
+          {/* Vùng tổng quan hợp nhất (Lớp 2: Nền trắng không viền bao ngoài + Lớp 3: Nền xanh nhạt cho Việc cần làm tiếp theo) */}
+          <section className="surface-canvas rounded-2xl p-5 sm:p-7 flex flex-col gap-6">
             <div className="space-y-1.5 border-b border-[var(--border-subtle)] pb-4">
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--primary)]">
                 Hệ thống Vị trí việc làm — HCM-UTE
@@ -103,10 +103,10 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Khối Việc cần làm tiếp theo: Đưa lên trước trên Mobile (order-2 sm:order-3) để nút Tiếp tục nằm ngay vùng nhìn đầu */}
-            <div className="order-2 sm:order-3 rounded-xl bg-[var(--primary)]/[0.06] border border-[var(--primary)]/25 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Khối Việc cần làm tiếp theo: Dùng nền xanh rất nhạt (Lớp 3), không cần viền xanh */}
+            <div className="order-2 sm:order-3 surface-tint rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
-                <div className="text-xs font-bold text-[var(--primary)]">
+                <div className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
                   Việc cần làm tiếp theo
                 </div>
                 <p className="text-sm sm:text-base font-semibold text-[var(--foreground)]">
@@ -122,7 +122,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Thông tin Đơn vị, Giai đoạn hiện tại, Tiến độ, Số mục cần bổ sung & Thời gian lưu */}
+            {/* Bố cục hai cột hợp nhất: Đơn vị đang thực hiện & Tiến độ hồ sơ hiện tại (phân tách bằng divider dọc) */}
             <div className="order-3 sm:order-2 grid grid-cols-1 sm:grid-cols-2 gap-6 py-1 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border-subtle)]">
               <div className="space-y-1.5 sm:pr-4">
                 <div className="flex items-center justify-between text-xs font-semibold text-[var(--ink-muted)]">
@@ -146,17 +146,17 @@ export default function HomePage() {
                 <div className="flex items-center justify-between text-xs font-semibold text-[var(--ink-muted)]">
                   <span className="inline-flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-[var(--ok)]" />
-                    <span>Tiến độ hồ sơ ({progressPercent}%)</span>
+                    <span>Tiến độ hồ sơ hiện tại ({progressPercent}%)</span>
                   </span>
                   <span className="inline-flex items-center gap-1 text-[var(--ink-subtle)]">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>Đã tự động lưu lúc {session.lastSavedAt}</span>
+                    <span>Lưu lúc {session.lastSavedAt}</span>
                   </span>
                 </div>
                 <div className="text-base font-bold text-[var(--primary)]">
                   Giai đoạn {currentStepNum}/5 — {currentStepInfo.shortTitle}
                 </div>
-                <div className="w-full h-2 rounded-full bg-[var(--border)] overflow-hidden" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
+                <div className="w-full h-2 rounded-full bg-[var(--muted)] overflow-hidden" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
                   <div className="h-full bg-[var(--primary)] rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--ink-muted)]">
@@ -176,13 +176,13 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Nhật ký thao tác gần đây — Dùng đường phân cách mảnh thay vì đóng khung từng dòng */}
-          <section className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
+          {/* Nhật ký thao tác gần đây — Không đóng khung viền lớn, dùng tiêu đề section + divider */}
+          <section className="surface-canvas rounded-2xl p-5 sm:p-6 space-y-3">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2.5">
               <div className="flex items-center gap-2">
                 <History className="w-4 h-4 text-[var(--primary)]" />
                 <h2 className="text-sm sm:text-base font-bold text-[var(--foreground)]">
-                  Nhật ký thao tác gần đây của đơn vị
+                  Nhật ký thao tác gần đây
                 </h2>
               </div>
               <span className="text-xs font-semibold text-[var(--ink-muted)] tabular-nums">
@@ -190,30 +190,29 @@ export default function HomePage() {
               </span>
             </div>
             {logs.length === 0 ? (
-              <p className="text-sm text-[var(--ink-muted)] py-2">
-                Chưa có bản ghi thao tác nào. Bấm <strong>Tiếp tục hồ sơ</strong> ở trên để bắt đầu.
+              <p className="text-sm text-[var(--ink-muted)] py-1">
+                Chưa có bản ghi thao tác nào.
               </p>
             ) : (
-              <ul className="divide-y divide-[var(--border-subtle)] max-h-48 overflow-y-auto pr-1">
-                {logs.slice(0, 4).map((log) => (
+              <ul className="divide-y divide-[var(--border-subtle)] max-h-56 overflow-y-auto pr-1">
+                {logs.slice(0, 5).map((log) => (
                   <li key={log.id} className="py-2.5 first:pt-1 last:pb-1 text-sm">
                     <div className="font-semibold text-[var(--foreground)]">
                       <span className="font-mono font-bold text-[var(--primary)] mr-1.5">[{log.unitCode}]</span>
                       <span>{log.details}</span>
                     </div>
-                    {(log.actorTitle || log.actorEmail) && (
-                      <div className="text-xs text-[var(--ink-muted)] mt-0.5">
-                        Người thực hiện: <strong>{log.actorTitle || 'Chưa khai báo'}</strong> · {log.actorEmail} · {log.timestamp}
-                      </div>
-                    )}
+                    <div className="text-xs text-[var(--ink-muted)] mt-0.5">
+                      {log.timestamp}
+                      {(log.actorTitle || log.actorEmail) ? ` · Người thao tác: ${log.actorTitle || 'Chưa khai báo'} (${log.actorEmail})` : ''}
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
           </section>
 
-          {/* Khu vực Hướng dẫn, Căn cứ pháp lý và Phạm vi 51 đơn vị thu gọn ở cuối trang */}
-          <details className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] overflow-hidden shadow-2xs">
+          {/* Khu vực Hướng dẫn, Căn cứ pháp lý và Phạm vi 51 đơn vị (Lớp 3: nền phụ, không viền) */}
+          <details className="surface-secondary rounded-xl overflow-hidden">
             <summary className="cursor-pointer px-5 min-h-[48px] text-sm font-bold text-[var(--foreground)] flex items-center justify-between">
               <span className="inline-flex items-center gap-2">
                 <FileText className="w-4 h-4 text-[var(--primary)] shrink-0" />

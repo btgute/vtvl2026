@@ -131,13 +131,13 @@ export function Step1ReviewConfirm({
   const missingStaffRows = positions.filter((p) => Number(p.staffCount || 0) === 0).length;
 
   return (
-    <div id="task-1-staff" className="space-y-4">
-      {/* Khối Kết quả hồ sơ dự kiến trước khi xác nhận (tham khảo S-Link) */}
+    <div id="task-1-staff" className="space-y-5">
+      {/* Khối Kết quả hồ sơ dự kiến trước khi xác nhận (Lớp 3: Nền phụ, không dùng viền hộp lồng nhau) */}
       <div
-        className={`rounded-xl border p-4 sm:p-5 space-y-4 transition-colors ${
+        className={`rounded-xl p-4 sm:p-5 space-y-4 transition-colors ${
           errors.length > 0
-            ? 'border-[var(--warn)]/45 bg-[var(--sheet)]'
-            : 'border-[var(--ok)]/40 bg-[var(--ok-soft)]/35'
+            ? 'surface-secondary'
+            : 'surface-tint'
         }`}
       >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">

@@ -141,7 +141,7 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
   };
 
   const renderStagesList = (compactMode: boolean, inMobileDrawer = false) => (
-    <ol className="space-y-1">
+    <ol className="space-y-0.5">
       {SIDEBAR_FIVE_STEPS.map((s) => {
         const isCurrent = currentStep === s.num;
         const isDone = !isCurrent && stageDoneFlags[s.num - 1];
@@ -156,12 +156,12 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
               : 'Chưa thực hiện';
 
         const rowContent = compactMode ? (
-          <div title={`${s.title} (${statusText})`} className={`flex items-center justify-center w-11 h-11 rounded-xl border transition-colors ${hasError ? 'bg-[var(--fix-soft)] border-[var(--fix)] text-[var(--fix)]' : isCurrent ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : isDone ? 'bg-[var(--ok-soft)] border-[var(--ok)]/40 text-[var(--ok)]' : 'bg-[var(--background)] border-[var(--border)] text-[var(--ink-muted)] hover:border-[var(--primary)]'}`}>
+          <div title={`${s.title} (${statusText})`} className={`flex items-center justify-center w-11 h-11 rounded-lg transition-colors ${hasError ? 'bg-[var(--fix-soft)] text-[var(--fix)] border-l-[3px] border-[var(--fix)]' : isCurrent ? 'bg-[var(--surface-tint)] text-[var(--primary)] border-l-[3px] border-[var(--primary)] font-bold' : isDone ? 'bg-[var(--ok-soft)]/60 text-[var(--ok)]' : 'text-[var(--ink-muted)] hover:bg-[var(--sheet)]'}`}>
             {isDone ? <Check className="w-4 h-4" /> : <span className="text-sm font-bold">{s.num}</span>}
           </div>
         ) : (
-          <div className={`group flex items-start gap-2.5 px-3 py-2.5 min-h-[44px] rounded-xl transition-colors ${hasError ? 'bg-[var(--fix-soft)] ring-1 ring-[var(--fix)]' : isCurrent ? 'bg-[var(--primary)]/10 ring-1 ring-[var(--primary)]/40' : 'hover:bg-[var(--background)]'}`}>
-            <span className={`mt-0.5 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 border ${hasError ? 'bg-[var(--fix)] text-white border-[var(--fix)]' : isCurrent ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : isDone ? 'bg-[var(--ok)] text-white border-[var(--ok)]' : 'bg-[var(--sheet)] text-[var(--ink-subtle)] border-[var(--border)]'}`}>
+          <div className={`group flex items-start gap-2.5 px-3 py-2.5 min-h-[44px] rounded-r-lg transition-colors border-l-[3px] ${hasError ? 'border-[var(--fix)] bg-[var(--fix-soft)]' : isCurrent ? 'border-[var(--primary)] bg-[var(--surface-tint)]' : 'border-transparent hover:bg-[var(--sheet)]/70'}`}>
+            <span className={`mt-0.5 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 ${hasError ? 'bg-[var(--fix)] text-white' : isCurrent ? 'bg-[var(--primary)] text-white' : isDone ? 'bg-[var(--ok-soft)] text-[var(--ok)]' : 'bg-[var(--muted)] text-[var(--ink-subtle)]'}`}>
               {hasError ? <AlertTriangle className="w-3.5 h-3.5" /> : isDone ? <Check className="w-3.5 h-3.5" /> : s.num}
             </span>
             <div className="flex-1 min-w-0">
@@ -187,7 +187,7 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
   );
 
   return (
-    <aside aria-label="Tiến trình 5 giai đoạn" className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] lg:sticky lg:top-20 select-none">
+    <aside aria-label="Tiến trình 5 giai đoạn" className="surface-secondary rounded-xl lg:rounded-none lg:bg-[var(--surface-secondary)] lg:border-r lg:border-[var(--border-subtle)] lg:sticky lg:top-20 select-none">
       {/* MOBILE BAR: Gọn nhẹ + Nút mở Bottom Sheet Drawer */}
       <div className="lg:hidden px-3.5 py-2.5 flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1 space-y-1">

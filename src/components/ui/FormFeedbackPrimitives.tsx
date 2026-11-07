@@ -135,12 +135,12 @@ export function FormField({
 }
 
 export function SegmentedControl<T extends string>({
-  ariaLabel, options, value, onChange, columnsClass = 'grid-cols-2 sm:grid-cols-4'
+  ariaLabel, options, value, onChange, columnsClass = 'grid-cols-2 lg:grid-cols-4'
 }: {
   ariaLabel: string; options: { id: T; label: string; subLabel?: string; disabled?: boolean }[]; value: T; onChange: (next: T) => void; columnsClass?: string;
 }) {
   return (
-    <div role="group" aria-label={ariaLabel} className={`grid ${columnsClass} gap-2`}>
+    <div role="group" aria-label={ariaLabel} className={`grid ${columnsClass} gap-1.5 rounded-xl bg-[var(--muted)] p-1.5`}>
       {options.map((opt) => {
         const selected = opt.id === value;
         return (
@@ -150,8 +150,10 @@ export function SegmentedControl<T extends string>({
             disabled={opt.disabled}
             aria-pressed={selected}
             onClick={() => onChange(opt.id)}
-            className={`relative flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 min-h-[44px] text-center transition-all duration-150 cursor-pointer ${
-              selected ? 'border-2 border-[var(--primary)] bg-[var(--primary)]/10 font-bold text-[var(--primary)] shadow-2xs' : 'border border-[var(--border)] bg-[var(--sheet)] font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]/60 hover:border-[var(--primary)]/45'
+            className={`relative flex items-center justify-center gap-2 rounded-lg px-3 py-2 min-h-[44px] text-center transition-all duration-150 cursor-pointer ${
+              selected
+                ? 'bg-[var(--sheet)] border border-[var(--primary)]/40 font-bold text-[var(--primary)] shadow-2xs'
+                : 'border border-transparent bg-transparent font-semibold text-[var(--foreground)] hover:bg-[var(--sheet)]/65 hover:text-[var(--primary)]'
             } disabled:opacity-45 disabled:cursor-not-allowed`}
           >
             {selected && <span className="w-4 h-4 rounded-full bg-[var(--primary)] text-white inline-flex items-center justify-center shrink-0" aria-hidden="true"><Check className="w-3 h-3" /></span>}

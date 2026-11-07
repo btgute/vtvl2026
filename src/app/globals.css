@@ -6,8 +6,10 @@
   --font-weight-bold: 525;
   --font-weight-semibold: 450;
   --font-weight-medium: 400;
-  --background: #f4f6f9;
+  --background: #f5f7fa;
   --sheet: #ffffff;
+  --surface-secondary: #f7f9fc;
+  --surface-tint: #eef5ff;
   --foreground: rgb(0, 71, 118);
   --ink-muted: #2b4c66;
   --ink-subtle: #476885;
@@ -16,9 +18,9 @@
   --primary-foreground: #ffffff;
   --accent-red: #c81e1e;
   --border: #c5d4e3;
-  --border-subtle: #dde7f0;
+  --border-subtle: #e2eaf2;
   --card: #ffffff;
-  --muted: #eaf0f6;
+  --muted: #eef2f6;
   --fix: #b42318;
   --fix-soft: #fdeceb;
   --warn: #8f4f00;
@@ -33,6 +35,8 @@
 .dark {
   --background: #0b1520;
   --sheet: #112030;
+  --surface-secondary: #15263a;
+  --surface-tint: #162d47;
   --foreground: #ebf4fc;
   --ink-muted: #b0cce4;
   --ink-subtle: #88acc9;
@@ -161,6 +165,33 @@ a.btn-touch {
   border-color: var(--border-subtle) !important;
   color: var(--ink-muted) !important;
   cursor: not-allowed;
+}
+
+/* Hệ thống 3 lớp bề mặt (3-Layer Surface System) & Thanh hành động cố định */
+.surface-canvas {
+  background-color: var(--sheet);
+  box-shadow: 0 1px 3px rgba(0, 71, 118, 0.04);
+}
+
+.surface-secondary {
+  background-color: var(--surface-secondary);
+}
+
+.surface-tint {
+  background-color: var(--surface-tint);
+}
+
+.sticky-action-bar {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(15, 46, 82, 0.08);
+  box-shadow: 0 -8px 24px rgba(15, 46, 82, 0.06);
+}
+
+.dark .sticky-action-bar {
+  background: rgba(17, 32, 48, 0.94);
+  border-top: 1px solid rgba(136, 172, 201, 0.14);
 }
 
 /* Phản hồi ngắn 1–2 giây khi dòng hoặc thẻ VTVL vừa lưu thành công (không làm nhảy chiều cao) */

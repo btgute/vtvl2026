@@ -159,7 +159,7 @@ export default function RaSoatPage() {
         </div>
 
         <div className="lg:col-span-9 space-y-5 min-w-0">
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-4 shadow-2xs">
+          <div className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
               <div className="flex items-center">
                 <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-sm flex items-center justify-center mr-2 shrink-0">5</span>

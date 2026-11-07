@@ -110,7 +110,7 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
   };
 
   return (
-    <section id="buoc-4" aria-labelledby="h4s" className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-5 space-y-4 shadow-2xs">
+    <section id="buoc-4" aria-labelledby="h4s" className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
         <div className="flex items-center">
           <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">4</span>

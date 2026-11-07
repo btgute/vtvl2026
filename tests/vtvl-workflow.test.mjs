@@ -212,6 +212,8 @@ runTest('8. Kiểm tra hệ thống phản hồi tương tác & trạng thái bi
   assert.ok(posList.includes('triggerRowChange') && posList.includes('vtvl-row-saved') && posList.includes('handleRetryRow'), 'Step1PositionList phải phản hồi Chưa lưu / Đã cập nhật (vtvl-row-saved) và cho phép Thử lại khi lỗi');
   assert.ok(reviewConfirm.includes('Kết quả hồ sơ dự kiến') && reviewConfirm.includes('validateStageData'), 'Step1ReviewConfirm phải có khối Kết quả hồ sơ dự kiến và hàm validateStageData');
   assert.ok(stepperBar.includes('Đang kiểm tra…') && stepperBar.includes('SaveStatus'), 'StickyActionBar phải hiển thị Đang kiểm tra… và SaveStatus theo thời gian thực');
+  assert.ok(css.includes('.surface-canvas') && css.includes('.surface-secondary') && css.includes('.surface-tint') && css.includes('.sticky-action-bar'), 'globals.css phải định nghĩa hệ thống 3 lớp bề mặt (.surface-canvas, .surface-secondary, .surface-tint) và .sticky-action-bar');
+  assert.ok(stepperBar.includes('Xem các chặng') && stepperBar.includes('sticky-action-bar'), 'StageStepperBar phải có nút Xem các chặng trên mobile và StickyActionBar dùng .sticky-action-bar');
 });
 
 // 9. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)
