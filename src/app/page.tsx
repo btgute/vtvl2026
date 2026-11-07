@@ -80,7 +80,7 @@ export default function HomePage() {
         </div>
 
         {/* Nội dung chính tinh gọn */}
-        <div className="lg:col-span-9 space-y-5">
+        <div className="lg:col-span-9 space-y-5 min-w-0">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] overflow-hidden shadow-2xs">
             <div className="px-4 py-3 border-b border-[var(--border-subtle)] flex items-center justify-between bg-[var(--background)]/50">
               <div className="flex items-center">

@@ -137,8 +137,8 @@ export default function RaSoatPage() {
           <WorkflowSidebar activeStep={5} unitCode={activeUnit.code} />
         </div>
 
-        <div className="lg:col-span-9 space-y-5">
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 space-y-4 shadow-2xs">
+        <div className="lg:col-span-9 space-y-5 min-w-0">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-3.5 sm:p-5 space-y-4 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
               <div className="flex items-center">
                 <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">5</span>

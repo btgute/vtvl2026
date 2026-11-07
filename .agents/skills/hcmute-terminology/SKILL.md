@@ -12,7 +12,7 @@ description: Chuẩn hóa tên gọi chính thức của Trường Đại học 
 - **Mục tiêu sử dụng:** Đảm bảo 100% văn bản, mã vị trí việc làm, bậc nghề nghiệp, tên chức danh nhà giáo, hệ số lương và căn cứ pháp lý tuân thủ đúng quy định hiện hành năm 2026.
 - **Điều kiện kích hoạt:** Kích hoạt khi khởi tạo hoặc cập nhật danh mục đơn vị, vị trí việc làm hoặc chức danh nhà giáo trong `src/configs/`, tạo tệp mẫu Excel, hiển thị trên giao diện hoặc biên soạn tài liệu hướng dẫn.
 
-## B. Danh mục Vị trí việc làm và Bậc nghề nghiệp theo Nghị định số 232/2026/NĐ-CP
+## B. Quy trình thực hiện (Danh mục Vị trí việc làm và Bậc nghề nghiệp theo Nghị định số 232/2026/NĐ-CP)
 
 1. **Vị trí việc làm lãnh đạo, quản lý (Phụ lục I — Nghị định 232/2026/NĐ-CP):**
    - Hiệu trưởng, Giám đốc, Viện trưởng và tương đương.
@@ -32,7 +32,7 @@ description: Chuẩn hóa tên gọi chính thức của Trường Đại học 
    - **Thủ quỹ**, **Y tế trường học:** **Bậc 1 đến Bậc 3**.
    - **Pháp chế**, **Tổ chức cán bộ, thi đua khen thưởng**, **Hợp tác, hội nhập quốc tế:** **Bậc 3 đến Bậc 5**.
 
-## C. Quy chuẩn chức danh nhà giáo theo Thông tư số 31/2026/TT-BGDĐT
+## C. Quy tắc kiểm tra (Quy chuẩn chức danh nhà giáo theo Thông tư số 31/2026/TT-BGDĐT)
 
 1. **Chức danh giảng viên đại học (Khoản 9 Điều 2 & Điều 14 TT 31/2026/TT-BGDĐT):**
    - **Giảng viên cao cấp** (`V.07.01.01` — `A3.1: 6,20 – 8,00`), **Giảng viên chính** (`V.07.01.02` — `A2.1: 4,40 – 6,78`), **Giảng viên** (`V.07.01.03` — `A1: 2,34 – 4,98`).
@@ -40,3 +40,7 @@ description: Chuẩn hóa tên gọi chính thức của Trường Đại học 
    - Viên chức đã bổ nhiệm Trợ giảng trước `31/3/2026` nếu đáp ứng chuẩn nghề nghiệp Giảng viên (`V.07.01.03`) thì Hiệu trưởng xem xét bổ nhiệm vào chức danh **Giảng viên (`V.07.01.03`)**; nếu chưa đáp ứng thì tiếp tục giữ mã số hiện giữ theo diện chuyển tiếp.
 3. **Căn cứ pháp lý thay thế (Khoản 2 Điều 17 TT 31/2026/TT-BGDĐT):**
    - Không dẫn chiếu các Điều 2, 8, 9, 10 của `Thông tư 40/2020/TT-BGDĐT` (đã hết hiệu lực). Bắt buộc dẫn chiếu **Nghị định số 232/2026/NĐ-CP, Thông tư số 31/2026/TT-BGDĐT ngày 14/4/2026, Nghị định số 93/2026/NĐ-CP ngày 31/3/2026 và Luật Nhà giáo số 73/2025/QH15**.
+
+## D. Giới hạn
+
+- Không tự ý thay đổi tên viết tắt **HCM-UTE**, tên trường hoặc giới hạn bậc nghề nghiệp trong Phụ lục I Hướng dẫn số `1907/HD-ĐHCNKT` khi chưa có văn bản sửa đổi chính thức.

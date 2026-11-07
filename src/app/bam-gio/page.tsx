@@ -142,8 +142,8 @@ export default function BamGioPage() {
           <WorkflowSidebar activeStep={3} unitCode={unit.code} />
         </div>
 
-        <div className="lg:col-span-9 space-y-5">
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 space-y-4 shadow-2xs">
+        <div className="lg:col-span-9 space-y-5 min-w-0">
+          <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-3.5 sm:p-5 space-y-4 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
               <div className="flex items-center">
                 <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">3</span>
@@ -238,17 +238,17 @@ export default function BamGioPage() {
                 <label className="block text-[11px] font-bold mb-1">Số sản phẩm</label>
                 <input type="number" min={1} value={manualProducts} onChange={(e) => setManualProducts(Math.max(1, parseInt(e.target.value || '1', 10)))} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs font-bold" />
               </div>
-              <button type="submit" className="h-8.5 rounded-xl bg-[var(--sheet)] border border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white font-bold text-xs inline-flex items-center justify-center gap-1 cursor-pointer transition-colors">
+              <button type="submit" className="col-span-2 sm:col-span-1 h-8.5 rounded-xl bg-[var(--sheet)] border border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white font-bold text-xs inline-flex items-center justify-center gap-1 cursor-pointer transition-colors">
                 <Plus className="w-3.5 h-3.5" />
                 <span>Thêm bản ghi</span>
               </button>
             </form>
 
             <div className="pt-2 border-t border-[var(--border-subtle)] space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <strong className="text-xs sm:text-sm text-[var(--foreground)]">Nhật ký đã ghi tại [{unit.code}] ({sessions.length} bản ghi)</strong>
-                <button id="task-3-export" type="button" onClick={handleExport} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer shadow-2xs">
-                  <Download className="w-3.5 h-3.5" />
+                <button id="task-3-export" type="button" onClick={handleExport} className="w-full sm:w-auto justify-center inline-flex items-center gap-1.5 min-h-9 py-1.5 px-4 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer shadow-2xs">
+                  <Download className="w-3.5 h-3.5 shrink-0" />
                   <span>Xuất phiếu định mức [{unit.code}] (.xlsx) &amp; Đính kèm sang Bước 4</span>
                 </button>
               </div>

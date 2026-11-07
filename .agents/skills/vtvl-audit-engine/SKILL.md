@@ -12,7 +12,7 @@ description: Bộ máy kiểm tra và rà soát chéo bộ biểu Vị trí vi�
 - **Mục tiêu sử dụng:** Giúp đơn vị phát hiện và xử lý triệt để các lỗi công thức, lỗi thiếu căn cứ, trùng nguồn lực hoặc lệch chuẩn trước khi ký nộp về Phòng Tổ chức - Nhân sự.
 - **Điều kiện kích hoạt:** Khi làm việc với `src/services/excel-audit/` hoặc giao diện `/ra-soat`.
 
-## B. Hệ thống quy tắc kiểm tra chuẩn Hướng dẫn số 07-HD/BTCTW
+## B. Quy trình thực hiện (Hệ thống quy tắc kiểm tra chuẩn Hướng dẫn số 07-HD/BTCTW)
 
 ### 1. Phân loại 3 mức độ cảnh báo
 - 🔴 **Phải sửa (`fix`):** Lỗi cấu trúc hoặc vi phạm quy tắc bắt buộc khiến chỉ tiêu kiểm tra tại `13. K_KiemTra` báo `CẦN RÀ SOÁT`:

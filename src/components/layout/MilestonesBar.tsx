@@ -16,19 +16,9 @@ export interface InfoTipProps {
 export function InfoTip({ title, children, align = 'left' }: InfoTipProps) {
   const [pinned, setPinned] = useState(false);
   return (
-    <span className="relative inline-flex items-center group align-middle ml-1.5">
-      <button
-        type="button"
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPinned((prev) => !prev); }}
-        aria-label={title || 'Xem thông tin giải thích'}
-        title="Rê chuột hoặc bấm để xem chi tiết"
-        className={`w-4.5 h-4.5 rounded-full text-[10px] font-extrabold inline-flex items-center justify-center transition-colors cursor-pointer border ${
-          pinned ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/30 hover:bg-[var(--primary)] hover:text-white'
-        }`}
-      >
-        !
-      </button>
-      <div className={`${pinned ? 'block' : 'hidden group-hover:block'} absolute z-40 top-full mt-1.5 w-72 sm:w-80 rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-3 text-xs font-normal text-[var(--foreground)] shadow-lg leading-relaxed ${align === 'right' ? 'right-0' : 'left-0'}`}>
+    <span className="relative inline-flex items-center group align-middle ml-1.5 shrink-0">
+      <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPinned((p) => !p); }} aria-label={title || 'Xem thông tin giải thích'} title="Rê chuột hoặc bấm để xem chi tiết" className={`w-4.5 h-4.5 rounded-full text-[10px] font-extrabold inline-flex items-center justify-center transition-colors cursor-pointer border ${pinned ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/30 hover:bg-[var(--primary)] hover:text-white'}`}>!</button>
+      <div className={`${pinned ? 'block' : 'hidden group-hover:block'} absolute z-40 top-full mt-1.5 w-[min(18.5rem,calc(100vw-2rem))] sm:w-80 rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-3 text-xs font-normal text-[var(--foreground)] shadow-lg leading-relaxed ${align === 'right' ? 'right-0' : 'left-0'}`}>
         {title && <div className="font-extrabold text-[var(--primary)] mb-1 border-b border-[var(--border-subtle)] pb-1">{title}</div>}
         <div className="text-[var(--ink-muted)] space-y-1">{children}</div>
       </div>

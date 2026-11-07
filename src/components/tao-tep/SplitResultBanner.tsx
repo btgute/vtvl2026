@@ -84,30 +84,30 @@ export function SplitResultBanner({ result, onDownload }: Props) {
         </table>
       </div>
 
-      <div className="flex flex-wrap gap-2.5">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2.5">
         <button
           type="button"
           onClick={() => onDownload(result.unitBlob, result.unitFileName)}
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--primary)] text-white font-semibold text-xs cursor-pointer shadow-2xs"
+          className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-10 px-4 py-2 rounded-xl bg-[var(--primary)] text-white font-semibold text-xs cursor-pointer shadow-2xs"
         >
-          <Download className="w-4 h-4" />
-          <span>Tải tệp đơn vị (21 trang tính): {result.unitFileName}</span>
+          <Download className="w-4 h-4 shrink-0" />
+          <span className="truncate">Tải tệp đơn vị (21 trang tính): {result.unitFileName}</span>
         </button>
         <button
           type="button"
           onClick={() => onDownload(result.fullFormBlob, result.fullFormFileName)}
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--sheet)] border border-[var(--border)] hover:border-[var(--primary)] text-[var(--foreground)] font-semibold text-xs cursor-pointer"
+          className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-10 px-4 py-2 rounded-xl bg-[var(--sheet)] border border-[var(--border)] hover:border-[var(--primary)] text-[var(--foreground)] font-semibold text-xs cursor-pointer"
         >
-          <Download className="w-4 h-4 text-[var(--primary)]" />
-          <span>Tải phiếu khảo sát tổng hợp: {result.fullFormFileName}</span>
+          <Download className="w-4 h-4 text-[var(--primary)] shrink-0" />
+          <span className="truncate">Tải phiếu khảo sát tổng hợp: {result.fullFormFileName}</span>
         </button>
         {result.zipBlob && result.zipFileName && (
           <button
             type="button"
             onClick={() => onDownload(result.zipBlob!, result.zipFileName!)}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--sheet)] border border-[var(--border)] hover:border-[var(--primary)] text-[var(--foreground)] font-semibold text-xs cursor-pointer"
+            className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-10 px-4 py-2 rounded-xl bg-[var(--sheet)] border border-[var(--border)] hover:border-[var(--primary)] text-[var(--foreground)] font-semibold text-xs cursor-pointer"
           >
-            <FolderArchive className="w-4 h-4 text-[#ED1C24]" />
+            <FolderArchive className="w-4 h-4 text-[#ED1C24] shrink-0" />
             <span>Tải gói phiếu theo từng vị trí (.zip)</span>
           </button>
         )}

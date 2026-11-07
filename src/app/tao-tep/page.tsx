@@ -133,9 +133,9 @@ export default function TaoTepPage() {
           <WorkflowSidebar activeStep={activeStep} onSelectStep={(s) => { if (s > 1 && !validateActor()) return; setActiveStep(s); }} unitCode={currentUnit.code} />
         </div>
 
-        <div className="lg:col-span-9 space-y-5">
+        <div className="lg:col-span-9 space-y-5 min-w-0">
           {activeStep === 1 && (
-            <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 space-y-4 shadow-2xs">
+            <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-3.5 sm:p-5 space-y-4 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
                 <div className="flex items-center">
                   <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">1</span>
@@ -235,17 +235,17 @@ export default function TaoTepPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                <div className="flex flex-wrap items-center gap-3 text-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
                   <span>Đơn vị: <strong>[{currentUnit.code}] {currentUnit.nameVi}</strong></span><span>· Tổng VTVL: <strong>{positions.length}</strong></span><span>· Nhân sự D1: <strong>{totalStaffD1}</strong></span><span>· Đề xuất C3: <strong className="text-[var(--primary)]">{totalFteC3} FTE</strong></span>
                 </div>
-                <button type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-[var(--primary)] hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-2xs cursor-pointer disabled:opacity-50"><FileSpreadsheet className="w-4 h-4" /><span>{loading ? 'Đang khởi tạo…' : 'Lưu đề xuất & Sang Bước 2 (Xuất tệp)'}</span><ArrowRight className="w-4 h-4" /></button>
+                <button type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-[var(--primary)] hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-2xs cursor-pointer disabled:opacity-50"><FileSpreadsheet className="w-4 h-4 shrink-0" /><span>{loading ? 'Đang khởi tạo…' : 'Lưu đề xuất & Sang Bước 2 (Xuất tệp)'}</span><ArrowRight className="w-4 h-4 shrink-0" /></button>
               </div>
             </section>
           )}
 
           {activeStep === 2 && (
-            <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 space-y-4 shadow-2xs">
+            <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-3.5 sm:p-5 space-y-4 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
                 <div className="flex items-center">
                   <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">2</span>
