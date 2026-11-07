@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Check, AlertTriangle, Clock, CircleDot, Circle, ArrowLeft, ArrowRight, Save } from 'lucide-react';
+import React from 'react';
+import { Check, AlertTriangle, Clock, CircleDot, Circle, ArrowLeft, ArrowRight, Save, Loader2 } from 'lucide-react';
 import { ProposedVtvlRow } from '@/types/vtvl';
 import { isPositionRowValid } from './Step1PositionList';
 import { Step1ValidationError } from './Step1ReviewConfirm';
+import { SaveLifecycleState, SaveStatus } from '@/components/ui/FormFeedbackPrimitives';
 
 export type WorkflowStatusKind = 'completed' | 'in_progress' | 'needs_supplement' | 'error' | 'not_started';
 
@@ -65,6 +66,7 @@ export function StatusBadge({ status, compact = false }: { status: WorkflowStatu
 /**
  * Hàm duy nhất xác định trạng thái của 5 Chặng trong Giai đoạn 1.
  * Chỉ duy nhất 1 chặng (currentStage) mang trạng thái "Đang thực hiện".
+ * Không báo lỗi đỏ cho các chặng người dùng chưa truy cập trừ khi đã sang Chặng 5 hoặc bấm Kiểm tra toàn hồ sơ.
  */
 export function computeStageStatuses(
   currentStage: 1 | 2 | 3 | 4 | 5,
@@ -72,28 +74,32 @@ export function computeStageStatuses(
   actorEmail: string,
   actorTitle: string,
   positions: ProposedVtvlRow[],
-  validationErrors: Step1ValidationError[]
+  validationErrors: Step1ValidationError[],
+  visitedStages: number[] = [1]
 ): StageMetaItem[] {
   const emailTrim = actorEmail.trim();
   const titleTrim = actorTitle.trim();
+  const inspectAll = currentStage === 5 || visitedStages.includes(5);
 
   const evalRawStatus = (num: 1 | 2 | 3 | 4 | 5): WorkflowStatusKind => {
+    const isVisited = inspectAll || visitedStages.includes(num);
     if (num === 1) return unitCode.trim() ? 'completed' : 'needs_supplement';
     if (num === 2) {
-      if (!emailTrim && !titleTrim) return 'needs_supplement';
-      if (emailTrim && !emailTrim.includes('@')) return 'error';
+      if (!emailTrim && !titleTrim) return isVisited ? 'needs_supplement' : 'not_started';
+      if (emailTrim && (!emailTrim.includes('@') || !emailTrim.includes('.'))) return isVisited ? 'error' : 'needs_supplement';
       if (!emailTrim || !titleTrim) return 'needs_supplement';
       return 'completed';
     }
     if (num === 3) return positions.length > 0 ? 'completed' : 'needs_supplement';
     if (num === 4) {
       if (positions.length === 0) return 'not_started';
-      if (positions.some((p) => !isPositionRowValid(p).valid)) return 'error';
+      if (positions.some((p) => !isPositionRowValid(p).valid)) return isVisited ? 'error' : 'needs_supplement';
       const totalStaff = positions.reduce((s, p) => s + Number(p.staffCount || 0), 0);
       return totalStaff === 0 ? 'needs_supplement' : 'completed';
     }
-    if (validationErrors.some((e) => e.stage === 4)) return 'error';
-    return validationErrors.length > 0 ? 'needs_supplement' : 'completed';
+    if (!isVisited) return 'not_started';
+    if (validationErrors.length > 0) return 'needs_supplement';
+    return 'completed';
   };
 
   const labels: { num: 1 | 2 | 3 | 4 | 5; shortLabel: string; fullTitle: string }[] = [
@@ -132,9 +138,12 @@ export function StageStepperBar({
               <button
                 type="button"
                 aria-current={isCurrent ? 'step' : undefined}
+                aria-selected={isCurrent}
                 onClick={() => onSelectStage(st.num)}
-                className={`group flex items-center gap-2 px-2.5 py-2 min-h-[44px] rounded-xl transition-colors cursor-pointer text-left w-full ${
-                  isCurrent ? 'bg-[var(--primary)]/10 text-[var(--primary)]' : 'hover:bg-[var(--background)] text-[var(--foreground)]'
+                className={`group flex items-center gap-2 px-2.5 py-2 min-h-[44px] rounded-xl border transition-all duration-150 cursor-pointer text-left w-full ${
+                  isCurrent
+                    ? 'border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)] shadow-2xs'
+                    : 'border-transparent hover:bg-[var(--background)] hover:border-[var(--border)] text-[var(--foreground)]'
                 }`}
               >
                 <span className={`w-6 h-6 rounded-full border text-xs font-bold flex items-center justify-center shrink-0 transition-transform ${meta.circleClass}`}>
@@ -161,6 +170,9 @@ export function StickyActionBar({
   unitCode,
   vtvlCount,
   errorCount,
+  saveLifecycle = 'idle',
+  isCheckingContinue = false,
+  continueCheckedOk = false,
   onPrevStage,
   onSaveNow,
   onInspectErrors,
@@ -172,29 +184,34 @@ export function StickyActionBar({
   unitCode: string;
   vtvlCount: number;
   errorCount: number;
+  saveLifecycle?: SaveLifecycleState;
+  isCheckingContinue?: boolean;
+  continueCheckedOk?: boolean;
   onPrevStage: () => void;
   onSaveNow: () => void;
   onInspectErrors: () => void;
   onContinue: () => void;
 }) {
-  const [justSaved, setJustSaved] = useState(false);
-  const handleManualSave = () => {
-    onSaveNow();
-    setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 2000);
-  };
+  const isFinalExportBlocked = (activeStep !== 1 || wizardStage === 5) && errorCount > 0;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border)] bg-[var(--sheet)]/95 backdrop-blur-xs pb-[env(safe-area-inset-bottom)]">
       <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex items-center justify-between sm:justify-start gap-3 text-xs text-[var(--ink-muted)]">
-          <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-[var(--ok)]" />
-            <span>Đã tự động lưu lúc <strong>{lastSavedAt}</strong></span>
-          </span>
+          <SaveStatus lifecycle={saveLifecycle} lastSavedAt={lastSavedAt} errorCount={errorCount} onRetrySave={onSaveNow} />
           <span className="hidden md:inline text-[var(--ink-subtle)]">· [{unitCode}] {vtvlCount} vị trí việc làm</span>
-          <button type="button" onClick={handleManualSave} className="inline-flex items-center gap-1 min-h-[36px] px-2.5 rounded-lg text-xs font-semibold text-[var(--primary)] hover:bg-[var(--primary)]/10 cursor-pointer transition-colors">
-            <Save className="w-3.5 h-3.5" /><span>{justSaved ? 'Đã lưu ngay' : 'Lưu ngay'}</span>
+          <button
+            type="button"
+            disabled={saveLifecycle === 'saving'}
+            onClick={onSaveNow}
+            className={`inline-flex items-center gap-1 min-h-[36px] px-2.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors disabled:opacity-50 ${
+              saveLifecycle === 'dirty'
+                ? 'border border-[var(--warn)] bg-[var(--warn-soft)] text-[var(--warn)] font-bold'
+                : 'text-[var(--primary)] hover:bg-[var(--primary)]/10'
+            }`}
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>{saveLifecycle === 'saved' ? 'Đã lưu' : 'Lưu ngay'}</span>
           </button>
         </div>
 
@@ -213,8 +230,20 @@ export function StickyActionBar({
           >
             {errorCount > 0 ? <><AlertTriangle className="w-4 h-4 shrink-0" /><span>{errorCount} lỗi cần xử lý</span></> : <><Check className="w-4 h-4 text-[var(--ok)] shrink-0" /><span>Kiểm tra dữ liệu</span></>}
           </button>
-          <button type="button" onClick={onContinue} className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-deep)] text-white text-xs sm:text-sm font-bold cursor-pointer shadow-2xs transition-colors">
-            <span>{activeStep === 1 && wizardStage < 5 ? 'Tiếp tục' : 'Xuất 4 tệp'}</span><ArrowRight className="w-4 h-4 shrink-0" />
+          <button
+            type="button"
+            disabled={isCheckingContinue || saveLifecycle === 'saving' || isFinalExportBlocked}
+            title={isFinalExportBlocked ? `Vui lòng bổ sung ${errorCount} mục còn thiếu trước khi xuất 4 tệp` : undefined}
+            onClick={onContinue}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-deep)] text-white text-xs sm:text-sm font-bold cursor-pointer shadow-2xs transition-colors disabled:opacity-55 disabled:cursor-not-allowed"
+          >
+            {isCheckingContinue ? (
+              <><Loader2 className="w-4 h-4 animate-spin shrink-0" /><span>Đang kiểm tra…</span></>
+            ) : continueCheckedOk ? (
+              <><Check className="w-4 h-4 shrink-0" /><span>Hợp lệ</span></>
+            ) : (
+              <><span>{activeStep === 1 && wizardStage < 5 ? 'Tiếp tục' : isFinalExportBlocked ? `Còn ${errorCount} mục cần xử lý` : 'Xuất 4 tệp'}</span><ArrowRight className="w-4 h-4 shrink-0" /></>
+            )}
           </button>
         </div>
       </div>

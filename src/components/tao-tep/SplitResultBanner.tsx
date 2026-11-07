@@ -11,7 +11,7 @@ interface Props {
   onDownload: (blob: Blob, filename: string) => void;
 }
 
-export function SplitFileNamesPreview({ unitCode, exportDate, includeZip }: { unitCode: string; exportDate: string; includeZip: boolean }) {
+export function SplitFileNamesPreview({ unitCode, exportDate, includeZip, onCopied }: { unitCode: string; exportDate: string; includeZip: boolean; onCopied?: (fileName: string) => void }) {
   const [copiedName, setCopiedName] = useState<string>('');
   const names = previewGeneratedFileNames(unitCode, exportDate);
   const items = [
@@ -24,9 +24,10 @@ export function SplitFileNamesPreview({ unitCode, exportDate, includeZip }: { un
   const handleCopy = (fileName: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       void navigator.clipboard.writeText(fileName);
-      setCopiedName(fileName);
-      setTimeout(() => setCopiedName(''), 1800);
     }
+    setCopiedName(fileName);
+    onCopied?.(fileName);
+    setTimeout(() => setCopiedName(''), 1800);
   };
 
   return (

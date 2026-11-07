@@ -174,7 +174,34 @@ runTest('7. Kiểm tra 5 Thẻ Rà soát, Xuất Excel Chua_du_can_cu, Ví dụ 
   }
 });
 
-// 8. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)
+// 8. Kiểm tra Hệ thống trạng thái biểu mẫu thống nhất (Dirty/Saving/Saved/Error, Blur Validation, Selected State, Toast, Kết quả dự kiến)
+runTest('8. Kiểm tra hệ thống phản hồi tương tác & trạng thái biểu mẫu (FormField, SaveStatus, Blur Validation, S-Link Preview)', () => {
+  const primitives = fs.readFileSync(path.join(root, 'src/components/ui/FormFeedbackPrimitives.tsx'), 'utf8');
+  const inputs = fs.readFileSync(path.join(root, 'src/components/ui/FormInputs.tsx'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'src/app/globals.css'), 'utf8');
+  const taoTep = fs.readFileSync(path.join(root, 'src/app/tao-tep/page.tsx'), 'utf8');
+  const posList = fs.readFileSync(path.join(root, 'src/components/tao-tep/Step1PositionList.tsx'), 'utf8');
+  const reviewConfirm = fs.readFileSync(path.join(root, 'src/components/tao-tep/Step1ReviewConfirm.tsx'), 'utf8');
+  const stepperBar = fs.readFileSync(path.join(root, 'src/components/tao-tep/StageStepperBar.tsx'), 'utf8');
+
+  // Kiểm tra đủ các trạng thái biểu mẫu và lưu
+  for (const stateToken of ["'default'", "'focused'", "'dirty'", "'saving'", "'saved'", "'error'", "'disabled'", "'readOnly'"]) {
+    assert.ok(primitives.includes(stateToken), `FormFeedbackPrimitives thiếu trạng thái ${stateToken}`);
+  }
+  assert.ok(primitives.includes('Chưa lưu') && primitives.includes('Đang lưu…') && primitives.includes('Chưa thể lưu') && primitives.includes('Thử lại'), 'InlineStatus phải hỗ trợ Chưa lưu, Đang lưu…, Chưa thể lưu và nút Thử lại');
+  assert.ok(primitives.includes('SegmentedControl') && primitives.includes('aria-pressed'), 'SegmentedControl phải có aria-pressed và trạng thái Selected rõ ràng');
+  assert.ok(primitives.includes('ToastRegion') && primitives.includes('aria-live="polite"'), 'Phải có ToastRegion hỗ trợ aria-live');
+  assert.ok(inputs.includes('TextInput') && inputs.includes('NumberInput') && inputs.includes('DateInput') && inputs.includes('Select') && inputs.includes('SearchableSelect'), 'FormInputs.tsx phải xuất đủ TextInput, NumberInput, DateInput, Select, SearchableSelect');
+  assert.ok(css.includes('.vtvl-control') && css.includes('.vtvl-row-saved') && css.includes('prefers-reduced-motion: reduce'), 'globals.css phải có class trạng thái .vtvl-control, .vtvl-row-saved và hỗ trợ prefers-reduced-motion');
+
+  // Kiểm tra validation sau blur, khóa nút Tiếp tục tránh bấm 2 lần, Kết quả hồ sơ dự kiến
+  assert.ok(taoTep.includes('touchedFields') && taoTep.includes('scheduleAutosave') && taoTep.includes('isCheckingContinue'), 'tao-tep/page.tsx phải kiểm tra lỗi sau blur (touchedFields), autosave và khóa nút Tiếp tục khi đang kiểm tra');
+  assert.ok(posList.includes('triggerRowChange') && posList.includes('vtvl-row-saved') && posList.includes('handleRetryRow'), 'Step1PositionList phải phản hồi Chưa lưu / Đã cập nhật (vtvl-row-saved) và cho phép Thử lại khi lỗi');
+  assert.ok(reviewConfirm.includes('Kết quả hồ sơ dự kiến') && reviewConfirm.includes('validateStageData'), 'Step1ReviewConfirm phải có khối Kết quả hồ sơ dự kiến và hàm validateStageData');
+  assert.ok(stepperBar.includes('Đang kiểm tra…') && stepperBar.includes('SaveStatus'), 'StickyActionBar phải hiển thị Đang kiểm tra… và SaveStatus theo thời gian thực');
+});
+
+// 9. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)
 const checkLocalServer = async () => {
   const routes = ['/', '/tao-tep', '/bam-gio', '/ra-soat', '/huong-dan'];
   try {
@@ -185,10 +212,10 @@ const checkLocalServer = async () => {
         assert.strictEqual(res.status, 200, `Đường dẫn ${r} trả về mã lỗi ${res.status}`);
       }
       passed += 1;
-      console.log('  ✓ [PASS] 8. Kiểm tra máy chủ cục bộ (http://localhost:3360): 5/5 trang trả về HTTP 200 OK');
+      console.log('  ✓ [PASS] 9. Kiểm tra máy chủ cục bộ (http://localhost:3360): 5/5 trang trả về HTTP 200 OK');
     }
   } catch {
-    console.log('  ℹ [SKIP] 8. Máy chủ cục bộ không chạy trong tiến trình hiện tại (đã qua 7/7 bài kiểm thử tĩnh)');
+    console.log('  ℹ [SKIP] 9. Máy chủ cục bộ không chạy trong tiến trình hiện tại (đã qua 8/8 bài kiểm thử tĩnh)');
   }
   console.log('----------------------------------------------------------------');
   console.log(` KẾT QUẢ: ĐẠT ${passed}/${passed} BÀI KIỂM THỬ ĐƠN VỊ (0 LỖI)`);

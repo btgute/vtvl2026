@@ -116,15 +116,16 @@ export function Step1CatalogSelector({
         </div>
         <button
           type="button"
+          aria-pressed={priorityOnly}
           onClick={() => setPriorityOnly((p) => !p)}
           className={`inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border text-xs sm:text-sm font-bold cursor-pointer transition-colors ${
             priorityOnly
-              ? 'border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]'
-              : 'border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]'
+              ? 'border-2 border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]'
+              : 'border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] hover:border-[var(--primary)]/45'
           }`}
         >
           <Filter className="w-4 h-4 shrink-0" />
-          <span>{priorityOnly ? 'Đang ưu tiên VTVL phù hợp khối đơn vị' : 'Đang hiển thị toàn bộ 38 VTVL của Trường'}</span>
+          <span>{priorityOnly ? '✓ Đang ưu tiên VTVL phù hợp khối đơn vị' : 'Đang hiển thị toàn bộ 38 VTVL của Trường'}</span>
         </button>
       </div>
 
@@ -197,13 +198,14 @@ export function Step1CatalogSelector({
             <button
               key={item.maDanhMucNd232}
               type="button"
+              aria-pressed={checked}
               onClick={() => toggleSelect(item.maDanhMucNd232)}
               className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 checked
-                  ? 'border-[var(--primary)] bg-[var(--primary)]/[0.1] ring-2 ring-[var(--primary)]/40'
+                  ? 'border-2 border-[var(--primary)] bg-[var(--primary)]/10 shadow-2xs'
                   : isAdded
-                    ? 'border-[var(--ok)] bg-[var(--ok-soft)] ring-1 ring-[var(--ok)]/35 hover:border-[var(--ok)]'
-                    : 'border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)]/50'
+                    ? 'border-[var(--ok)] bg-[var(--ok-soft)] hover:border-[var(--ok)]'
+                    : 'border-[var(--border)] bg-[var(--sheet)] hover:bg-[var(--muted)]/50 hover:border-[var(--primary)]/50'
               }`}
             >
               <span className="mt-0.5 shrink-0">
