@@ -139,9 +139,10 @@ runTest('5. Kiểm tra Lược đồ CSDL quan hệ 18 bảng (PostgreSQL / Supa
 // 6. Kiểm tra bắt buộc nhập Email & Chức vụ người thực hiện và lưu vào dữ liệu thao tác
 runTest('6. Kiểm tra bắt buộc nhập Email & Chức vụ người thực hiện và lưu vào nhật ký', () => {
   const taoTep = fs.readFileSync(path.join(root, 'src/app/tao-tep/page.tsx'), 'utf8');
+  const reviewConfirm = fs.readFileSync(path.join(root, 'src/components/tao-tep/Step1ReviewConfirm.tsx'), 'utf8');
   assert.ok(taoTep.includes('id="task-1-actor"'), 'Bước 1 phải có ô nhập Email người thực hiện (#task-1-actor)');
   assert.ok(taoTep.includes('id="task-1-role"'), 'Bước 1 phải có ô nhập Chức vụ người thực hiện (#task-1-role)');
-  assert.ok(taoTep.includes('validateActor'), 'Bước 1 phải kiểm tra bắt buộc nhập Email và Chức vụ trước khi xuất tệp');
+  assert.ok(taoTep.includes('validateStep1Data') && reviewConfirm.includes('validateStep1Data'), 'Bước 1 phải kiểm tra bắt buộc Email, Chức vụ và từng VTVL trước khi xuất tệp');
 
   const logSvc = fs.readFileSync(path.join(root, 'src/services/telemetry/activity-log.ts'), 'utf8');
   assert.ok(logSvc.includes('actorEmail'), 'ActiveUnitSession & ActivityLogEntry phải lưu actorEmail');
@@ -149,19 +150,24 @@ runTest('6. Kiểm tra bắt buộc nhập Email & Chức vụ người thực h
   assert.ok(logSvc.includes('syncActivityToSupabase'), 'recordActivity phải đồng bộ nhật ký thao tác lên Supabase');
 });
 
-// 7. Kiểm tra Sidebar cây tiến trình 5 bước, Click-to-Focus & Responsive Layout
-runTest('7. Kiểm tra Sidebar cây tiến trình 5 bước, Click-to-Focus & Responsive Grid', () => {
+// 7. Kiểm tra Wizard 5 chặng Bước 1, Thẻ VTVL Mobile, Sidebar thu gọn & Accessibility
+runTest('7. Kiểm tra Wizard 5 chặng Bước 1, Thẻ VTVL Mobile, Sidebar thu gọn & Responsive', () => {
   const sidebar = fs.readFileSync(path.join(root, 'src/components/layout/MilestonesBar.tsx'), 'utf8');
   assert.ok(sidebar.includes('focusTaskTarget'), 'Sidebar phải có hàm focusTaskTarget để cuộn và trỏ chuột vào tác vụ');
-  const taskIds = ['task-1-unit', 'task-1-actor', 'task-1-add', 'task-1-name', 'task-1-level', 'task-1-params', 'task-1-staff'];
+  assert.ok(sidebar.includes('Xem toàn bộ tiến trình'), 'Mobile phải có thanh tiến trình thu gọn kèm nút "Xem toàn bộ tiến trình"');
+  const taskIds = ['task-1-unit', 'task-1-actor', 'task-1-add', 'task-1-name', 'task-1-staff'];
   for (const tid of taskIds) {
     assert.ok(sidebar.includes(tid), `Sidebar Bước 1 thiếu tác vụ con: ${tid}`);
   }
   assert.ok(sidebar.includes('calc(100vw-2rem)'), 'InfoTip phải giới hạn chiều rộng theo viewport trên màn hình di động');
 
-  for (const pageRel of ['src/app/page.tsx', 'src/app/tao-tep/page.tsx', 'src/app/bam-gio/page.tsx', 'src/app/ra-soat/page.tsx']) {
+  const posList = fs.readFileSync(path.join(root, 'src/components/tao-tep/Step1PositionList.tsx'), 'utf8');
+  assert.ok(posList.includes('md:hidden') && posList.includes('Chỉnh sửa'), 'Mobile phải hiển thị từng thẻ VTVL có nút "Chỉnh sửa"');
+  assert.ok(posList.includes('hidden md:block'), 'Desktop phải hiển thị bảng có cố định cột đầu và tiêu đề');
+
+  for (const pageRel of ['src/app/tao-tep/page.tsx', 'src/app/bam-gio/page.tsx', 'src/app/ra-soat/page.tsx']) {
     const pageContent = fs.readFileSync(path.join(root, pageRel), 'utf8');
-    assert.ok(pageContent.includes('min-w-0'), `Trang ${pageRel} phải có min-w-0 trên cột chính để chống vỡ bố cục bảng trên mobile`);
+    assert.ok(pageContent.includes('min-w-0'), `Trang ${pageRel} phải có min-w-0 trên cột chính để chống vỡ bố cục trên mobile`);
   }
 });
 

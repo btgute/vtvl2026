@@ -10,7 +10,7 @@ export interface ActivityLogEntry {
   unitName: string;
   actorEmail?: string;
   actorTitle?: string;
-  action: 'TAO_TEP' | 'NAP_PHIEU' | 'BAM_GIO' | 'RA_SOAT' | 'CHON_DON_VI';
+  action: 'TAO_TEP' | 'NAP_PHIEU' | 'BAM_GIO' | 'RA_SOAT' | 'CHON_DON_VI' | 'LUU_NHAP';
   details: string;
 }
 
@@ -20,10 +20,14 @@ export interface ActiveUnitSession {
   customDate: string;
   actorEmail: string;
   actorTitle: string;
+  activeStep: number;
+  wizardStage: 1 | 2 | 3 | 4 | 5;
+  lastSavedAt: string;
   ngachOverrides: Record<string, number>;
   customPositionNames: Record<string, string>;
   customCareerLevels: Record<string, string>;
   proposedPositions: ProposedVtvlRow[];
+  previousPositionsSnapshot?: ProposedVtvlRow[];
 }
 
 const STORAGE_KEY = 'hcmute_vtvl_activity_logs_v1';
@@ -34,6 +38,11 @@ let cachedRootWorkbookFile: File | null = null;
 let cachedMergedWorkbookFile: File | null = null;
 let cachedSurveyFormFiles: File[] = [];
 
+function formatCurrentHHMM(): string {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+}
+
 function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSession {
   return {
     unitCode: unit.code,
@@ -41,6 +50,9 @@ function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSes
     customDate: '2026-11-07',
     actorEmail: '',
     actorTitle: '',
+    activeStep: 1,
+    wizardStage: 1,
+    lastSavedAt: formatCurrentHHMM(),
     ngachOverrides: {},
     customPositionNames: {},
     customCareerLevels: {},
@@ -59,16 +71,23 @@ export function getActiveUnitSession(): ActiveUnitSession {
       Array.isArray(parsed.proposedPositions) && parsed.proposedPositions.length > 0
         ? parsed.proposedPositions
         : buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group);
+    const stage = ([1, 2, 3, 4, 5] as const).includes(parsed.wizardStage as 1 | 2 | 3 | 4 | 5)
+      ? (parsed.wizardStage as 1 | 2 | 3 | 4 | 5)
+      : 1;
     return {
       unitCode: unit.code,
       kind: unit.group,
       customDate: parsed.customDate || '2026-11-07',
       actorEmail: parsed.actorEmail || '',
       actorTitle: parsed.actorTitle || '',
+      activeStep: parsed.activeStep || 1,
+      wizardStage: stage,
+      lastSavedAt: parsed.lastSavedAt || formatCurrentHHMM(),
       ngachOverrides: parsed.ngachOverrides || {},
       customPositionNames: parsed.customPositionNames || {},
       customCareerLevels: parsed.customCareerLevels || {},
-      proposedPositions: proposed
+      proposedPositions: proposed,
+      previousPositionsSnapshot: parsed.previousPositionsSnapshot
     };
   } catch {
     return createDefaultSession();
@@ -93,6 +112,9 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
     customDate: partial.customDate ?? current.customDate,
     actorEmail: partial.actorEmail ?? current.actorEmail,
     actorTitle: partial.actorTitle ?? current.actorTitle,
+    activeStep: partial.activeStep ?? current.activeStep,
+    wizardStage: partial.wizardStage ?? current.wizardStage,
+    lastSavedAt: formatCurrentHHMM(),
     ngachOverrides: partial.ngachOverrides ?? (isSameUnit ? current.ngachOverrides : {}),
     customPositionNames: partial.customPositionNames ?? (isSameUnit ? current.customPositionNames : {}),
     customCareerLevels: partial.customCareerLevels ?? (isSameUnit ? current.customCareerLevels : {}),
@@ -100,7 +122,11 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
       partial.proposedPositions ??
       (isSameUnit
         ? current.proposedPositions
-        : buildDefaultProposedPositionsForUnit(matchedUnit.nameVi, matchedUnit.group))
+        : buildDefaultProposedPositionsForUnit(matchedUnit.nameVi, matchedUnit.group)),
+    previousPositionsSnapshot:
+      partial.previousPositionsSnapshot !== undefined
+        ? partial.previousPositionsSnapshot
+        : current.previousPositionsSnapshot
   };
 
   if (!isSameUnit && cachedUnitCode && cachedUnitCode !== matchedUnit.code) {
@@ -114,8 +140,8 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
     try {
       window.localStorage.setItem(UNIT_SESSION_KEY, JSON.stringify(updated));
       window.dispatchEvent(new Event('vtvl-unit-session-updated'));
-    } catch (err) {
-      console.error('Failed to save active unit session:', err);
+    } catch {
+      // Bỏ qua lỗi bộ nhớ trình duyệt đầy, không ghi thông tin cá nhân ra console
     }
   }
   return updated;
@@ -190,8 +216,8 @@ export function recordActivity(
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event('vtvl-activity-updated'));
     void syncActivityToSupabase(unitCode, unitName, action, details, actorEmail, actorTitle);
-  } catch (err) {
-    console.error('Failed to record VTVL activity:', err);
+  } catch {
+    // Không ghi dữ liệu cá nhân ra console
   }
 }
 

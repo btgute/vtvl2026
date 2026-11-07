@@ -18,10 +18,10 @@ import { InfoTip } from './MilestonesBar';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Tổng quan', icon: Home },
-  { href: '/tao-tep', label: 'Bước 1·2·4: Tạo & gộp tệp', icon: FileSpreadsheet },
+  { href: '/tao-tep', label: 'Bước 1·2·4: Hồ sơ đơn vị', icon: FileSpreadsheet },
   { href: '/bam-gio', label: 'Bước 3: Đo định mức', icon: Timer },
   { href: '/ra-soat', label: 'Bước 5: Thẩm định', icon: CheckCircle2 },
-  { href: '/huong-dan', label: 'Hướng dẫn', icon: BookOpenCheck }
+  { href: '/huong-dan', label: 'Trợ giúp', icon: BookOpenCheck }
 ];
 
 export function Header() {
@@ -42,28 +42,28 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--sheet)] border-b border-[var(--border)] shadow-2xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-14 sm:h-16 items-center justify-between w-full gap-3">
-        <div className="flex items-center gap-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between w-full gap-2">
+        <div className="flex items-center gap-1 min-w-0">
           <Link
             href="/"
             aria-label="Trang chủ hệ thống Vị trí việc làm 360 HCM-UTE"
-            className="flex items-center gap-2.5 py-1"
+            className="flex items-center gap-2.5 py-1 min-h-[44px] min-w-0"
           >
             <img
               src="/ute_logo.png"
               alt="HCM-UTE Logo"
-              className="block h-9 w-auto md:hidden object-contain"
+              className="block h-9 w-auto md:hidden object-contain shrink-0"
             />
             <img
               src={dark ? '/horizontal-ute-logo-white.png' : '/horizontal-ute-logo.png'}
               alt="HCM-UTE Logo"
-              className="hidden h-9 sm:h-10 w-auto md:block object-contain"
+              className="hidden h-10 w-auto md:block object-contain shrink-0"
             />
-            <div className="border-l border-[var(--border)] pl-2.5 flex flex-col">
-              <span className="text-sm sm:text-base font-extrabold tracking-tight text-[var(--foreground)] leading-tight">
+            <div className="border-l border-[var(--border)] pl-2.5 flex flex-col min-w-0">
+              <span className="text-sm sm:text-base font-extrabold tracking-tight text-[var(--foreground)] leading-tight truncate">
                 Vị trí việc làm <span className="text-[var(--primary)]">360</span>
               </span>
-              <span className="text-[11px] text-[var(--ink-muted)] font-medium hidden sm:inline">
+              <span className="text-xs text-[var(--ink-muted)] font-medium hidden sm:inline truncate">
                 Đề án VTVL 2026–2030 · HCM-UTE
               </span>
             </div>
@@ -74,7 +74,7 @@ export function Header() {
           </InfoTip>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           <nav aria-label="Điều hướng quy trình nghiệp vụ" className="hidden lg:flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -84,13 +84,13 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
+                  className={`inline-flex items-center gap-1.5 px-3.5 min-h-[44px] rounded-xl text-sm font-semibold transition-colors border ${
                     active
-                      ? 'bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/30'
+                      ? 'bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/35 font-bold'
                       : 'text-[var(--foreground)] border-transparent hover:bg-[var(--muted)]'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <Icon className="w-4 h-4 shrink-0" />
                   <span>{item.label}</span>
                 </Link>
               );
@@ -100,25 +100,27 @@ export function Header() {
           <button
             type="button"
             onClick={toggleTheme}
+            aria-label={dark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
             title={dark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
-            className="h-8 w-8 rounded-lg border border-[var(--border)] bg-[var(--sheet)] hover:bg-[var(--muted)] flex items-center justify-center cursor-pointer transition-colors"
+            className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:bg-[var(--muted)] flex items-center justify-center cursor-pointer transition-colors"
           >
-            {dark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-[var(--foreground)]" />}
+            {dark ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-[var(--foreground)]" />}
           </button>
 
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Mở danh mục điều hướng"
-            className="lg:hidden h-8 w-8 rounded-lg border border-[var(--border)] bg-[var(--sheet)] flex items-center justify-center cursor-pointer"
+            aria-expanded={mobileOpen}
+            aria-label={mobileOpen ? 'Đóng danh mục điều hướng' : 'Mở danh mục điều hướng'}
+            className="lg:hidden h-11 w-11 min-h-[44px] min-w-[44px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] flex items-center justify-center cursor-pointer"
           >
-            {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden border-t border-[var(--border)] bg-[var(--sheet)] px-4 py-3 space-y-1 shadow-md">
+        <div className="lg:hidden border-t border-[var(--border)] bg-[var(--sheet)] px-4 py-3 space-y-1.5 shadow-lg">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
@@ -127,11 +129,11 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold ${
+                className={`flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-base font-semibold ${
                   active ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)] hover:bg-[var(--muted)]'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-5 h-5 shrink-0" />
                 <span>{item.label}</span>
               </Link>
             );
