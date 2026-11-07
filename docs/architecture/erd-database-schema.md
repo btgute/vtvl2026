@@ -67,3 +67,4 @@ erDiagram
 
 - **Trigger `trg_validate_c1_career_level` (`public.fn_validate_c1_career_level()`):** Tự động đối chiếu giá trị `bac_nghe_nghiep_su_dung` trong bảng `public.c1_vtvl` với mảng `ds_bac_cho_phep` của vị trí khung tương ứng trong `public.dm_vtvl_khung_truong`. Nếu đơn vị nhập bậc nằm ngoài giới hạn Phụ lục I văn bản `1907/HD-ĐHCNKT`, cơ sở dữ liệu sẽ từ chối bản ghi và trả về thông báo lỗi cụ thể.
 - **View `public.v_tong_hop_vtvl_toan_truong`:** Kết nối `dm_don_vi` và `t_tien_do` để tổng hợp trạng thái nộp hồ sơ và tổng nhu cầu FTE của toàn bộ 51 đơn vị thuộc HCM-UTE.
+
