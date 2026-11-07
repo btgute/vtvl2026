@@ -17,7 +17,7 @@ import { Step1PositionList } from '@/components/tao-tep/Step1PositionList';
 import { Step1ReviewConfirm, validateStep1Data } from '@/components/tao-tep/Step1ReviewConfirm';
 import { UnitScaleAndNgachTool } from '@/components/tao-tep/UnitScaleAndNgachTool';
 import { StageStepperBar, StickyActionBar, computeStageStatuses, StatusBadge } from '@/components/tao-tep/StageStepperBar';
-import { buildDefaultNgachAllocations, buildDefaultScaleMetrics, getActiveUnitSession, recordActivity, saveActiveUnitSession, setSessionRootWorkbook } from '@/services/telemetry/activity-log';
+import { buildDefaultNgachAllocations, buildDefaultScaleMetrics, formatCurrentHHMM, getActiveUnitSession, getRealtimeDateYYYYMMDD, recordActivity, resetActiveUnitToDefault, saveActiveUnitSession, setSessionRootWorkbook } from '@/services/telemetry/activity-log';
 import { syncUnitSplitToSupabase } from '@/services/supabase/vtvl-sync';
 
 const ROLE_PRESETS = ['Trưởng đơn vị (Trưởng khoa / Viện trưởng / Trưởng phòng / Giám đốc)', 'Phó Trưởng đơn vị phụ trách VTVL', 'Thư ký Tổ công tác VTVL đơn vị', 'Trưởng Bộ môn / Trưởng Ngành', 'Chuyên viên / Thư ký khoa tổng hợp hồ sơ'];
@@ -27,30 +27,42 @@ export default function TaoTepPage() {
   const [wizardStage, setWizardStage] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [kind, setKind] = useState<UnitGroupKind>('khoa-vien');
   const [selectedUnitCode, setSelectedUnitCode] = useState<string>('FME');
-  const [customDate, setCustomDate] = useState<string>('2026-11-07');
+  const [customDate, setCustomDate] = useState<string>(() => getRealtimeDateYYYYMMDD());
   const [actorEmail, setActorEmail] = useState<string>('');
   const [actorTitle, setActorTitle] = useState<string>('');
-  const [lastSavedAt, setLastSavedAt] = useState<string>('19:00');
+  const [lastSavedAt, setLastSavedAt] = useState<string>(() => formatCurrentHHMM());
   const [includeZip, setIncludeZip] = useState<boolean>(true);
   const [positions, setPositions] = useState<ProposedVtvlRow[]>(() => buildDefaultProposedPositionsForUnit('Khoa Cơ khí Chế tạo máy', 'khoa-vien'));
   const [scaleMetrics, setScaleMetrics] = useState<UnitScaleMetrics>(() => buildDefaultScaleMetrics('khoa-vien'));
   const [ngachAllocations, setNgachAllocations] = useState<NgachAllocationRow[]>(() => buildDefaultNgachAllocations(buildDefaultProposedPositionsForUnit('Khoa Cơ khí Chế tạo máy', 'khoa-vien')));
   const [undoSnapshot, setUndoSnapshot] = useState<ProposedVtvlRow[] | undefined>(undefined);
   const [confirmAction, setConfirmAction] = useState<{ type: 'reset' | 'delete'; row?: ProposedVtvlRow } | null>(null);
+  const [realtimeBanner, setRealtimeBanner] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [stale, setStale] = useState<boolean>(false);
   const [result, setResult] = useState<SplitResultSummary | null>(null);
 
-  useEffect(() => {
-    const saved = getActiveUnitSession();
+  const applySessionToState = (saved: ReturnType<typeof getActiveUnitSession>) => {
     setKind(saved.kind); setSelectedUnitCode(saved.unitCode); setCustomDate(saved.customDate);
     setActorEmail(saved.actorEmail); setActorTitle(saved.actorTitle);
     setWizardStage(saved.wizardStage || 1); setLastSavedAt(saved.lastSavedAt);
     setPositions(saved.proposedPositions); setUndoSnapshot(saved.previousPositionsSnapshot);
     if (saved.scaleMetrics) setScaleMetrics(saved.scaleMetrics);
     if (saved.ngachAllocations) setNgachAllocations(saved.ngachAllocations);
+  };
+
+  useEffect(() => {
+    applySessionToState(getActiveUnitSession());
     const sp = new URLSearchParams(window.location.search).get('step');
     setActiveStep(sp === '2' || window.location.hash === '#buoc-3' ? 2 : sp === '4' || window.location.hash === '#buoc-4' ? 4 : 1);
+    const onStorage = (e: StorageEvent) => { if (e.key === 'hcmute_vtvl_active_unit_session_v2') applySessionToState(getActiveUnitSession()); };
+    window.addEventListener('storage', onStorage);
+    let bc: BroadcastChannel | null = null;
+    if ('BroadcastChannel' in window) {
+      bc = new BroadcastChannel('hcmute_vtvl_realtime');
+      bc.onmessage = () => applySessionToState(getActiveUnitSession());
+    }
+    return () => { window.removeEventListener('storage', onStorage); bc?.close(); };
   }, []);
   useEffect(() => {
     const onFocusTask = (e: Event) => {
@@ -94,10 +106,20 @@ export default function TaoTepPage() {
     const seq = positions.length + 1; const baseCode = row.vtvlSuffix.replace(/-\d+$/, '');
     syncPositions([...positions, { ...row, id: `pos-${Date.now()}-${seq}`, vtvlSuffix: `${baseCode}-${String(seq).padStart(2, '0')}`, specificName: `${row.specificName} (${seq})` }], currentUnit.code, kind, positions);
   };
-  const handleExecuteConfirmedAction = () => {
+  const handleExecuteConfirmedAction = (fullSessionReset = false) => {
     if (!confirmAction) return;
-    if (confirmAction.type === 'reset') syncPositions(buildDefaultProposedPositionsForUnit(currentUnit.nameVi, kind), currentUnit.code, kind, positions);
-    else if (confirmAction.type === 'delete' && confirmAction.row && positions.length > 1) syncPositions(positions.filter((r) => r.id !== confirmAction.row!.id), currentUnit.code, kind, positions);
+    if (confirmAction.type === 'reset') {
+      const fresh = resetActiveUnitToDefault(currentUnit.code, fullSessionReset);
+      applySessionToState(fresh);
+      setActiveStep(1);
+      setResult(null);
+      setStale(false);
+      recordActivity(currentUnit.code, currentUnit.nameVi, 'CHON_DON_VI', fullSessionReset ? `Đặt lại toàn bộ phiên làm việc của [${currentUnit.code}] về ban đầu` : `Khôi phục danh sách ${fresh.proposedPositions.length} VTVL mặc định của [${currentUnit.code}]`);
+      setRealtimeBanner(fullSessionReset ? `Đã đặt lại toàn bộ phiên làm việc của [${currentUnit.code}] về Chặng 1/5 lúc ${fresh.lastSavedAt}.` : `Đã khôi phục ${fresh.proposedPositions.length} vị trí việc làm mặc định của [${currentUnit.code}] lúc ${fresh.lastSavedAt}.`);
+      setTimeout(() => setRealtimeBanner(''), 4500);
+    } else if (confirmAction.type === 'delete' && confirmAction.row && positions.length > 1) {
+      syncPositions(positions.filter((r) => r.id !== confirmAction.row!.id), currentUnit.code, kind, positions);
+    }
     setConfirmAction(null);
   };
   const handleUndoSnapshot = () => { if (undoSnapshot && undoSnapshot.length > 0) syncPositions(undoSnapshot, currentUnit.code, kind); };
@@ -158,25 +180,25 @@ export default function TaoTepPage() {
                 </div>
               </div>
 
+              {realtimeBanner && <div role="status" aria-live="polite" className="rounded-xl border border-[var(--ok)]/40 bg-[var(--ok-soft)] px-4 py-2.5 text-sm font-bold text-[var(--ok)]">✓ {realtimeBanner}</div>}
+
               {confirmAction && (
                 <div role="alertdialog" aria-labelledby="confirm-title" className="rounded-xl border border-[var(--fix)] bg-[var(--fix-soft)] p-4 space-y-3">
-                  <div className="flex items-start gap-2.5">
-                    <ShieldAlert className="w-5 h-5 text-[var(--fix)] shrink-0 mt-0.5" />
-                    <div className="space-y-1 text-sm"><strong id="confirm-title" className="text-[var(--fix)] block text-base">Xác nhận thay đổi dữ liệu vị trí việc làm</strong><p className="text-[var(--foreground)]">{confirmAction.type === 'reset' ? `Đặt lại toàn bộ ${positions.length} vị trí việc làm của [${currentUnit.code}] về mặc định?` : `Xóa vị trí "${confirmAction.row?.specificName}" (${currentUnit.code}-${confirmAction.row?.vtvlSuffix}) khỏi danh sách đề xuất?`}</p></div>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-end gap-2.5">
+                  <div className="flex items-start gap-2.5"><ShieldAlert className="w-5 h-5 text-[var(--fix)] shrink-0 mt-0.5" /><div className="space-y-1 text-sm"><strong id="confirm-title" className="text-[var(--fix)] block text-base">Xác nhận khôi phục dữ liệu mặc định</strong><p className="text-[var(--foreground)]">{confirmAction.type === 'reset' ? `Chọn phạm vi khôi phục cho [${currentUnit.code}] ${currentUnit.nameVi}: khôi phục danh sách VTVL mặc định (chuyển về Chặng 4 để xem ngay) hoặc đặt lại toàn bộ phiên về Chặng 1/5.` : `Xóa vị trí "${confirmAction.row?.specificName}" (${currentUnit.code}-${confirmAction.row?.vtvlSuffix}) khỏi danh sách đề xuất?`}</p></div></div>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
                     <button type="button" onClick={() => setConfirmAction(null)} className="min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold text-[var(--foreground)] cursor-pointer">Hủy bỏ</button>
-                    <button type="button" onClick={handleExecuteConfirmedAction} className="min-h-[44px] px-4 rounded-xl bg-[var(--fix)] text-white text-sm font-bold cursor-pointer">Xác nhận thực hiện</button>
+                    {confirmAction.type === 'reset' ? (
+                      <>
+                        <button type="button" onClick={() => handleExecuteConfirmedAction(false)} className="min-h-[44px] px-4 rounded-xl border border-[var(--fix)] bg-[var(--sheet)] text-[var(--fix)] text-sm font-bold cursor-pointer">Khôi phục VTVL mặc định (Xem tại Chặng 4)</button>
+                        <button type="button" onClick={() => handleExecuteConfirmedAction(true)} className="min-h-[44px] px-4 rounded-xl bg-[var(--fix)] text-white text-sm font-bold cursor-pointer">Đặt lại toàn bộ về Chặng 1/5</button>
+                      </>
+                    ) : <button type="button" onClick={() => handleExecuteConfirmedAction(false)} className="min-h-[44px] px-4 rounded-xl bg-[var(--fix)] text-white text-sm font-bold cursor-pointer">Xác nhận xóa vị trí</button>}
                   </div>
                 </div>
               )}
 
               <StageStepperBar stages={stageStatuses} currentStage={wizardStage} onSelectStage={handleStageChange} />
-
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-base font-bold text-[var(--foreground)]">{currentStageMeta.fullTitle}</h2>
-                <StatusBadge status={currentStageMeta.status} />
-              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-base font-bold text-[var(--foreground)]">{currentStageMeta.fullTitle}</h2><StatusBadge status={currentStageMeta.status} /></div>
 
               {wizardStage === 1 && (
                 <div className="space-y-4">
@@ -194,17 +216,8 @@ export default function TaoTepPage() {
 
               {wizardStage === 2 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="task-1-actor" className="block text-sm font-semibold text-[var(--foreground)] mb-1">Email công vụ người thực hiện <span className="text-[var(--fix)]">*</span></label>
-                    <input id="task-1-actor" type="email" required aria-invalid={!actorEmail.includes('@')} aria-describedby="actor-email-err" value={actorEmail} onChange={(e) => handleActorChange(e.target.value, actorTitle)} placeholder={`VD: ${currentUnit.code.toLowerCase()}@hcmute.edu.vn`} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-base sm:text-sm" />
-                    {(!actorEmail.trim() || !actorEmail.includes('@')) && <p id="actor-email-err" className="text-xs font-semibold text-[var(--fix)] mt-1">Vui lòng nhập địa chỉ email công vụ hợp lệ (có ký tự @).</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="task-1-role" className="block text-sm font-semibold text-[var(--foreground)] mb-1">Chức vụ / Vai trò người thực hiện <span className="text-[var(--fix)]">*</span></label>
-                    <input id="task-1-role" type="text" list="hcmute-actor-roles" required aria-invalid={!actorTitle.trim()} aria-describedby="actor-role-err" value={actorTitle} onChange={(e) => handleActorChange(actorEmail, e.target.value)} placeholder={`VD: ${currentUnit.headTitleVi} / Thư ký Đề án VTVL`} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-base sm:text-sm" />
-                    <datalist id="hcmute-actor-roles">{ROLE_PRESETS.map((r) => <option key={r} value={r} />)}</datalist>
-                    {!actorTitle.trim() && <p id="actor-role-err" className="text-xs font-semibold text-[var(--fix)] mt-1">Vui lòng nhập hoặc chọn chức vụ của người thực hiện.</p>}
-                  </div>
+                  <div><label htmlFor="task-1-actor" className="block text-sm font-semibold text-[var(--foreground)] mb-1">Email công vụ người thực hiện <span className="text-[var(--fix)]">*</span></label><input id="task-1-actor" type="email" required aria-invalid={!actorEmail.includes('@')} aria-describedby="actor-email-err" value={actorEmail} onChange={(e) => handleActorChange(e.target.value, actorTitle)} placeholder={`VD: ${currentUnit.code.toLowerCase()}@hcmute.edu.vn`} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-base sm:text-sm" />{(!actorEmail.trim() || !actorEmail.includes('@')) && <p id="actor-email-err" className="text-xs font-semibold text-[var(--fix)] mt-1">Vui lòng nhập địa chỉ email công vụ hợp lệ (có ký tự @).</p>}</div>
+                  <div><label htmlFor="task-1-role" className="block text-sm font-semibold text-[var(--foreground)] mb-1">Chức vụ / Vai trò người thực hiện <span className="text-[var(--fix)]">*</span></label><input id="task-1-role" type="text" list="hcmute-actor-roles" required aria-invalid={!actorTitle.trim()} aria-describedby="actor-role-err" value={actorTitle} onChange={(e) => handleActorChange(actorEmail, e.target.value)} placeholder={`VD: ${currentUnit.headTitleVi} / Thư ký Đề án VTVL`} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-base sm:text-sm" /><datalist id="hcmute-actor-roles">{ROLE_PRESETS.map((r) => <option key={r} value={r} />)}</datalist>{!actorTitle.trim() && <p id="actor-role-err" className="text-xs font-semibold text-[var(--fix)] mt-1">Vui lòng nhập hoặc chọn chức vụ của người thực hiện.</p>}</div>
                 </div>
               )}
 

@@ -40,9 +40,29 @@ let cachedRootWorkbookFile: File | null = null;
 let cachedMergedWorkbookFile: File | null = null;
 let cachedSurveyFormFiles: File[] = [];
 
-function formatCurrentHHMM(): string {
+export function formatCurrentHHMM(): string {
   const now = new Date();
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+}
+
+export function getRealtimeDateYYYYMMDD(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function notifyRealtimeSessionChange(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event('vtvl-unit-session-updated'));
+  try {
+    if ('BroadcastChannel' in window) {
+      const bc = new BroadcastChannel('hcmute_vtvl_realtime');
+      bc.postMessage({ type: 'SESSION_UPDATED', ts: Date.now() });
+      bc.close();
+    }
+  } catch { /* ignore */ }
 }
 
 export function buildDefaultScaleMetrics(group: UnitGroupKind): UnitScaleMetrics {
@@ -68,7 +88,7 @@ function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSes
   return {
     unitCode: unit.code,
     kind: unit.group,
-    customDate: '2026-11-07',
+    customDate: getRealtimeDateYYYYMMDD(),
     actorEmail: '',
     actorTitle: '',
     activeStep: 1,
@@ -100,7 +120,7 @@ export function getActiveUnitSession(): ActiveUnitSession {
     return {
       unitCode: unit.code,
       kind: unit.group,
-      customDate: parsed.customDate || '2026-11-07',
+      customDate: parsed.customDate || getRealtimeDateYYYYMMDD(),
       actorEmail: parsed.actorEmail || '',
       actorTitle: parsed.actorTitle || '',
       activeStep: parsed.activeStep || 1,
@@ -163,10 +183,47 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
   if (typeof window !== 'undefined') {
     try {
       window.localStorage.setItem(UNIT_SESSION_KEY, JSON.stringify(updated));
-      window.dispatchEvent(new Event('vtvl-unit-session-updated'));
+      notifyRealtimeSessionChange();
     } catch { /* ignore */ }
   }
   return updated;
+}
+
+export function resetActiveUnitToDefault(unitCode: string, fullSessionReset = false): ActiveUnitSession {
+  const current = getActiveUnitSession();
+  const unit = HCMUTE_UNITS.find((u) => u.code === unitCode) || HCMUTE_UNITS[0];
+  const freshPositions = buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group);
+  const freshScale = buildDefaultScaleMetrics(unit.group);
+  const freshNgach = buildDefaultNgachAllocations(freshPositions);
+  cachedRootWorkbookFile = null;
+  cachedMergedWorkbookFile = null;
+  cachedSurveyFormFiles = [];
+
+  const resetSession: ActiveUnitSession = {
+    unitCode: unit.code,
+    kind: unit.group,
+    customDate: getRealtimeDateYYYYMMDD(),
+    actorEmail: fullSessionReset ? '' : current.actorEmail,
+    actorTitle: fullSessionReset ? '' : current.actorTitle,
+    activeStep: 1,
+    wizardStage: fullSessionReset ? 1 : 4,
+    lastSavedAt: formatCurrentHHMM(),
+    scaleMetrics: freshScale,
+    ngachAllocations: freshNgach,
+    ngachOverrides: {},
+    customPositionNames: {},
+    customCareerLevels: {},
+    proposedPositions: freshPositions,
+    previousPositionsSnapshot: current.proposedPositions
+  };
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(UNIT_SESSION_KEY, JSON.stringify(resetSession));
+      notifyRealtimeSessionChange();
+    } catch { /* ignore */ }
+  }
+  return resetSession;
 }
 
 export function setSessionRootWorkbook(unitCode: string, blob: Blob, fileName: string): File {

@@ -36,9 +36,17 @@ export default function HomePage() {
     sync();
     window.addEventListener('vtvl-unit-session-updated', sync);
     window.addEventListener('vtvl-activity-updated', sync);
+    window.addEventListener('storage', sync);
+    let bc: BroadcastChannel | null = null;
+    if ('BroadcastChannel' in window) {
+      bc = new BroadcastChannel('hcmute_vtvl_realtime');
+      bc.onmessage = sync;
+    }
     return () => {
       window.removeEventListener('vtvl-unit-session-updated', sync);
       window.removeEventListener('vtvl-activity-updated', sync);
+      window.removeEventListener('storage', sync);
+      bc?.close();
     };
   }, []);
 
