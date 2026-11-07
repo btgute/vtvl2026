@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { Copy, Trash2, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle, Edit3 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Copy, Trash2, ChevronRight, ChevronUp, CheckCircle2, AlertTriangle, Edit3, MoreHorizontal, ArrowRight, Info, Layers, Users } from 'lucide-react';
 import { ProposedVtvlRow, WorkforceMethod } from '@/types/vtvl';
+import { ND232_2026_VTVL_CATALOG } from '@/configs/hcmute-nd232-catalog';
 import { InfoTip } from '@/components/layout/MilestonesBar';
 import { InlineStatus, SaveLifecycleState, ValidationMessage } from '@/components/ui/FormFeedbackPrimitives';
 import { TextInput, NumberInput, Select, SearchableSelect } from '@/components/ui/FormInputs';
@@ -55,13 +56,25 @@ export function isPositionRowValid(pos: ProposedVtvlRow): { valid: boolean; reas
 }
 
 export function Step1PositionList({ unitCode, positions, forceShowErrors = false, onUpdateRow, onDuplicateRow, onRequestRemoveRow }: Step1PositionListProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(positions[0]?.id || null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [pendingSwitchId, setPendingSwitchId] = useState<string | null>(null);
+  const [dirtyRowIds, setDirtyRowIds] = useState<Record<string, boolean>>({});
   const [rowStatus, setRowStatus] = useState<Record<string, SaveLifecycleState>>({});
   const [touchedRows, setTouchedRows] = useState<Record<string, boolean>>({});
   const [lastPatchByRow, setLastPatchByRow] = useState<Record<string, Partial<ProposedVtvlRow>>>({});
+  const snapshotRef = useRef<Record<string, ProposedVtvlRow>>({});
   const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
+  useEffect(() => {
+    if (forceShowErrors) {
+      const firstInvalid = positions.find((p) => !isPositionRowValid(p).valid);
+      if (firstInvalid) { snapshotRef.current[firstInvalid.id] = { ...firstInvalid }; setExpandedId(firstInvalid.id); }
+    }
+  }, [forceShowErrors, positions]);
+
   const triggerRowChange = (id: string, patch: Partial<ProposedVtvlRow>) => {
+    setDirtyRowIds((prev) => ({ ...prev, [id]: true }));
     setLastPatchByRow((prev) => ({ ...prev, [id]: { ...(prev[id] || {}), ...patch } }));
     setRowStatus((prev) => ({ ...prev, [id]: 'dirty' }));
     if (timersRef.current[id]) clearTimeout(timersRef.current[id]);
@@ -71,149 +84,198 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
         setRowStatus((prev) => ({ ...prev, [id]: 'saved' }));
         timersRef.current[`${id}-fade`] = setTimeout(() => setRowStatus((prev) => ({ ...prev, [id]: 'idle' })), 1600);
       }, 220);
-    } catch {
-      setRowStatus((prev) => ({ ...prev, [id]: 'error' }));
-    }
+    } catch { setRowStatus((prev) => ({ ...prev, [id]: 'error' })); }
   };
 
-  const handleBlurRow = (id: string) => setTouchedRows((prev) => ({ ...prev, [id]: true }));
   const handleRetryRow = (id: string) => { const patch = lastPatchByRow[id]; if (patch) triggerRowChange(id, patch); };
 
+  const openItemForEdit = (pos: ProposedVtvlRow) => {
+    setOpenMenuId(null);
+    if (expandedId && expandedId !== pos.id && dirtyRowIds[expandedId]) { setPendingSwitchId(pos.id); return; }
+    snapshotRef.current[pos.id] = { ...pos };
+    setDirtyRowIds((prev) => ({ ...prev, [pos.id]: false }));
+    setPendingSwitchId(null); setExpandedId(pos.id);
+  };
+
+  const handleSaveAndCollapse = (id: string, nextExpandId: string | null = null) => {
+    setTouchedRows((prev) => ({ ...prev, [id]: true }));
+    setDirtyRowIds((prev) => ({ ...prev, [id]: false }));
+    setRowStatus((prev) => ({ ...prev, [id]: 'saved' }));
+    timersRef.current[`${id}-fade`] = setTimeout(() => setRowStatus((prev) => ({ ...prev, [id]: 'idle' })), 1600);
+    setPendingSwitchId(null);
+    if (nextExpandId) { const target = positions.find((p) => p.id === nextExpandId); if (target) snapshotRef.current[target.id] = { ...target }; }
+    setExpandedId(nextExpandId);
+  };
+
+  const handleCancelEdit = (id: string, nextExpandId: string | null = null) => {
+    const snap = snapshotRef.current[id];
+    if (snap) onUpdateRow(id, snap);
+    setDirtyRowIds((prev) => ({ ...prev, [id]: false }));
+    setRowStatus((prev) => ({ ...prev, [id]: 'idle' }));
+    setPendingSwitchId(null);
+    if (nextExpandId) { const target = positions.find((p) => p.id === nextExpandId); if (target) snapshotRef.current[target.id] = { ...target }; }
+    setExpandedId(nextExpandId);
+  };
+
   return (
-    <div id="task-1-name" className="space-y-4">
+    <div id="task-1-name" className="space-y-3.5" onClick={() => { if (openMenuId) setOpenMenuId(null); }}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center">
-          <h3 className="text-base font-extrabold text-[var(--foreground)]">Danh sách vị trí việc làm của đơn vị ({positions.length} vị trí)</h3>
+          <h3 className="text-base sm:text-lg font-bold text-[var(--foreground)]">Danh sách vị trí việc làm của đơn vị ({positions.length} vị trí)</h3>
           <InfoTip title="Giải thích các ký hiệu chuyên môn">
             <p><strong>Biểu C1 (Danh mục VTVL):</strong> Khai báo tên cụ thể, mã vị trí và bậc nghề nghiệp tại đơn vị.</p>
             <p><strong>Biểu D1 (Nhân sự hiện có):</strong> Số viên chức, người lao động thực tế đang làm việc tại vị trí này.</p>
             <p><strong>Biểu C3 (Nhu cầu nhân sự):</strong> Số biên chế định mức (FTE) đơn vị đề xuất bố trí.</p>
           </InfoTip>
         </div>
-        <span className="text-xs sm:text-sm font-semibold text-[var(--ink-muted)]">Mỗi thay đổi tự động kiểm tra và hiển thị trạng thái lưu trực tiếp trên dòng</span>
+        <span className="text-xs text-[var(--ink-muted)]">Bấm vào từng vị trí hoặc nút Chỉnh sửa để mở chi tiết (chỉ mở 1 vị trí cùng lúc)</span>
       </div>
 
       <datalist id="step1-ngach-datalist">
         {SUGGESTED_NGACH_OPTIONS.map((opt) => <option key={opt.code} value={opt.code}>{opt.label}</option>)}
       </datalist>
 
-      {/* GIAO DIỆN MOBILE (< md) */}
-      <div className="md:hidden space-y-3">
+      <div className="space-y-3.5">
         {positions.map((pos, idx) => {
           const isExpanded = expandedId === pos.id;
           const check = isPositionRowValid(pos);
           const showErr = (touchedRows[pos.id] || forceShowErrors) && !check.valid;
           const st = rowStatus[pos.id] || 'idle';
-          const fullCode = `${unitCode}-${pos.vtvlSuffix}`;
-          return (
-            <div key={pos.id} id={`vtvl-card-${pos.id}`} onBlur={() => handleBlurRow(pos.id)} className={`rounded-xl border bg-[var(--sheet)] p-4 space-y-3 shadow-2xs transition-colors duration-150 ${st === 'saved' ? 'vtvl-row-saved' : showErr ? 'border-[var(--fix)]' : isExpanded ? 'border-2 border-[var(--primary)] bg-[var(--primary)]/[0.03]' : 'border-[var(--border)]'}`}>
-              <div className="space-y-1 min-w-0">
-                <div className="flex flex-wrap items-center justify-between gap-1.5">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="font-mono text-xs font-extrabold px-2 py-0.5 rounded-md bg-[var(--primary)]/10 text-[var(--primary)]">{fullCode}</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-[var(--muted)] text-[var(--foreground)]">{pos.careerLevel}</span>
-                  </div>
-                  {st !== 'idle' ? <InlineStatus state={st} savedLabel="Đã cập nhật" onRetry={() => handleRetryRow(pos.id)} /> : check.valid ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-[var(--ok)] bg-[var(--ok-soft)] px-2 py-0.5 rounded-md"><CheckCircle2 className="w-3.5 h-3.5" /><span>Hợp lệ</span></span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-[var(--fix)] bg-[var(--fix-soft)] px-2 py-0.5 rounded-md"><AlertTriangle className="w-3.5 h-3.5" /><span>Cần bổ sung</span></span>
-                  )}
-                </div>
-                <h4 className="text-base font-extrabold text-[var(--foreground)] leading-snug">{idx + 1}. {pos.specificName || '(Chưa đặt tên vị trí)'}</h4>
-                <p className="text-xs text-[var(--ink-muted)]">Khung Trường: <strong>{pos.frameworkTitle}</strong> · Mã ngạch: <span className="font-mono font-bold text-[var(--primary)]">{pos.ngachCode}</span></p>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5 pt-1 border-t border-[var(--border-subtle)] text-sm">
-                <div className="rounded-xl bg-[var(--background)] px-3 py-2"><span className="text-xs text-[var(--ink-muted)] block">Nhân sự hiện có (D1)</span><strong className="text-base font-extrabold text-[var(--foreground)] tabular-nums">{pos.staffCount} người</strong></div>
-                <div className="rounded-xl bg-[var(--primary)]/[0.06] px-3 py-2"><span className="text-xs text-[var(--ink-muted)] block">Nhân sự đề xuất (C3)</span><strong className="text-base font-extrabold text-[var(--primary)] tabular-nums">{pos.proposedFte} FTE</strong></div>
-              </div>
-              {showErr && <ValidationMessage id={`mob-err-${pos.id}`} message={check.reason} />}
-              <div className="flex items-center gap-2 pt-1">
-                <button type="button" aria-expanded={isExpanded} aria-pressed={isExpanded} onClick={() => setExpandedId(isExpanded ? null : pos.id)} className={`flex-1 inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 rounded-xl border text-sm font-bold cursor-pointer transition-colors ${isExpanded ? 'border-2 border-[var(--primary)] bg-[var(--primary)]/12 text-[var(--primary)]' : 'border-[var(--primary)]/40 bg-[var(--primary)]/10 text-[var(--primary)]'}`}>
-                  <Edit3 className="w-4 h-4" /><span>{isExpanded ? 'Đang mở chỉnh sửa' : 'Chỉnh sửa'}</span>{isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                <button type="button" onClick={() => onDuplicateRow(pos)} aria-label={`Sao chép vị trí ${pos.specificName}`} className="inline-flex items-center justify-center gap-1 min-h-[44px] min-w-[44px] px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm font-bold text-[var(--foreground)] cursor-pointer"><Copy className="w-4 h-4 text-[var(--primary)]" /><span>Sao chép</span></button>
-                <button type="button" disabled={positions.length <= 1} onClick={() => onRequestRemoveRow(pos)} aria-label={`Xóa vị trí ${pos.specificName}`} className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--fix)] disabled:opacity-40 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
-              </div>
-              {isExpanded && (
-                <div className="pt-3 border-t border-[var(--border)] space-y-3">
-                  <div>
-                    <label htmlFor={`mob-name-${pos.id}`} className="block text-sm font-bold text-[var(--foreground)] mb-1">Tên vị trí việc làm cụ thể tại đơn vị <span className="text-[var(--fix)]">*</span></label>
-                    <TextInput id={`mob-name-${pos.id}`} value={pos.specificName} state={showErr && !pos.specificName.trim() ? 'error' : 'default'} onChange={(e) => triggerRowChange(pos.id, { specificName: e.target.value })} className="font-bold" />
-                  </div>
-                  <div>
-                    <label htmlFor={`mob-ngach-${pos.id}`} className="block text-xs font-extrabold text-[var(--foreground)] mb-1">Mã ngạch chức danh <span className="text-[var(--warn)] font-bold">(mã có sẵn là gợi ý — chọn hoặc tự gõ)</span></label>
-                    <SearchableSelect id={`mob-ngach-${pos.id}`} value={pos.ngachCode} options={SUGGESTED_NGACH_OPTIONS} datalistId="step1-ngach-datalist" ariaLabelSelect={`Chọn nhanh mã ngạch cho ${pos.specificName}`} ariaLabelInput={`Mã ngạch thực tế của ${pos.specificName}`} onChange={(val) => triggerRowChange(pos.id, { ngachCode: val })} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div><label htmlFor={`mob-code-${pos.id}`} className="block text-sm font-bold text-[var(--foreground)] mb-1">Mã hậu tố ({unitCode}-...) <span className="text-[var(--fix)]">*</span></label><TextInput id={`mob-code-${pos.id}`} value={pos.vtvlSuffix} state={showErr && !pos.vtvlSuffix.trim() ? 'error' : 'default'} onChange={(e) => triggerRowChange(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="font-mono font-bold text-[var(--primary)]" /></div>
-                    <div><label htmlFor={`mob-lvl-${pos.id}`} className="block text-sm font-bold text-[var(--foreground)] mb-1">Bậc nghề nghiệp</label><Select id={`mob-lvl-${pos.id}`} value={pos.careerLevel} disabled={pos.allowedLevels.length <= 1} onChange={(e) => triggerRowChange(pos.id, { careerLevel: e.target.value })}>{pos.allowedLevels.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}</Select></div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div><label htmlFor={`mob-staff-${pos.id}`} className="block text-sm font-bold text-[var(--foreground)] mb-1">Nhân sự hiện có (người)</label><NumberInput id={`mob-staff-${pos.id}`} min={0} max={200} value={pos.staffCount} onChange={(e) => triggerRowChange(pos.id, { staffCount: Math.max(0, parseInt(e.target.value || '0', 10)) })} className="font-bold" /></div>
-                    <div><label htmlFor={`mob-fte-${pos.id}`} className="block text-sm font-bold text-[var(--foreground)] mb-1">Nhân sự đề xuất (FTE) <span className="text-[var(--fix)]">*</span></label><NumberInput id={`mob-fte-${pos.id}`} min={0.5} max={200} step="0.5" value={pos.proposedFte} state={showErr && pos.proposedFte <= 0 ? 'error' : 'default'} onChange={(e) => triggerRowChange(pos.id, { proposedFte: Math.max(0, parseFloat(e.target.value || '0')) })} className="font-extrabold text-[var(--primary)]" /></div>
-                  </div>
+          const numBadge = String(idx + 1).padStart(2, '0');
+          const diffFte = Number((Number(pos.proposedFte || 0) - Number(pos.staffCount || 0)).toFixed(2));
+          const isMenuOpen = openMenuId === pos.id;
+
+          const statusPill = st !== 'idle' ? (
+            <InlineStatus state={st} savedLabel="Đã cập nhật" onRetry={() => handleRetryRow(pos.id)} />
+          ) : check.valid ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--ok-soft)] text-[var(--ok)] text-xs font-bold whitespace-nowrap"><CheckCircle2 className="w-3.5 h-3.5 shrink-0" /><span>Hợp lệ</span></span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--fix-soft)] text-[var(--fix)] text-xs font-bold whitespace-nowrap"><AlertTriangle className="w-3.5 h-3.5 shrink-0" /><span>Cần bổ sung</span></span>
+          );
+
+          const moreMenu = (
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button type="button" aria-label={`Tùy chọn thêm cho ${pos.specificName}`} aria-expanded={isMenuOpen} onClick={() => setOpenMenuId(isMenuOpen ? null : pos.id)} className="w-10 h-10 min-h-[38px] min-w-[38px] inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-[var(--ink-muted)] hover:text-[var(--foreground)] cursor-pointer"><MoreHorizontal className="w-4 h-4" /></button>
+              {isMenuOpen && (
+                <div role="menu" className="absolute right-0 top-full mt-1.5 z-30 w-44 rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-1.5 shadow-lg space-y-1">
+                  <button type="button" role="menuitem" onClick={() => { setOpenMenuId(null); onDuplicateRow(pos); }} className="w-full flex items-center gap-2 px-3 py-2 min-h-[38px] rounded-lg text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-tint)] hover:text-[var(--primary)] cursor-pointer text-left"><Copy className="w-3.5 h-3.5 text-[var(--primary)]" /><span>Sao chép vị trí</span></button>
+                  <button type="button" role="menuitem" disabled={positions.length <= 1} onClick={() => { setOpenMenuId(null); onRequestRemoveRow(pos); }} className="w-full flex items-center gap-2 px-3 py-2 min-h-[38px] rounded-lg text-xs font-semibold text-[var(--fix)] hover:bg-[var(--fix-soft)] disabled:opacity-40 cursor-pointer text-left"><Trash2 className="w-3.5 h-3.5" /><span>Xóa vị trí</span></button>
                 </div>
               )}
             </div>
           );
-        })}
-      </div>
 
-      {/* GIAO DIỆN DESKTOP (>= md) */}
-      <div className="hidden md:block space-y-3">
-        {positions.map((pos, idx) => {
-          const check = isPositionRowValid(pos);
-          const showErr = (touchedRows[pos.id] || forceShowErrors) && !check.valid;
-          const st = rowStatus[pos.id] || 'idle';
+          if (!isExpanded) {
+            return (
+              <div key={pos.id} id={`vtvl-row-${pos.id}`} className={`rounded-2xl border px-4 py-3.5 bg-[var(--sheet)] transition-all duration-150 shadow-2xs ${st === 'saved' ? 'vtvl-row-saved' : showErr ? 'border-[var(--fix)] bg-[var(--fix-soft)]/20' : 'border-[var(--border-subtle)] hover:border-[var(--primary)]/45'}`}>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openItemForEdit(pos); } }} onClick={() => openItemForEdit(pos)} className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer text-left">
+                    <ChevronRight className="w-4 h-4 text-[var(--ink-subtle)] shrink-0" />
+                    <span className="w-9 h-9 rounded-xl bg-[var(--surface-tint)] text-[var(--primary)] font-bold text-sm inline-flex items-center justify-center shrink-0 tabular-nums">{numBadge}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm sm:text-base font-bold text-[var(--foreground)] truncate">{pos.specificName || '(Chưa đặt tên vị trí)'}</div>
+                      <div className="text-xs text-[var(--ink-muted)] truncate"><span className="font-mono font-semibold text-[var(--foreground)]">{unitCode}-{pos.vtvlSuffix}</span> · Khung Trường: {pos.frameworkTitle}</div>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 sm:gap-4 shrink-0 pt-2.5 lg:pt-0 border-t lg:border-t-0 border-[var(--border-subtle)]">
+                    <span className="text-xs sm:text-sm text-[var(--ink-muted)] lg:border-l lg:border-[var(--border-subtle)] lg:pl-4 whitespace-nowrap"><strong className="text-[var(--foreground)]">{pos.method}</strong> · {pos.standardHoursYear.toLocaleString('vi-VN')} giờ/năm</span>
+                    <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[var(--foreground)] lg:border-l lg:border-[var(--border-subtle)] lg:pl-4 tabular-nums whitespace-nowrap" title="Hiện có (D1) → Đề xuất (C3)"><span>{pos.staffCount}</span><ArrowRight className="w-3.5 h-3.5 text-[var(--ink-subtle)]" /><span className="text-[var(--primary)]">{pos.proposedFte}</span></span>
+                    <div className="lg:border-l lg:border-[var(--border-subtle)] lg:pl-4">{statusPill}</div>
+                    <div className="flex items-center gap-1.5">
+                      <button type="button" onClick={() => openItemForEdit(pos)} className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:bg-[var(--surface-tint)] hover:border-[var(--primary)]/50 text-xs sm:text-sm font-bold text-[var(--primary)] cursor-pointer transition-colors"><Edit3 className="w-3.5 h-3.5" /><span>Chỉnh sửa</span></button>
+                      {moreMenu}
+                    </div>
+                  </div>
+                </div>
+                {showErr && <ValidationMessage id={`desk-err-${pos.id}`} message={check.reason} />}
+              </div>
+            );
+          }
+
           return (
-            <div key={pos.id} id={`vtvl-row-${pos.id}`} onBlur={() => handleBlurRow(pos.id)} className={`rounded-xl border p-4 space-y-3 transition-colors duration-150 shadow-2xs ${st === 'saved' ? 'vtvl-row-saved' : showErr ? 'border-[var(--fix)] bg-[var(--fix-soft)]/25' : 'border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)]/50'}`}>
-              <div className="grid grid-cols-12 gap-3 items-end">
-                <div className="col-span-6">
-                  <div className="flex items-center justify-between text-xs font-bold text-[var(--ink-muted)] mb-1">
-                    <label htmlFor={`desk-name-${pos.id}`}>{idx + 1}. Tên vị trí việc làm cụ thể tại đơn vị (Biểu C1) <span className="text-[var(--fix)]">*</span></label>
-                    <span className="text-[var(--primary)]">Khung Trường: {pos.frameworkTitle}</span>
-                  </div>
-                  <TextInput id={`desk-name-${pos.id}`} aria-label={`Tên vị trí việc làm cụ thể cho mã ${pos.vtvlSuffix}`} state={showErr && !pos.specificName.trim() ? 'error' : 'default'} value={pos.specificName} onChange={(e) => triggerRowChange(pos.id, { specificName: e.target.value })} className="font-bold py-2" />
-                </div>
-                <div className="col-span-3">
-                  <label htmlFor={`desk-code-${pos.id}`} className="block text-xs font-bold text-[var(--ink-muted)] mb-1">Mã vị trí đơn vị ({unitCode}-...) <span className="text-[var(--fix)]">*</span></label>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-mono font-bold text-[var(--ink-muted)] shrink-0">{unitCode}-</span>
-                    <div className="flex-1"><TextInput id={`desk-code-${pos.id}`} aria-label={`Mã hậu tố vị trí ${pos.specificName}`} state={showErr && !pos.vtvlSuffix.trim() ? 'error' : 'default'} value={pos.vtvlSuffix} onChange={(e) => triggerRowChange(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="font-mono font-bold text-[var(--primary)] py-2" /></div>
+            <div key={pos.id} id={`vtvl-row-${pos.id}`} onBlur={() => setTouchedRows((p) => ({ ...p, [pos.id]: true }))} className={`rounded-2xl border bg-[var(--sheet)] shadow-sm transition-all duration-150 ${st === 'saved' ? 'vtvl-row-saved' : showErr ? 'border-[var(--fix)]' : 'border-[var(--primary)]/40'}`}>
+              <div className="bg-[var(--surface-tint)]/80 px-4 sm:px-5 py-3.5 border-b border-[var(--border-subtle)] rounded-t-2xl flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="w-10 h-10 rounded-xl bg-[var(--primary)]/15 text-[var(--primary)] font-bold text-sm inline-flex items-center justify-center shrink-0 tabular-nums">{numBadge}</span>
+                  <span className="hidden sm:block h-8 w-[1px] bg-[var(--border)] shrink-0" />
+                  <div className="min-w-0">
+                    <h4 className="text-base sm:text-lg font-bold text-[var(--foreground)] leading-snug truncate">{pos.specificName || '(Chưa đặt tên vị trí)'}</h4>
+                    <p className="text-xs text-[var(--ink-muted)] truncate"><span className="font-mono font-semibold text-[var(--foreground)]">{unitCode}-{pos.vtvlSuffix}</span> · Khung Trường: {pos.frameworkTitle}</p>
                   </div>
                 </div>
-                <div className="col-span-3 flex items-center justify-end gap-2">
-                  <div className="min-w-[92px] flex justify-end">
-                    {st !== 'idle' ? <InlineStatus state={st} savedLabel="Đã cập nhật" onRetry={() => handleRetryRow(pos.id)} /> : check.valid ? <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--ok)]"><CheckCircle2 className="w-3.5 h-3.5" /><span>Hợp lệ</span></span> : null}
-                  </div>
-                  <button type="button" title="Tạo thêm 1 dòng vị trí tương tự" aria-label={`Sao chép vị trí ${pos.specificName}`} onClick={() => onDuplicateRow(pos)} className="inline-flex items-center gap-1.5 min-h-[42px] px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-xs font-bold text-[var(--primary)] cursor-pointer"><Copy className="w-3.5 h-3.5" /><span>Sao chép</span></button>
-                  <button type="button" title="Xóa vị trí này" aria-label={`Xóa vị trí ${pos.specificName}`} disabled={positions.length <= 1} onClick={() => onRequestRemoveRow(pos)} className="inline-flex items-center gap-1 min-h-[42px] px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--fix)] text-xs font-bold text-[var(--fix)] disabled:opacity-35 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /><span>Xóa</span></button>
+                <div className="flex items-center gap-2 ml-auto">
+                  {statusPill}
+                  <button type="button" onClick={() => handleSaveAndCollapse(pos.id, null)} className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-xs sm:text-sm font-bold text-[var(--foreground)] cursor-pointer"><ChevronUp className="w-4 h-4" /><span>Thu gọn</span></button>
+                  {moreMenu}
                 </div>
               </div>
-              {showErr && <ValidationMessage id={`desk-err-${pos.id}`} message={check.reason} />}
-              <div className="grid grid-cols-12 gap-3 pt-2.5 border-t border-[var(--border-subtle)] items-end">
-                <div className="col-span-4">
-                  <label htmlFor={`desk-ngach-${pos.id}`} className="block text-xs font-bold text-[var(--ink-muted)] mb-1">Mã ngạch <span className="text-[var(--warn)]">(mã có sẵn là gợi ý — chọn hoặc tự gõ)</span></label>
-                  <SearchableSelect id={`desk-ngach-${pos.id}`} value={pos.ngachCode} options={SUGGESTED_NGACH_OPTIONS} datalistId="step1-ngach-datalist" ariaLabelSelect={`Chọn mã ngạch cho vị trí ${pos.specificName}`} ariaLabelInput={`Mã ngạch thực tế của vị trí ${pos.specificName}`} onChange={(val) => triggerRowChange(pos.id, { ngachCode: val })} />
-                </div>
-                <div className="col-span-3">
-                  <label htmlFor={`desk-lvl-${pos.id}`} className="block text-xs font-bold text-[var(--ink-muted)] mb-1">Bậc nghề nghiệp (Phụ lục I)</label>
-                  <Select id={`desk-lvl-${pos.id}`} data-task="task-1-level" aria-label={`Bậc nghề nghiệp của ${pos.specificName}`} value={pos.careerLevel} disabled={pos.allowedLevels.length <= 1} onChange={(e) => triggerRowChange(pos.id, { careerLevel: e.target.value })} className="text-xs font-bold text-[var(--primary)]">{pos.allowedLevels.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}</Select>
-                </div>
-                <div className="col-span-3">
-                  <label className="block text-xs font-bold text-[var(--ink-muted)] mb-1">Phương pháp (C3) &amp; Quỹ giờ năm</label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <Select id={`desk-method-${pos.id}`} data-task="task-1-params" aria-label={`Phương pháp định biên của ${pos.specificName}`} value={pos.method} onChange={(e) => triggerRowChange(pos.id, { method: e.target.value as WorkforceMethod })} className="text-xs font-bold">{METHODS.map((m) => <option key={m.value} value={m.value}>{m.value}</option>)}</Select>
-                    <Select id={`desk-hours-${pos.id}`} aria-label={`Quỹ giờ chuẩn năm của ${pos.specificName}`} value={pos.standardHoursYear} onChange={(e) => { const h = Number(e.target.value); triggerRowChange(pos.id, { standardHoursYear: h, workingRegime: h === 1760 ? 'Đặc thù' : 'Phổ biến (40 giờ/tuần)' }); }} className="text-xs font-semibold"><option value={1904}>1.904 giờ/năm</option><option value={1760}>1.760 giờ/năm (GV)</option></Select>
+
+              {pendingSwitchId && (
+                <div role="alert" className="mx-4 mt-3 rounded-xl border border-[var(--warn)]/45 bg-[var(--warn-soft)] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                  <span className="font-semibold text-[var(--warn)]">Vị trí này có thay đổi vừa chỉnh sửa. Bạn muốn lưu hay hủy trước khi chuyển sang vị trí khác?</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => handleCancelEdit(pos.id, pendingSwitchId)} className="min-h-[34px] px-3 rounded-lg border border-[var(--border)] bg-[var(--sheet)] font-semibold text-[var(--foreground)] cursor-pointer">Hủy thay đổi</button>
+                    <button type="button" onClick={() => handleSaveAndCollapse(pos.id, pendingSwitchId)} className="min-h-[34px] px-3 rounded-lg bg-[var(--primary)] text-white font-bold cursor-pointer">Lưu &amp; chuyển tiếp</button>
                   </div>
                 </div>
-                <div className="col-span-1">
-                  <label htmlFor={`desk-staff-${pos.id}`} className="block text-xs font-bold text-[var(--ink-muted)] mb-1 text-right">Hiện có (D1)</label>
-                  <NumberInput id={`desk-staff-${pos.id}`} data-task="task-1-staff" aria-label={`Nhân sự hiện có của ${pos.specificName}`} min={0} max={200} value={pos.staffCount} onChange={(e) => triggerRowChange(pos.id, { staffCount: Math.max(0, parseInt(e.target.value || '0', 10)) })} className="text-right font-bold" />
+              )}
+
+              <div className="p-4 sm:p-5 space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+                  <div className="lg:col-span-2 flex items-center gap-2 rounded-xl bg-[var(--surface-secondary)] px-3.5 py-3 lg:min-h-[64px] text-xs font-bold uppercase tracking-wide text-[var(--foreground)]"><Info className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Thông tin vị trí</span></div>
+                  <div className="lg:col-span-5">
+                    <label htmlFor={`desk-name-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Tên vị trí việc làm cụ thể tại đơn vị (Biểu C1) <span className="text-[var(--fix)]">*</span></label>
+                    <TextInput id={`desk-name-${pos.id}`} state={showErr && !pos.specificName.trim() ? 'error' : 'default'} value={pos.specificName} onChange={(e) => triggerRowChange(pos.id, { specificName: e.target.value })} className="font-semibold" />
+                  </div>
+                  <div className="lg:col-span-3">
+                    <label htmlFor={`desk-fw-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Khung Trường</label>
+                    <Select id={`desk-fw-${pos.id}`} value={pos.frameworkId} onChange={(e) => { const fw = ND232_2026_VTVL_CATALOG.find((x) => x.maDanhMucNd232 === e.target.value); if (fw) triggerRowChange(pos.id, { frameworkId: fw.maDanhMucNd232, frameworkTitle: fw.positionName, vtvlGroup4: fw.vtvlGroup4, careerLevel: fw.careerLevel, allowedLevels: fw.allowedLevels }); }}>{ND232_2026_VTVL_CATALOG.map((fw) => <option key={fw.maDanhMucNd232} value={fw.maDanhMucNd232}>{fw.positionName}</option>)}</Select>
+                  </div>
+                  <div className="lg:col-span-2">
+                    <label htmlFor={`desk-code-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Mã vị trí đơn vị ({unitCode}-...) <span className="text-[var(--fix)]">*</span></label>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2.5 min-h-[44px] inline-flex items-center rounded-xl bg-[var(--surface-secondary)] text-xs font-mono font-bold text-[var(--ink-muted)] shrink-0">{unitCode}-</span>
+                      <TextInput id={`desk-code-${pos.id}`} state={showErr && !pos.vtvlSuffix.trim() ? 'error' : 'default'} value={pos.vtvlSuffix} onChange={(e) => triggerRowChange(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="font-mono font-bold text-[var(--primary)]" />
+                    </div>
+                  </div>
                 </div>
-                <div className="col-span-1">
-                  <label htmlFor={`desk-fte-${pos.id}`} className="block text-xs font-bold text-[var(--primary)] mb-1 text-right">Đề xuất (C3)</label>
-                  <NumberInput id={`desk-fte-${pos.id}`} aria-label={`Biên chế FTE đề xuất của ${pos.specificName}`} min={0.5} max={200} step="0.5" state={showErr && pos.proposedFte <= 0 ? 'error' : 'default'} value={pos.proposedFte} onChange={(e) => triggerRowChange(pos.id, { proposedFte: Math.max(0, parseFloat(e.target.value || '0')) })} className="text-right font-extrabold text-[var(--primary)]" />
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start pt-2 border-t border-[var(--border-subtle)]">
+                  <div className="lg:col-span-2 flex items-center gap-2 rounded-xl bg-[var(--surface-secondary)] px-3.5 py-3 lg:min-h-[64px] text-xs font-bold uppercase tracking-wide text-[var(--foreground)]"><Layers className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Phân loại và định mức</span></div>
+                  <div className="lg:col-span-4">
+                    <label htmlFor={`desk-ngach-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Mã ngạch <span className="font-normal text-[var(--ink-muted)]">(mã có sẵn là gợi ý — chọn hoặc tự gõ)</span></label>
+                    <SearchableSelect id={`desk-ngach-${pos.id}`} value={pos.ngachCode} options={SUGGESTED_NGACH_OPTIONS} datalistId="step1-ngach-datalist" ariaLabelSelect={`Chọn mã ngạch cho vị trí ${pos.specificName}`} ariaLabelInput={`Mã ngạch thực tế của vị trí ${pos.specificName}`} onChange={(val) => triggerRowChange(pos.id, { ngachCode: val })} />
+                  </div>
+                  <div className="lg:col-span-3">
+                    <label htmlFor={`desk-lvl-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Bậc nghề nghiệp (Phụ lục I)</label>
+                    <Select id={`desk-lvl-${pos.id}`} data-task="task-1-level" value={pos.careerLevel} disabled={pos.allowedLevels.length <= 1} onChange={(e) => triggerRowChange(pos.id, { careerLevel: e.target.value })}>{pos.allowedLevels.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}</Select>
+                  </div>
+                  <div className="lg:col-span-3">
+                    <label className="block text-xs font-bold text-[var(--foreground)] mb-1">Phương pháp (C3) &amp; Quỹ giờ năm</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Select id={`desk-method-${pos.id}`} data-task="task-1-params" value={pos.method} onChange={(e) => triggerRowChange(pos.id, { method: e.target.value as WorkforceMethod })} className="font-bold">{METHODS.map((m) => <option key={m.value} value={m.value}>{m.value}</option>)}</Select>
+                      <Select id={`desk-hours-${pos.id}`} value={pos.standardHoursYear} onChange={(e) => { const h = Number(e.target.value); triggerRowChange(pos.id, { standardHoursYear: h, workingRegime: h === 1760 ? 'Đặc thù' : 'Phổ biến (40 giờ/tuần)' }); }}><option value={1904}>1.904 giờ/năm</option><option value={1760}>1.760 giờ/năm</option></Select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-center pt-2 border-t border-[var(--border-subtle)]">
+                  <div className="lg:col-span-2 flex items-center gap-2 rounded-xl bg-[var(--surface-secondary)] px-3.5 py-3 lg:min-h-[64px] text-xs font-bold uppercase tracking-wide text-[var(--foreground)]"><Users className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Nhân sự</span></div>
+                  <div className="lg:col-span-10 flex flex-wrap items-end gap-3 sm:gap-4">
+                    <div className="w-28 sm:w-32"><label htmlFor={`desk-staff-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Hiện có (D1)</label><NumberInput id={`desk-staff-${pos.id}`} data-task="task-1-staff" min={0} max={200} value={pos.staffCount} onChange={(e) => triggerRowChange(pos.id, { staffCount: Math.max(0, parseInt(e.target.value || '0', 10)) })} className="text-center font-bold" /></div>
+                    <ArrowRight className="w-4 h-4 text-[var(--ink-subtle)] mb-3.5 shrink-0" />
+                    <div className="w-28 sm:w-32"><label htmlFor={`desk-fte-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Đề xuất (C3)</label><NumberInput id={`desk-fte-${pos.id}`} min={0.5} max={200} step="0.5" state={showErr && pos.proposedFte <= 0 ? 'error' : 'default'} value={pos.proposedFte} onChange={(e) => triggerRowChange(pos.id, { proposedFte: Math.max(0, parseFloat(e.target.value || '0')) })} className="text-center font-bold text-[var(--primary)]" /></div>
+                    <span className="hidden sm:block h-10 w-[1px] bg-[var(--border-subtle)] mb-1" />
+                    <div className="w-28 sm:w-32"><span className="block text-xs font-bold text-[var(--foreground)] mb-1">Chênh lệch</span><div className={`min-h-[44px] rounded-xl bg-[var(--surface-secondary)] px-3 flex items-center justify-center text-sm font-bold tabular-nums ${diffFte > 0 ? 'text-[var(--primary)]' : diffFte < 0 ? 'text-[var(--warn)]' : 'text-[var(--foreground)]'}`}>{diffFte > 0 ? `+${diffFte}` : diffFte}</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-4 sm:px-5 py-3 border-t border-[var(--border-subtle)] bg-[var(--surface-secondary)]/45 rounded-b-2xl flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0">{showErr && <ValidationMessage id={`desk-err-${pos.id}`} message={check.reason} />}</div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <button type="button" onClick={() => handleCancelEdit(pos.id, null)} className="min-h-[40px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:bg-[var(--muted)] text-xs sm:text-sm font-bold text-[var(--foreground)] cursor-pointer">Hủy</button>
+                  <button type="button" onClick={() => handleSaveAndCollapse(pos.id, null)} className="min-h-[40px] px-5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-deep)] text-white text-xs sm:text-sm font-bold shadow-2xs cursor-pointer transition-colors">Lưu thay đổi</button>
                 </div>
               </div>
             </div>
