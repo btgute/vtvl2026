@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { UploadCloud, Sparkles, Search, Download, AlertOctagon, FileWarning, Eye } from 'lucide-react';
-import { MilestonesBar } from '@/components/layout/MilestonesBar';
+import { WorkflowSidebar, InfoTip } from '@/components/layout/MilestonesBar';
 import { AuditReportResult, AuditSeverity } from '@/types/vtvl';
 import { auditUnitWorkbooks } from '@/services/excel-audit/audit-engine';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
@@ -14,9 +14,9 @@ const SEVERITY_META: Record<
   AuditSeverity,
   { label: string; badgeClass: string; icon: React.ComponentType<{ className?: string }> }
 > = {
-  fix: { label: 'Yêu cầu chỉnh sửa bắt buộc', badgeClass: 'bg-[var(--fix-soft)] text-[var(--fix)] border-[var(--fix)]/30', icon: AlertOctagon },
-  evidence: { label: 'Yêu cầu bổ sung căn cứ xác thực', badgeClass: 'bg-[var(--warn-soft)] text-[var(--warn)] border-[var(--warn)]/30', icon: FileWarning },
-  review: { label: 'Khuyến nghị rà soát nghiệp vụ', badgeClass: 'bg-sky-50 text-[var(--primary)] border-sky-200 dark:bg-sky-950/50', icon: Eye }
+  fix: { label: 'Chỉnh sửa bắt buộc', badgeClass: 'bg-[var(--fix-soft)] text-[var(--fix)] border-[var(--fix)]/30', icon: AlertOctagon },
+  evidence: { label: 'Bổ sung căn cứ', badgeClass: 'bg-[var(--warn-soft)] text-[var(--warn)] border-[var(--warn)]/30', icon: FileWarning },
+  review: { label: 'Khuyến nghị rà soát', badgeClass: 'bg-sky-50 text-[var(--primary)] border-sky-200 dark:bg-sky-950/50', icon: Eye }
 };
 
 export default function RaSoatPage() {
@@ -104,143 +104,137 @@ export default function RaSoatPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--sheet)] p-5 sm:p-7 space-y-4 shadow-2xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
-              PHÂN HỆ THẨM ĐỊNH VÀ KIỂM TRA CHÉO BỘ BIỂU ĐƠN VỊ (BƯỚC 5 — BIỂU 13. K_KIEMTRA)
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)] mt-1">
-              Thẩm định và kiểm tra chéo bộ biểu vị trí việc làm
-            </h1>
-            <p className="text-xs sm:text-sm text-[var(--ink-muted)] mt-1 max-w-3xl leading-relaxed">
-              Thực hiện đối soát tự động tính toàn vẹn dữ liệu giữa các biểu (<code className="font-mono">A1, A2, B1, B2_CT, B2, C1, C2, C3, D1, D2</code>), kiểm tra bậc nghề nghiệp (Bậc 1–5) theo <strong>Nghị định số 232/2026/NĐ-CP</strong> và mã chức danh nhà giáo theo <strong>Thông tư số 31/2026/TT-BGDĐT</strong>.
-            </p>
-          </div>
-          <button type="button" onClick={handleLoadSampleDemo} disabled={auditing} className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]/30 font-bold text-xs cursor-pointer shrink-0 transition-colors">
-            <Sparkles className="w-4 h-4" />
-            <span>Nạp hồ sơ mẫu đối chiếu (FME &amp; BMC)</span>
-          </button>
+    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div className="lg:col-span-3">
+          <WorkflowSidebar activeStep={5} />
         </div>
-        <MilestonesBar />
-      </div>
 
-      <label className="block rounded-3xl border-2 border-dashed border-[var(--primary)]/40 hover:border-[var(--primary)] bg-[var(--sheet)] p-7 text-center cursor-pointer transition-all shadow-2xs">
-        <input type="file" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => handleFilesSelected(e.target.files)} className="hidden" />
-        <div className="mx-auto w-14 h-14 rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center mb-2.5">
-          <UploadCloud className="w-7 h-7" />
-        </div>
-        <h2 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">
-          {auditing ? 'Hệ thống đang thực hiện đối soát dữ liệu các biểu…' : 'Tải lên tệp dữ liệu đơn vị (.xlsx) để thực hiện kiểm tra chéo'}
-        </h2>
-        <p className="text-xs text-[var(--ink-muted)] mt-1">
-          Có thể chọn đồng thời một hoặc nhiều tệp đơn vị (.xlsx). Toàn bộ quá trình thẩm định được thực hiện bảo mật cục bộ trên trình duyệt.
-        </p>
-      </label>
-
-      {report && (
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--sheet)] p-5 sm:p-6 space-y-4 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-base font-extrabold text-[var(--foreground)]">I. Bảng tổng hợp kết quả thẩm định ({report.filesCount} đơn vị)</h3>
-              <button type="button" onClick={handleExportAuditExcel} className="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--primary)] text-white font-semibold text-xs cursor-pointer">
-                <Download className="w-4 h-4" />
-                <span>Kết xuất báo cáo thẩm định (.xlsx)</span>
+        <div className="lg:col-span-9 space-y-5">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 space-y-4 shadow-2xs">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
+              <div className="flex items-center">
+                <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">5</span>
+                <h1 className="text-base sm:text-lg font-extrabold text-[var(--foreground)]">
+                  Bước 5: Thẩm định và kiểm tra chéo 6 chỉ tiêu (Biểu 13. K_KiemTra)
+                </h1>
+                <InfoTip title="6 chỉ tiêu kiểm tra chéo tự động">
+                  <p>1. A2 ↔ A1 (Khớp mã nhiệm vụ); 2. B1 ↔ C1/C2 (Khớp mã VTVL &amp; Bậc nghề nghiệp); 3. Cột R biểu B1 (Nguồn số liệu &amp; lệch chuẩn &gt;30%); 4. B2_CT ↔ B1 (Giờ giảm số hóa); 5. D1 ↔ C1 (Không trùng nhân sự, rà soát Trợ giảng K5 Đ15 TT 31/2026); 6. C3 ↔ D2 (Phương án biên chế).</p>
+                </InfoTip>
+              </div>
+              <button type="button" onClick={handleLoadSampleDemo} disabled={auditing} className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]/30 font-bold text-xs cursor-pointer transition-colors">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Nạp hồ sơ mẫu (FME &amp; BMC)</span>
               </button>
             </div>
-            <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[var(--background)] border-b border-[var(--border)]">
-                    <th className="py-2.5 px-3 text-left">Mã ĐV</th>
-                    <th className="py-2.5 px-3 text-left">Tên đơn vị</th>
-                    <th className="py-2.5 px-3 text-left">Tên tệp dữ liệu</th>
-                    <th className="py-2.5 px-3 text-right">Số VTVL (C1)</th>
-                    <th className="py-2.5 px-3 text-right">Công việc (B1)</th>
-                    <th className="py-2.5 px-3 text-right">Nhân sự (D1)</th>
-                    <th className="py-2.5 px-3 text-right">Nhu cầu (C3)</th>
-                    <th className="py-2.5 px-3 text-right">Chỉnh sửa bắt buộc</th>
-                    <th className="py-2.5 px-3 text-right">Bổ sung căn cứ</th>
-                    <th className="py-2.5 px-3 text-right">Khuyến nghị rà soát</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {report.unitSummaries.map((u) => (
-                    <tr key={u.fileName} className="border-b border-[var(--border-subtle)]">
-                      <td className="py-2.5 px-3 font-mono font-bold text-[var(--primary)]">{u.unitCode}</td>
-                      <td className="py-2.5 px-3 font-semibold">{u.unitName}</td>
-                      <td className="py-2.5 px-3 font-mono text-[11px]">{u.fileName}</td>
-                      <td className="py-2.5 px-3 text-right tabular-nums">{u.vtvlCount}</td>
-                      <td className="py-2.5 px-3 text-right tabular-nums">{u.taskCount}</td>
-                      <td className="py-2.5 px-3 text-right tabular-nums">{u.staffCount}</td>
-                      <td className="py-2.5 px-3 text-right font-bold tabular-nums">{u.proposedFte}</td>
-                      <td className="py-2.5 px-3 text-right font-extrabold text-[var(--fix)] tabular-nums">{u.fixCount}</td>
-                      <td className="py-2.5 px-3 text-right font-extrabold text-[var(--warn)] tabular-nums">{u.evidenceCount}</td>
-                      <td className="py-2.5 px-3 text-right font-extrabold text-[var(--primary)] tabular-nums">{u.reviewCount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+
+            <label className="block rounded-2xl border-2 border-dashed border-[var(--primary)]/40 hover:border-[var(--primary)] bg-[var(--background)] p-5 text-center cursor-pointer transition-all">
+              <input type="file" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => handleFilesSelected(e.target.files)} className="hidden" />
+              <UploadCloud className="w-7 h-7 text-[var(--primary)] mx-auto mb-1.5" />
+              <div className="text-xs sm:text-sm font-extrabold text-[var(--foreground)]">
+                {auditing ? 'Đang đối soát dữ liệu các biểu…' : 'Bấm chọn hoặc kéo thả tệp dữ liệu đơn vị (.xlsx) cần thẩm định'}
+              </div>
+              <p className="text-[11px] text-[var(--ink-muted)] mt-0.5">Hỗ trợ kiểm tra đồng thời một hoặc nhiều tệp đơn vị (.xlsx)</p>
+            </label>
           </div>
 
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--sheet)] p-5 sm:p-6 space-y-4 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={() => setSeverityFilter('all')} className={`px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer ${severityFilter === 'all' ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-[var(--background)] border-[var(--border)]'}`}>
-                  Tất cả hạng mục ({report.totalIssues})
-                </button>
-                {(['fix', 'evidence', 'review'] as AuditSeverity[]).map((sev) => (
-                  <button key={sev} type="button" onClick={() => setSeverityFilter(sev)} className={`px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer ${severityFilter === sev ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : SEVERITY_META[sev].badgeClass}`}>
-                    {SEVERITY_META[sev].label} ({report.countsBySeverity[sev]})
+          {report && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-extrabold text-[var(--foreground)]">Tổng hợp kết quả ({report.filesCount} đơn vị)</h3>
+                  <button type="button" onClick={handleExportAuditExcel} className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-xl bg-[var(--primary)] text-white font-semibold text-xs cursor-pointer">
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Xuất báo cáo thẩm định (.xlsx)</span>
                   </button>
-                ))}
+                </div>
+                <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-[var(--background)] border-b border-[var(--border)]">
+                        <th className="py-2 px-2.5 text-left">Mã ĐV</th>
+                        <th className="py-2 px-2.5 text-left">Tên đơn vị</th>
+                        <th className="py-2 px-2.5 text-right">VTVL (C1)</th>
+                        <th className="py-2 px-2.5 text-right">Đầu việc (B1)</th>
+                        <th className="py-2 px-2.5 text-right">Nhân sự (D1)</th>
+                        <th className="py-2 px-2.5 text-right">FTE (C3)</th>
+                        <th className="py-2 px-2.5 text-right">Bắt buộc sửa</th>
+                        <th className="py-2 px-2.5 text-right">Bổ sung căn cứ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.unitSummaries.map((u) => (
+                        <tr key={u.fileName} className="border-b border-[var(--border-subtle)]">
+                          <td className="py-2 px-2.5 font-mono font-bold text-[var(--primary)]">{u.unitCode}</td>
+                          <td className="py-2 px-2.5 font-semibold">{u.unitName}</td>
+                          <td className="py-2 px-2.5 text-right tabular-nums">{u.vtvlCount}</td>
+                          <td className="py-2 px-2.5 text-right tabular-nums">{u.taskCount}</td>
+                          <td className="py-2 px-2.5 text-right tabular-nums">{u.staffCount}</td>
+                          <td className="py-2 px-2.5 text-right font-bold tabular-nums">{u.proposedFte}</td>
+                          <td className="py-2 px-2.5 text-right font-extrabold text-[var(--fix)] tabular-nums">{u.fixCount}</td>
+                          <td className="py-2 px-2.5 text-right font-extrabold text-[var(--warn)] tabular-nums">{u.evidenceCount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <select value={sheetFilter} onChange={(e) => setSheetFilter(e.target.value)} className="rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-xs font-semibold">
-                  <option value="all">Toàn bộ các biểu (A1–D2)</option>
-                  {Object.keys(report.countsBySheet).map((sh) => (
-                    <option key={sh} value={sh}>Biểu {sh} ({report.countsBySheet[sh]})</option>
-                  ))}
-                </select>
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-subtle)]" />
-                  <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tra cứu mã công việc, tọa độ ô…" className="rounded-xl border border-[var(--border)] bg-[var(--background)] pl-8 pr-3 py-1.5 text-xs" />
+
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button type="button" onClick={() => setSeverityFilter('all')} className={`px-2.5 py-1 rounded-lg text-xs font-bold border cursor-pointer ${severityFilter === 'all' ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-[var(--background)] border-[var(--border)]'}`}>
+                      Tất cả ({report.totalIssues})
+                    </button>
+                    {(['fix', 'evidence', 'review'] as AuditSeverity[]).map((sev) => (
+                      <button key={sev} type="button" onClick={() => setSeverityFilter(sev)} className={`px-2.5 py-1 rounded-lg text-xs font-bold border cursor-pointer ${severityFilter === sev ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : SEVERITY_META[sev].badgeClass}`}>
+                        {SEVERITY_META[sev].label} ({report.countsBySeverity[sev]})
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select value={sheetFilter} onChange={(e) => setSheetFilter(e.target.value)} className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs font-semibold">
+                      <option value="all">Mọi biểu (A1–D2)</option>
+                      {Object.keys(report.countsBySheet).map((sh) => (
+                        <option key={sh} value={sh}>Biểu {sh} ({report.countsBySheet[sh]})</option>
+                      ))}
+                    </select>
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--ink-subtle)]" />
+                      <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm mã, ô…" className="rounded-lg border border-[var(--border)] bg-[var(--background)] pl-7 pr-2.5 py-1 text-xs w-36 sm:w-44" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {filteredIssues.map((issue) => {
+                    const meta = SEVERITY_META[issue.severity];
+                    const Icon = meta.icon;
+                    return (
+                      <div key={issue.id} className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-3 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${meta.badgeClass}`}>
+                              <Icon className="w-3 h-3" />
+                              <span>{meta.label}</span>
+                            </span>
+                            <span className="font-mono text-xs font-bold text-[var(--primary)] bg-[var(--sheet)] px-2 py-0.5 rounded border border-[var(--border)]">
+                              {issue.unitCode} · {issue.cellRef}
+                            </span>
+                          </div>
+                          <h4 className="text-xs font-bold text-[var(--foreground)]">{issue.title}</h4>
+                          <p className="text-xs text-[var(--ink-muted)]"><strong>Hướng dẫn:</strong> {issue.suggestion}</p>
+                        </div>
+                        <code className="font-mono text-[11px] bg-[var(--sheet)] px-2 py-1 rounded border border-[var(--border)] shrink-0 max-w-[200px] truncate">{issue.currentValue}</code>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
-            <div className="space-y-2.5">
-              {filteredIssues.map((issue) => {
-                const meta = SEVERITY_META[issue.severity];
-                const Icon = meta.icon;
-                return (
-                  <div key={issue.id} className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${meta.badgeClass}`}>
-                          <Icon className="w-3 h-3" />
-                          <span>{meta.label}</span>
-                        </span>
-                        <span className="font-mono text-xs font-bold text-[var(--primary)] bg-[var(--sheet)] px-2 py-0.5 rounded border border-[var(--border)]">
-                          {issue.unitCode} · {issue.cellRef}
-                        </span>
-                        <span className="font-mono text-[11px] text-[var(--ink-subtle)]">[{issue.ruleId}]</span>
-                      </div>
-                      <h4 className="text-xs sm:text-sm font-bold text-[var(--foreground)] pt-0.5">{issue.title}</h4>
-                      <p className="text-xs text-[var(--ink-muted)]"><strong>Hướng dẫn hoàn thiện:</strong> {issue.suggestion}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-[11px] text-[var(--ink-subtle)] block">Giá trị hiện tại:</span>
-                      <code className="font-mono text-xs bg-[var(--sheet)] px-2 py-1 rounded border border-[var(--border)] inline-block mt-0.5 max-w-[220px] truncate">{issue.currentValue}</code>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
