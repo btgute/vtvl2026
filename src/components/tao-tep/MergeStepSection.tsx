@@ -60,7 +60,8 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
           includeZipPerPosition: false,
           ngachOverrides: session.ngachOverrides,
           customPositionNames: session.customPositionNames,
-          customCareerLevels: session.customCareerLevels
+          customCareerLevels: session.customCareerLevels,
+          proposedPositions: session.proposedPositions
         });
         targetRootFile = setSessionRootWorkbook(
           activeUnit.code,

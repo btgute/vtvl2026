@@ -7,12 +7,13 @@ import { WorkflowSidebar, InfoTip } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { NGACH_LIST_BY_GROUP, TASK_TEMPLATES_BY_GROUP } from '@/configs/hcmute-quotas';
 import { buildDefaultSpecificVtvlName } from '@/configs/hcmute-nd232-catalog';
-import { TimeSessionRow } from '@/types/vtvl';
+import { TimeSessionRow, ProposedVtvlRow } from '@/types/vtvl';
 import { exportPersonalTimerWorkbook } from '@/services/excel-split/personal-timer-export';
 import { getActiveUnitSession, recordActivity } from '@/services/telemetry/activity-log';
 
 export default function BamGioPage() {
   const [unitCode, setUnitCode] = useState<string>('FME');
+  const [proposedPositions, setProposedPositions] = useState<ProposedVtvlRow[]>([]);
   const [customPositionNames, setCustomPositionNames] = useState<Record<string, string>>({});
   const [customCareerLevels, setCustomCareerLevels] = useState<Record<string, string>>({});
   const [performerTitle, setPerformerTitle] = useState<string>('Giảng viên chính');
@@ -35,14 +36,19 @@ export default function BamGioPage() {
     const saved = getActiveUnitSession();
     const matched = HCMUTE_UNITS.find((u) => u.code === saved.unitCode) || HCMUTE_UNITS[0];
     setUnitCode(matched.code);
+    setProposedPositions(saved.proposedPositions || []);
     setCustomPositionNames(saved.customPositionNames || {});
     setCustomCareerLevels(saved.customCareerLevels || {});
     setManualDate(saved.customDate || '2026-11-07');
 
-    const groupTasks = TASK_TEMPLATES_BY_GROUP[matched.group];
-    if (groupTasks.length > 0) {
-      setSelectedVtvlSuffix(groupTasks[0].vtvlSuffix);
-      setActiveTaskCode(`${matched.code}-${groupTasks[0].taskSuffix}`);
+    if (saved.proposedPositions && saved.proposedPositions.length > 0) {
+      setSelectedVtvlSuffix(saved.proposedPositions[0].vtvlSuffix);
+    } else {
+      const groupTasks = TASK_TEMPLATES_BY_GROUP[matched.group];
+      if (groupTasks.length > 0) {
+        setSelectedVtvlSuffix(groupTasks[0].vtvlSuffix);
+        setActiveTaskCode(`${matched.code}-${groupTasks[0].taskSuffix}`);
+      }
     }
   }, []);
 
@@ -52,8 +58,11 @@ export default function BamGioPage() {
   }, [unit]);
 
   const vtvlOptions = useMemo(() => {
+    if (proposedPositions.length > 0) {
+      return proposedPositions.map((p) => ({ suffix: p.vtvlSuffix, code: `${unit.code}-${p.vtvlSuffix}`, name: p.specificName, level: p.careerLevel, ngachCode: p.ngachCode }));
+    }
     const ngachList = NGACH_LIST_BY_GROUP[unit.group];
-    const map = new Map<string, { suffix: string; code: string; name: string; level: string }>();
+    const map = new Map<string, { suffix: string; code: string; name: string; level: string; ngachCode: string }>();
     tasksOfUnit.forEach((t) => {
       if (!map.has(t.vtvlSuffix)) {
         const ngach = ngachList.find((n) => n.code === t.ngachCode);
@@ -61,13 +70,19 @@ export default function BamGioPage() {
         const defaultName = ngach ? buildDefaultSpecificVtvlName(fwTitle, unit.nameVi, ngach.specificNameSuffix, unit.group) : t.vtvlName;
         const specificName = ngach ? customPositionNames[ngach.code] ?? defaultName : t.vtvlName;
         const careerLevel = ngach ? customCareerLevels[ngach.code] ?? ngach.defaultCareerLevel ?? 'Bậc 3' : 'Bậc 3';
-        map.set(t.vtvlSuffix, { suffix: t.vtvlSuffix, code: t.fullVtvlCode, name: specificName, level: careerLevel });
+        map.set(t.vtvlSuffix, { suffix: t.vtvlSuffix, code: t.fullVtvlCode, name: specificName, level: careerLevel, ngachCode: t.ngachCode });
       }
     });
     return Array.from(map.values());
-  }, [tasksOfUnit, unit, customPositionNames, customCareerLevels]);
+  }, [proposedPositions, tasksOfUnit, unit, customPositionNames, customCareerLevels]);
 
-  const tasksForPosition = useMemo(() => tasksOfUnit.filter((t) => t.vtvlSuffix === selectedVtvlSuffix), [tasksOfUnit, selectedVtvlSuffix]);
+  const tasksForPosition = useMemo(() => {
+    const direct = tasksOfUnit.filter((t) => t.vtvlSuffix === selectedVtvlSuffix);
+    if (direct.length > 0) return direct;
+    const selectedOpt = vtvlOptions.find((v) => v.suffix === selectedVtvlSuffix);
+    const byNgach = selectedOpt ? tasksOfUnit.filter((t) => t.ngachCode === selectedOpt.ngachCode) : [];
+    return byNgach.length > 0 ? byNgach : tasksOfUnit.slice(0, 2);
+  }, [tasksOfUnit, selectedVtvlSuffix, vtvlOptions]);
 
   useEffect(() => {
     if (tasksForPosition.length > 0) setActiveTaskCode(tasksForPosition[0].fullTaskCode);

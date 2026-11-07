@@ -1,4 +1,4 @@
-import { HcmuteVtvlGroup4 } from '@/types/vtvl';
+import { HcmuteVtvlGroup4, ProposedVtvlRow, UnitGroupKind, WorkforceMethod, WorkingRegime } from '@/types/vtvl';
 
 export interface Nd232PositionCatalogItem {
   maDanhMucNd232: string; // PK: HD1907-I-01 .. HD1907-IV-04
@@ -175,4 +175,86 @@ export function buildDefaultSpecificVtvlName(
     return `Chánh ${unitNameVi}`;
   }
   return specificSuffix ? `${frameworkTitle} ${specificSuffix}` : frameworkTitle;
+}
+
+export function buildProposedPositionFromFramework(
+  frameworkId: string,
+  unitNameVi: string,
+  unitKind: UnitGroupKind,
+  seqIndex = 1,
+  specificHint?: string
+): ProposedVtvlRow {
+  const item =
+    ND232_2026_VTVL_CATALOG.find((x) => x.maDanhMucNd232 === frameworkId) ||
+    ND232_2026_VTVL_CATALOG[0];
+
+  const isLecturerOrTa =
+    item.maChucDanhTt31.startsWith('V.07.01.') &&
+    (item.positionName.includes('Giảng viên') || item.positionName.includes('Trợ giảng'));
+  const isManager = item.vtvlGroup4 === 'I. Nhóm VTVL Quản lý';
+
+  const workingRegime: WorkingRegime = isLecturerOrTa ? 'Đặc thù' : 'Phổ biến (40 giờ/tuần)';
+  const standardHoursYear = isLecturerOrTa ? 1760 : 1904;
+  const method: WorkforceMethod = isManager ? 'PP1' : 'PP2';
+  const baseCode = item.linkedCodeHint.replace(/-0[1-9]$/, '');
+  const vtvlSuffix = `${baseCode}-${String(seqIndex).padStart(2, '0')}`;
+
+  return {
+    id: `pos-${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${seqIndex}`,
+    frameworkId: item.maDanhMucNd232,
+    vtvlSuffix,
+    ngachCode: item.maChucDanhTt31,
+    vtvlGroup4: item.vtvlGroup4,
+    frameworkTitle: item.positionName,
+    specificName: buildDefaultSpecificVtvlName(
+      item.positionName,
+      unitNameVi,
+      specificHint,
+      unitKind
+    ),
+    careerLevel: item.allowedLevels[0] || item.careerLevel,
+    allowedLevels: item.allowedLevels,
+    method,
+    workingRegime,
+    standardHoursYear,
+    staffCount: isManager ? 1 : isLecturerOrTa ? 6 : 2,
+    proposedFte: isManager ? 1 : isLecturerOrTa ? 6 : 2
+  };
+}
+
+export function buildDefaultProposedPositionsForUnit(
+  unitNameVi: string,
+  unitKind: UnitGroupKind
+): ProposedVtvlRow[] {
+  if (unitKind === 'khoa-vien') {
+    return [
+      { ...buildProposedPositionFromFramework('HD1907-I-03', unitNameVi, unitKind, 1), vtvlSuffix: 'QL-01', staffCount: 1, proposedFte: 1 },
+      { ...buildProposedPositionFromFramework('HD1907-I-10', unitNameVi, unitKind, 2, 'phụ trách Đào tạo & KHCN'), vtvlSuffix: 'QL-02', staffCount: 2, proposedFte: 2 },
+      { ...buildProposedPositionFromFramework('HD1907-II-02', unitNameVi, unitKind, 1), vtvlSuffix: 'DT-GV-02', staffCount: 8, proposedFte: 8 },
+      { ...buildProposedPositionFromFramework('HD1907-II-01', unitNameVi, unitKind, 2), vtvlSuffix: 'DT-GV-03', staffCount: 14, proposedFte: 14 },
+      { ...buildProposedPositionFromFramework('HD1907-III-01', unitNameVi, unitKind, 1), vtvlSuffix: 'HT-TG-01', staffCount: 2, proposedFte: 2 },
+      { ...buildProposedPositionFromFramework('HD1907-III-02', unitNameVi, unitKind, 1, 'thực hành chuyên ngành'), vtvlSuffix: 'HT-PTN-01', staffCount: 3, proposedFte: 3 },
+      { ...buildProposedPositionFromFramework('HD1907-II-08', unitNameVi, unitKind, 1, 'Thư ký khoa'), vtvlSuffix: 'CM-CV-01', staffCount: 2, proposedFte: 2 }
+    ];
+  }
+  if (unitKind === 'phong-ban') {
+    return [
+      { ...buildProposedPositionFromFramework('HD1907-I-05', unitNameVi, unitKind, 1), vtvlSuffix: 'QL-01', staffCount: 1, proposedFte: 1 },
+      { ...buildProposedPositionFromFramework('HD1907-I-12', unitNameVi, unitKind, 2, 'phụ trách nghiệp vụ'), vtvlSuffix: 'QL-02', staffCount: 2, proposedFte: 2 },
+      { ...buildProposedPositionFromFramework('HD1907-II-08', unitNameVi, unitKind, 1, 'tổng hợp & tham mưu'), vtvlSuffix: 'CM-CV-01', careerLevel: 'Bậc 4', staffCount: 3, proposedFte: 3 },
+      { ...buildProposedPositionFromFramework('HD1907-II-08', unitNameVi, unitKind, 2, 'nghiệp vụ chuyên trách'), vtvlSuffix: 'CM-CV-02', careerLevel: 'Bậc 3', staffCount: 5, proposedFte: 5 }
+    ];
+  }
+  if (unitKind === 'trung-tam') {
+    return [
+      { ...buildProposedPositionFromFramework('HD1907-I-06', unitNameVi, unitKind, 1), vtvlSuffix: 'QL-01', staffCount: 1, proposedFte: 1 },
+      { ...buildProposedPositionFromFramework('HD1907-I-13', unitNameVi, unitKind, 2, 'phụ trách vận hành'), vtvlSuffix: 'QL-02', staffCount: 1, proposedFte: 1 },
+      { ...buildProposedPositionFromFramework('HD1907-II-05', unitNameVi, unitKind, 1), vtvlSuffix: 'NC-NCV-01', staffCount: 4, proposedFte: 4 },
+      { ...buildProposedPositionFromFramework('HD1907-II-08', unitNameVi, unitKind, 1, 'điều phối dịch vụ'), vtvlSuffix: 'CM-CV-01', staffCount: 3, proposedFte: 3 }
+    ];
+  }
+  return [
+    { ...buildProposedPositionFromFramework('HD1907-I-07', unitNameVi, unitKind, 1), vtvlSuffix: 'QL-01', staffCount: 1, proposedFte: 1 },
+    { ...buildProposedPositionFromFramework('HD1907-II-08', unitNameVi, unitKind, 1, 'công tác Đảng – Đoàn thể'), vtvlSuffix: 'CM-CV-01', staffCount: 3, proposedFte: 3 }
+  ];
 }

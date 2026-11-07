@@ -1,5 +1,6 @@
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
-import { HcmuteUnit, UnitGroupKind } from '@/types/vtvl';
+import { buildDefaultProposedPositionsForUnit } from '@/configs/hcmute-nd232-catalog';
+import { HcmuteUnit, ProposedVtvlRow, UnitGroupKind } from '@/types/vtvl';
 import { syncActivityToSupabase } from '@/services/supabase/vtvl-sync';
 
 export interface ActivityLogEntry {
@@ -18,43 +19,51 @@ export interface ActiveUnitSession {
   ngachOverrides: Record<string, number>;
   customPositionNames: Record<string, string>;
   customCareerLevels: Record<string, string>;
+  proposedPositions: ProposedVtvlRow[];
 }
 
 const STORAGE_KEY = 'hcmute_vtvl_activity_logs_v1';
-const UNIT_SESSION_KEY = 'hcmute_vtvl_active_unit_session_v1';
+const UNIT_SESSION_KEY = 'hcmute_vtvl_active_unit_session_v2';
 
-// Bộ nhớ đệm tệp Excel trong phiên làm việc của đơn vị đang chọn (giữa Bước 1 -> 2 -> 3 -> 4 -> 5)
 let cachedUnitCode = '';
 let cachedRootWorkbookFile: File | null = null;
 let cachedMergedWorkbookFile: File | null = null;
 let cachedSurveyFormFiles: File[] = [];
 
-const DEFAULT_SESSION: ActiveUnitSession = {
-  unitCode: 'FME',
-  kind: 'khoa-vien',
-  customDate: '2026-11-07',
-  ngachOverrides: {},
-  customPositionNames: {},
-  customCareerLevels: {}
-};
+function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSession {
+  return {
+    unitCode: unit.code,
+    kind: unit.group,
+    customDate: '2026-11-07',
+    ngachOverrides: {},
+    customPositionNames: {},
+    customCareerLevels: {},
+    proposedPositions: buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group)
+  };
+}
 
 export function getActiveUnitSession(): ActiveUnitSession {
-  if (typeof window === 'undefined') return DEFAULT_SESSION;
+  if (typeof window === 'undefined') return createDefaultSession();
   try {
     const raw = window.localStorage.getItem(UNIT_SESSION_KEY);
-    if (!raw) return DEFAULT_SESSION;
+    if (!raw) return createDefaultSession();
     const parsed = JSON.parse(raw) as Partial<ActiveUnitSession>;
     const unit = HCMUTE_UNITS.find((u) => u.code === parsed.unitCode) || HCMUTE_UNITS[0];
+    const proposed =
+      Array.isArray(parsed.proposedPositions) && parsed.proposedPositions.length > 0
+        ? parsed.proposedPositions
+        : buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group);
     return {
       unitCode: unit.code,
       kind: unit.group,
       customDate: parsed.customDate || '2026-11-07',
       ngachOverrides: parsed.ngachOverrides || {},
       customPositionNames: parsed.customPositionNames || {},
-      customCareerLevels: parsed.customCareerLevels || {}
+      customCareerLevels: parsed.customCareerLevels || {},
+      proposedPositions: proposed
     };
   } catch {
-    return DEFAULT_SESSION;
+    return createDefaultSession();
   }
 }
 
@@ -76,7 +85,12 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
     customDate: partial.customDate ?? current.customDate,
     ngachOverrides: partial.ngachOverrides ?? (isSameUnit ? current.ngachOverrides : {}),
     customPositionNames: partial.customPositionNames ?? (isSameUnit ? current.customPositionNames : {}),
-    customCareerLevels: partial.customCareerLevels ?? (isSameUnit ? current.customCareerLevels : {})
+    customCareerLevels: partial.customCareerLevels ?? (isSameUnit ? current.customCareerLevels : {}),
+    proposedPositions:
+      partial.proposedPositions ??
+      (isSameUnit
+        ? current.proposedPositions
+        : buildDefaultProposedPositionsForUnit(matchedUnit.nameVi, matchedUnit.group))
   };
 
   if (!isSameUnit && cachedUnitCode && cachedUnitCode !== matchedUnit.code) {

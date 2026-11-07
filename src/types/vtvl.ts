@@ -100,6 +100,23 @@ export interface JobTaskTemplate {
   digitalMinutesAfter?: number;
 }
 
+export interface ProposedVtvlRow {
+  id: string;
+  frameworkId: string; // maDanhMucNd232 (HD1907-I-01 .. HD1907-IV-04)
+  vtvlSuffix: string; // e.g. QL-01, DT-GV-02, CM-CV-01
+  ngachCode: string; // e.g. V.07.01.02, 01.003
+  vtvlGroup4: HcmuteVtvlGroup4;
+  frameworkTitle: string;
+  specificName: string;
+  careerLevel: string;
+  allowedLevels: string[];
+  method: WorkforceMethod;
+  workingRegime: WorkingRegime;
+  standardHoursYear: number;
+  staffCount: number;
+  proposedFte: number;
+}
+
 export interface UnitSplitOptions {
   kind: UnitGroupKind;
   unitCode: string;
@@ -111,6 +128,7 @@ export interface UnitSplitOptions {
   ngachOverrides: Record<string, number>;
   customPositionNames?: Record<string, string>;
   customCareerLevels?: Record<string, string>;
+  proposedPositions?: ProposedVtvlRow[];
   customStaffRows?: StaffMemberRow[];
 }
 

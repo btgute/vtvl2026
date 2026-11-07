@@ -170,19 +170,35 @@ export function buildHd07CoreSheets(
   // 9. D1_NhanLuc (11 cột A–K)
   const d1Rows: (string | number)[][] = [];
   let staffSeq = 1;
-  ngachList.forEach((n) => {
-    const count = opts.ngachOverrides[n.code] ?? n.defaultCount;
-    const matchingPos = positionBreakdown.find((p) => p.ngachCode === n.code) || positionBreakdown[0];
-    for (let k = 0; k < Math.min(count, 15); k++) {
-      d1Rows.push([
-        `${opts.unitCode}-NL${String(staffSeq).padStart(3, '0')}`, matchingPos.vtvlCode, n.personnelType,
-        n.standardHoursPerYear, n.standardHoursPerYear, 0, opts.unitNameVi,
-        `Danh sách nhân sự chốt ngày ${HD07_CONSTANTS.STAFF_CUTOFF_DATE} (${n.code})`,
-        'Đang làm việc', 'Đạt', n.workingRegime === 'Đặc thù' ? n.standardHoursPerYear : ''
-      ]);
-      staffSeq++;
-    }
-  });
+  if (opts.proposedPositions && opts.proposedPositions.length > 0) {
+    opts.proposedPositions.forEach((pos) => {
+      const cleanSuffix = pos.vtvlSuffix.replace(new RegExp(`^${opts.unitCode}-`), '');
+      const vtvlCode = `${opts.unitCode}-${cleanSuffix}`;
+      for (let k = 0; k < Math.min(pos.staffCount, 15); k++) {
+        d1Rows.push([
+          `${opts.unitCode}-NL${String(staffSeq).padStart(3, '0')}`, vtvlCode, 'Viên chức',
+          pos.standardHoursYear, pos.standardHoursYear, 0, opts.unitNameVi,
+          `Danh sách nhân sự chốt ngày ${HD07_CONSTANTS.STAFF_CUTOFF_DATE} (${pos.ngachCode})`,
+          'Đang làm việc', 'Đạt', pos.workingRegime === 'Đặc thù' ? pos.standardHoursYear : ''
+        ]);
+        staffSeq++;
+      }
+    });
+  } else {
+    ngachList.forEach((n) => {
+      const count = opts.ngachOverrides[n.code] ?? n.defaultCount;
+      const matchingPos = positionBreakdown.find((p) => p.ngachCode === n.code) || positionBreakdown[0];
+      for (let k = 0; k < Math.min(count, 15); k++) {
+        d1Rows.push([
+          `${opts.unitCode}-NL${String(staffSeq).padStart(3, '0')}`, matchingPos.vtvlCode, n.personnelType,
+          n.standardHoursPerYear, n.standardHoursPerYear, 0, opts.unitNameVi,
+          `Danh sách nhân sự chốt ngày ${HD07_CONSTANTS.STAFF_CUTOFF_DATE} (${n.code})`,
+          'Đang làm việc', 'Đạt', n.workingRegime === 'Đặc thù' ? n.standardHoursPerYear : ''
+        ]);
+        staffSeq++;
+      }
+    });
+  }
   const wsD1 = XLSX.utils.aoa_to_sheet([
     [`BIỂU 9. D1_NhanLuc — NGUỒN NHÂN LỰC HIỆN CÓ CHỐT TẠI 30/9/2026 (${opts.unitCode})`],
     ['Mã nguồn lực', 'Mã VTVL', 'Loại nhân lực', 'Giờ quy đổi/năm (tự lấy)', 'Giờ dành cho VTVL', 'Giờ việc khác', 'Nơi tính BC', 'Nguồn', 'Trạng thái', 'Cảnh báo', 'Giờ riêng theo chế độ'],

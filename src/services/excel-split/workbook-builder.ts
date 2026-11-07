@@ -28,61 +28,119 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
 
   const vtvlMap = new Map<string, SplitResultSummary['positionBreakdown'][number]>();
 
-  templates.forEach((t) => {
-    const vtvlCode = `${opts.unitCode}-${t.vtvlSuffix}`;
-    const spHours = Number(((t.defaultQtyPerYear * t.defaultMinutesPerProduct) / 60).toFixed(1));
-    const totalB1Hours = Number((spHours + t.extraRelatedHoursYear).toFixed(1));
-    const b2ReductionHours =
-      t.digitalMinutesBefore && t.digitalMinutesAfter
-        ? Number((((t.digitalMinutesBefore - t.digitalMinutesAfter) * t.defaultQtyPerYear) / 60).toFixed(1))
-        : 0;
-    const ngach = ngachList.find((n) => n.code === t.ngachCode);
-    const stdHours = ngach ? ngach.standardHoursPerYear : HD07_CONSTANTS.STANDARD_PP2_HOURS;
-    const workingRegime = ngach ? ngach.workingRegime : 'Phổ biến (40 giờ/tuần)';
-    const frameworkTitle = t.frameworkTitle || ngach?.frameworkTitle || t.vtvlName;
-    const vtvlGroup4 = t.vtvlGroup4 || ngach?.vtvlGroup4 || 'II. Nhóm VTVL Chuyên môn, nghiệp vụ';
-    const defaultSpecificName = buildDefaultSpecificVtvlName(
-      frameworkTitle,
-      opts.unitNameVi,
-      ngach?.specificNameSuffix,
-      opts.kind
-    );
-    const specificVtvlName =
-      opts.customPositionNames?.[t.ngachCode]?.trim() || defaultSpecificName;
-    const selectedCareerLevel =
-      opts.customCareerLevels?.[t.ngachCode] ||
-      t.defaultCareerLevel ||
-      ngach?.defaultCareerLevel ||
-      'Bậc 3';
+  // Nếu đơn vị đã tự tạo & cấu hình danh sách VTVL đề xuất tại Bước 1
+  if (opts.proposedPositions && opts.proposedPositions.length > 0) {
+    opts.proposedPositions.forEach((pos) => {
+      const cleanSuffix = pos.vtvlSuffix.replace(new RegExp(`^${opts.unitCode}-`), '');
+      const vtvlCode = `${opts.unitCode}-${cleanSuffix}`;
+      const matchedTasks = templates.filter(
+        (t) => t.vtvlSuffix === cleanSuffix || t.ngachCode === pos.ngachCode
+      );
+      const b1HoursYear =
+        matchedTasks.length > 0
+          ? Number(
+              matchedTasks
+                .reduce(
+                  (acc, t) =>
+                    acc +
+                    (t.defaultQtyPerYear * t.defaultMinutesPerProduct) / 60 +
+                    t.extraRelatedHoursYear,
+                  0
+                )
+                .toFixed(1)
+            )
+          : Number((pos.proposedFte * pos.standardHoursYear).toFixed(1));
+      const b2Reduction =
+        matchedTasks.length > 0
+          ? Number(
+              matchedTasks
+                .reduce(
+                  (acc, t) =>
+                    acc +
+                    (t.digitalMinutesBefore && t.digitalMinutesAfter
+                      ? ((t.digitalMinutesBefore - t.digitalMinutesAfter) * t.defaultQtyPerYear) / 60
+                      : 0),
+                  0
+                )
+                .toFixed(1)
+            )
+          : 0;
+      const netHoursYear = Number(Math.max(100, b1HoursYear - b2Reduction).toFixed(1));
 
-    const existing = vtvlMap.get(vtvlCode);
-    if (existing) {
-      existing.taskCount += 1;
-      existing.b1HoursYear = Number((existing.b1HoursYear + totalB1Hours).toFixed(1));
-      existing.b2NetHoursYear = Number((existing.b2NetHoursYear - b2ReductionHours).toFixed(1));
-      existing.netHoursYear = Number((existing.b1HoursYear + existing.b2NetHoursYear).toFixed(1));
-      existing.recommendedFte =
-        t.method === 'PP1' ? 1 : Math.max(1, Number((existing.netHoursYear / stdHours).toFixed(2)));
-    } else {
-      const netH = Number((totalB1Hours - b2ReductionHours).toFixed(1));
       vtvlMap.set(vtvlCode, {
         vtvlCode,
-        vtvlName: specificVtvlName,
-        frameworkTitle,
-        vtvlGroup4,
-        careerLevel: selectedCareerLevel,
-        ngachCode: t.ngachCode,
-        method: t.method,
-        workingRegime,
-        standardHoursYear: stdHours,
-        taskCount: 1,
-        b1HoursYear: totalB1Hours,
-        b2NetHoursYear: -b2ReductionHours,
-        netHoursYear: netH,
-        recommendedFte: t.method === 'PP1' ? 1 : Math.max(1, Number((netH / stdHours).toFixed(2)))
+        vtvlName: pos.specificName,
+        frameworkTitle: pos.frameworkTitle,
+        vtvlGroup4: pos.vtvlGroup4,
+        careerLevel: pos.careerLevel,
+        ngachCode: pos.ngachCode,
+        method: pos.method,
+        workingRegime: pos.workingRegime,
+        standardHoursYear: pos.standardHoursYear,
+        taskCount: Math.max(1, matchedTasks.length),
+        b1HoursYear,
+        b2NetHoursYear: -b2Reduction,
+        netHoursYear,
+        recommendedFte: pos.proposedFte
       });
-    }
-  });
+    });
+  } else {
+    templates.forEach((t) => {
+      const vtvlCode = `${opts.unitCode}-${t.vtvlSuffix}`;
+      const spHours = Number(((t.defaultQtyPerYear * t.defaultMinutesPerProduct) / 60).toFixed(1));
+      const totalB1Hours = Number((spHours + t.extraRelatedHoursYear).toFixed(1));
+      const b2ReductionHours =
+        t.digitalMinutesBefore && t.digitalMinutesAfter
+          ? Number((((t.digitalMinutesBefore - t.digitalMinutesAfter) * t.defaultQtyPerYear) / 60).toFixed(1))
+          : 0;
+      const ngach = ngachList.find((n) => n.code === t.ngachCode);
+      const stdHours = ngach ? ngach.standardHoursPerYear : HD07_CONSTANTS.STANDARD_PP2_HOURS;
+      const workingRegime = ngach ? ngach.workingRegime : 'Phổ biến (40 giờ/tuần)';
+      const frameworkTitle = t.frameworkTitle || ngach?.frameworkTitle || t.vtvlName;
+      const vtvlGroup4 = t.vtvlGroup4 || ngach?.vtvlGroup4 || 'II. Nhóm VTVL Chuyên môn, nghiệp vụ';
+      const defaultSpecificName = buildDefaultSpecificVtvlName(
+        frameworkTitle,
+        opts.unitNameVi,
+        ngach?.specificNameSuffix,
+        opts.kind
+      );
+      const specificVtvlName =
+        opts.customPositionNames?.[t.ngachCode]?.trim() || defaultSpecificName;
+      const selectedCareerLevel =
+        opts.customCareerLevels?.[t.ngachCode] ||
+        t.defaultCareerLevel ||
+        ngach?.defaultCareerLevel ||
+        'Bậc 3';
+
+      const existing = vtvlMap.get(vtvlCode);
+      if (existing) {
+        existing.taskCount += 1;
+        existing.b1HoursYear = Number((existing.b1HoursYear + totalB1Hours).toFixed(1));
+        existing.b2NetHoursYear = Number((existing.b2NetHoursYear - b2ReductionHours).toFixed(1));
+        existing.netHoursYear = Number((existing.b1HoursYear + existing.b2NetHoursYear).toFixed(1));
+        existing.recommendedFte =
+          t.method === 'PP1' ? 1 : Math.max(1, Number((existing.netHoursYear / stdHours).toFixed(2)));
+      } else {
+        const netH = Number((totalB1Hours - b2ReductionHours).toFixed(1));
+        vtvlMap.set(vtvlCode, {
+          vtvlCode,
+          vtvlName: specificVtvlName,
+          frameworkTitle,
+          vtvlGroup4,
+          careerLevel: selectedCareerLevel,
+          ngachCode: t.ngachCode,
+          method: t.method,
+          workingRegime,
+          standardHoursYear: stdHours,
+          taskCount: 1,
+          b1HoursYear: totalB1Hours,
+          b2NetHoursYear: -b2ReductionHours,
+          netHoursYear: netH,
+          recommendedFte: t.method === 'PP1' ? 1 : Math.max(1, Number((netH / stdHours).toFixed(2)))
+        });
+      }
+    });
+  }
 
   const positionBreakdown = Array.from(vtvlMap.values());
   const totalStandardFte = Number(

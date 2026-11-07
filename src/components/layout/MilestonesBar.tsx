@@ -52,12 +52,14 @@ export interface SidebarStepItem {
 
 export const SIDEBAR_FIVE_STEPS: SidebarStepItem[] = [
   {
-    num: 1, title: 'Bước 1: Cấu hình đơn vị', href: '/tao-tep?step=1', badge: 'Cấu hình',
+    num: 1, title: 'Bước 1: Đề xuất VTVL đơn vị', href: '/tao-tep?step=1', badge: 'Đề xuất',
     subTasks: [
       { id: 'task-1-unit', label: 'Chọn đơn vị', statusTag: 'ĐV' },
-      { id: 'task-1-name', label: 'Tên VTVL cụ thể', statusTag: 'M' },
-      { id: 'task-1-level', label: 'Bậc nghề nghiệp', statusTag: 'M' },
-      { id: 'task-1-staff', label: 'Nhân sự hiện có', statusTag: 'D1' }
+      { id: 'task-1-add', label: 'Thêm vị trí việc làm', statusTag: '+' },
+      { id: 'task-1-name', label: 'Tên VTVL cụ thể', statusTag: 'C1' },
+      { id: 'task-1-level', label: 'Bậc nghề nghiệp', statusTag: 'BẬC' },
+      { id: 'task-1-params', label: 'Phương pháp & Giờ', statusTag: 'PP' },
+      { id: 'task-1-staff', label: 'Nhân sự & Biên chế', statusTag: 'C3' }
     ]
   },
   {

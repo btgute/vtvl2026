@@ -51,7 +51,8 @@ export default function RaSoatPage() {
           includeZipPerPosition: false,
           ngachOverrides: session.ngachOverrides,
           customPositionNames: session.customPositionNames,
-          customCareerLevels: session.customCareerLevels
+          customCareerLevels: session.customCareerLevels,
+          proposedPositions: session.proposedPositions
         });
         fileToAudit = setSessionRootWorkbook(unitToAudit.code, split.unitBlob, split.unitFileName);
       }
