@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, CheckSquare, Square, Filter } from 'lucide-react';
+import { Search, Plus, CheckSquare, Square, Filter, CheckCircle2 } from 'lucide-react';
 import { ND232_2026_VTVL_CATALOG, Nd232PositionCatalogItem } from '@/configs/hcmute-nd232-catalog';
 import { HcmuteVtvlGroup4, UnitGroupKind } from '@/types/vtvl';
 
@@ -192,6 +192,7 @@ export function Step1CatalogSelector({
         {filteredCatalog.map((item) => {
           const checked = selectedIds.includes(item.maDanhMucNd232);
           const alreadyCount = existingFrameworkIds.filter((id) => id === item.maDanhMucNd232).length;
+          const isAdded = alreadyCount > 0;
           return (
             <button
               key={item.maDanhMucNd232}
@@ -199,28 +200,36 @@ export function Step1CatalogSelector({
               onClick={() => toggleSelect(item.maDanhMucNd232)}
               className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 checked
-                  ? 'border-[var(--primary)] bg-[var(--primary)]/[0.08] ring-1 ring-[var(--primary)]/30'
-                  : 'border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)]/50'
+                  ? 'border-[var(--primary)] bg-[var(--primary)]/[0.1] ring-2 ring-[var(--primary)]/40'
+                  : isAdded
+                    ? 'border-[var(--ok)] bg-[var(--ok-soft)] ring-1 ring-[var(--ok)]/35 hover:border-[var(--ok)]'
+                    : 'border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)]/50'
               }`}
             >
-              <span className="mt-0.5 text-[var(--primary)] shrink-0">
-                {checked ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 text-[var(--ink-subtle)]" />}
+              <span className="mt-0.5 shrink-0">
+                {checked ? (
+                  <CheckSquare className="w-5 h-5 text-[var(--primary)]" />
+                ) : isAdded ? (
+                  <CheckCircle2 className="w-5 h-5 text-[var(--ok)]" />
+                ) : (
+                  <Square className="w-5 h-5 text-[var(--ink-subtle)]" />
+                )}
               </span>
               <div className="min-w-0 flex-1 space-y-0.5">
                 <div className="flex flex-wrap items-center justify-between gap-1">
-                  <strong className="text-sm font-extrabold text-[var(--foreground)]">
+                  <strong className={`text-sm font-extrabold ${isAdded ? 'text-[var(--ok)]' : 'text-[var(--foreground)]'}`}>
                     {item.positionName}
                   </strong>
-                  <span className="text-xs font-mono font-bold text-[var(--primary)]">
+                  <span className={`text-xs font-mono font-bold ${isAdded ? 'text-[var(--ok)]' : 'text-[var(--primary)]'}`}>
                     {item.maChucDanhTt31}
                   </span>
                 </div>
                 <div className="text-xs text-[var(--ink-muted)]">
                   {item.vtvlGroup4.replace('. Nhóm VTVL ', '. ')} · Giới hạn: <strong>{item.careerLevel}</strong>
                 </div>
-                {alreadyCount > 0 && (
-                  <div className="text-xs font-bold text-[var(--ok)]">
-                    Đã có {alreadyCount} vị trí trong danh sách đơn vị
+                {isAdded && (
+                  <div className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full bg-[var(--ok)]/15 text-xs font-extrabold text-[var(--ok)]">
+                    ✓ Đã có {alreadyCount} vị trí trong danh sách đơn vị
                   </div>
                 )}
               </div>
