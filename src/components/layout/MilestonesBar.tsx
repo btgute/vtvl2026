@@ -137,8 +137,8 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
 
           const railNode = (
             <div className="group relative flex items-center justify-center w-full py-0.5">
-              {(isCurrent || hasError) && <span aria-hidden="true" className={`absolute left-1.5 w-1 h-6 rounded-full ${hasError ? 'bg-[var(--fix)]' : 'bg-[var(--primary)]'}`} />}
-              <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold transition-all ${railCircleClass}`}>
+              {(isCurrent || hasError) && <span aria-hidden="true" className={`absolute left-1.5 w-1 h-5 rounded-full ${hasError ? 'bg-[var(--fix)]' : 'bg-[var(--primary)]'}`} />}
+              <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-extrabold transition-all ${railCircleClass}`}>
                 {hasError ? <AlertTriangle className="w-4 h-4" /> : isDone ? <Check className="w-4 h-4 stroke-[2.4]" /> : <span className={isCurrent ? 'text-white' : ''}>{s.num}</span>}
               </span>
               <div role="tooltip" className="pointer-events-none invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-visible:visible group-focus-visible:opacity-100 group-focus-within:visible group-focus-within:opacity-100 transition-opacity duration-150 absolute left-full ml-3 top-1/2 -translate-y-1/2 z-50 w-max max-w-[260px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-3.5 py-2.5 text-left shadow-md">
@@ -221,8 +221,8 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
       {/* DESKTOP SIDEBAR: Mở rộng hoặc Navigation Rail (76px) */}
       <div className="hidden lg:block">
         {desktopCollapsed ? (
-          <div className="flex flex-col items-center py-3.5 px-2">
-            <button type="button" onClick={() => setDesktopCollapsed(false)} aria-label="Mở rộng thanh tiến trình" title="Mở rộng thanh tiến trình" className="w-10 h-10 min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-xl border border-[var(--primary)]/50 bg-[var(--sheet)] hover:bg-[var(--surface-tint)] text-[var(--primary)] shadow-2xs cursor-pointer transition-colors mb-4">
+          <div className="flex flex-col items-center py-3.5 w-full">
+            <button type="button" onClick={() => setDesktopCollapsed(false)} aria-label="Mở rộng thanh tiến trình" title="Mở rộng thanh tiến trình" className="w-9 h-9 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-xl border border-[var(--primary)]/50 bg-[var(--sheet)] hover:bg-[var(--surface-tint)] text-[var(--primary)] shadow-2xs cursor-pointer transition-colors mb-4">
               <PanelLeftOpen className="w-4 h-4" />
             </button>
             {renderStagesList(true, false)}
