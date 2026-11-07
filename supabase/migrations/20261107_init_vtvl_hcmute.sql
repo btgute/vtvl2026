@@ -1,10 +1,18 @@
 -- =============================================================================
--- HCM-UTE VTVL 360 — SUPABASE POSTGRESQL SCHEMA & MASTER SEED DATA
--- Căn cứ: Hướng dẫn 07-HD/BTCTW, Nghị định 232/2026/NĐ-CP,
---         Thông tư 31/2026/TT-BGDĐT (14/4/2026) & Hướng dẫn số 02 (1907/HD-ĐHCNKT)
+-- HCM-UTE VTVL 360 — CƠ SỞ DỮ LIỆU QUAN HỆ (POSTGRESQL / SUPABASE)
+-- Hệ 18 bảng quan hệ chuẩn hóa ánh xạ 21 trang tính VTVL
+-- Căn cứ pháp lý:
+--   1. Hướng dẫn số 07-HD/BTCTW của Ban Tổ chức Trung ương
+--   2. Nghị định số 232/2026/NĐ-CP ngày 25/5/2026 của Chính phủ (Bậc nghề nghiệp 1–5)
+--   3. Thông tư số 31/2026/TT-BGDĐT ngày 14/4/2026 của Bộ trưởng Bộ GD&ĐT
+--   4. Hướng dẫn số 02 (1907/HD-ĐHCNKT ngày 17/6/2026) của Hiệu trưởng HCM-UTE
 -- =============================================================================
 
--- 1. BẢNG DANH MỤC 51 ĐƠN VỊ THUỘC HCM-UTE (DM_DON_VI)
+-- =============================================================================
+-- PHẦN I. NHÓM 04 BẢNG DANH MỤC GỐC TOÀN TRƯỜNG (MASTER REFERENCE TABLES)
+-- =============================================================================
+
+-- 1. BẢNG DM_DON_VI: Danh mục 51 đơn vị thuộc/trực thuộc HCM-UTE
 CREATE TABLE IF NOT EXISTS public.dm_don_vi (
   ma_don_vi text PRIMARY KEY,
   ten_don_vi_vi text NOT NULL,
@@ -13,11 +21,11 @@ CREATE TABLE IF NOT EXISTS public.dm_don_vi (
   linh_vuc text,
   chuc_danh_thu_truong_vi text,
   chuc_danh_thu_truong_en text,
-  so_nhan_su_mac_dinh integer NOT NULL DEFAULT 10,
+  so_nhan_su_mac_dinh integer NOT NULL DEFAULT 10 CHECK (so_nhan_su_mac_dinh >= 0),
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- 2. BẢNG DANH MỤC 28 MÃ CHỨC DANH & XẾP LƯƠNG NHÀ GIÁO (DM_CHUC_DANH_TT31)
+-- 2. BẢNG DM_CHUC_DANH_TT31: Danh mục 28 mã số chức danh & xếp lương nhà giáo (TT 31/2026/TT-BGDĐT)
 CREATE TABLE IF NOT EXISTS public.dm_chuc_danh_tt31 (
   ma_so_chuc_danh text PRIMARY KEY,
   ten_chuc_danh text NOT NULL,
@@ -29,12 +37,19 @@ CREATE TABLE IF NOT EXISTS public.dm_chuc_danh_tt31 (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- 3. BẢNG KHUNG 38 VỊ TRÍ VIỆC LÀM CỦA TRƯỜNG (04 NHÓM — PHỤ LỤC I HD 1907/HD-ĐHCNKT & NĐ 232/2026)
+-- 3. BẢNG DM_VTVL_KHUNG_TRUONG: Khung 38 vị trí việc làm của Trường theo 04 nhóm (Phụ lục I - 1907/HD-ĐHCNKT)
 CREATE TABLE IF NOT EXISTS public.dm_vtvl_khung_truong (
   ma_danh_muc_nd232 text PRIMARY KEY,
   tt_toan_truong integer NOT NULL,
   tt_trong_nhom integer NOT NULL,
-  nhom_vtvl_4 text NOT NULL,
+  nhom_vtvl_4 text NOT NULL CHECK (
+    nhom_vtvl_4 IN (
+      'I. Nhóm VTVL Quản lý',
+      'II. Nhóm VTVL Chuyên môn, nghiệp vụ',
+      'III. Nhóm VTVL Hỗ trợ',
+      'IV. Nhóm VTVL Phục vụ'
+    )
+  ),
   ten_khung_vtvl_truong text NOT NULL,
   gioi_han_bac_nghe_nghiep text NOT NULL,
   ds_bac_cho_phep jsonb NOT NULL DEFAULT '[]'::jsonb,
@@ -44,14 +59,15 @@ CREATE TABLE IF NOT EXISTS public.dm_vtvl_khung_truong (
   pham_vi_ap_dung text,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS idx_dm_vtvl_khung_nhom4 ON public.dm_vtvl_khung_truong(nhom_vtvl_4);
 
--- 4. BẢNG DANH MỤC SẢN PHẨM CHUẨN NHÓM I–VI (11. DM_SAN_PHAM)
+-- 4. BẢNG DM_SAN_PHAM: Danh mục sản phẩm chuẩn 6 nhóm La Mã I–VI (Biểu 11. DM_SAN_PHAM)
 CREATE TABLE IF NOT EXISTS public.dm_san_pham (
   ma_sp_chuan text PRIMARY KEY,
   ten_loai_sp text NOT NULL,
   khoi_nganh_linh_vuc text NOT NULL,
   nhom_la_ma text NOT NULL CHECK (nhom_la_ma IN ('I', 'II', 'III', 'IV', 'V', 'VI')),
-  phut_sp_chuan numeric(10,2) NOT NULL,
+  phut_sp_chuan numeric(10,2) NOT NULL CHECK (phut_sp_chuan > 0),
   van_ban_xac_nhan text,
   trang_thai text NOT NULL DEFAULT 'Đã xác nhận',
   co_quan_xac_nhan text,
@@ -60,10 +76,15 @@ CREATE TABLE IF NOT EXISTS public.dm_san_pham (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- 5. BẢNG C1_VTVL: DANH MỤC VTVL CỤ THỂ TẠI ĐƠN VỊ (PHỤ LỤC II HD 1907 & BIỂU 6. C1_VTVL)
+-- =============================================================================
+-- PHẦN II. NHÓM 14 BẢNG DỮ LIỆU NGHIỆP VỤ QUAN HỆ THEO ĐƠN VỊ (UNIT TABLES)
+-- =============================================================================
+
+-- 5. BẢNG C1_VTVL: Danh mục VTVL cụ thể tại đơn vị (Biểu 6. C1_VTVL & Phụ lục II 1907/HD-ĐHCNKT)
 CREATE TABLE IF NOT EXISTS public.c1_vtvl (
   ma_vtvl text PRIMARY KEY,
   ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ma_danh_muc_nd232 text REFERENCES public.dm_vtvl_khung_truong(ma_danh_muc_nd232) ON DELETE SET NULL,
   nhom_vtvl_4 text NOT NULL,
   ten_khung_vtvl_truong text NOT NULL,
   ten_vtvl_cu_the_don_vi text NOT NULL,
@@ -71,7 +92,7 @@ CREATE TABLE IF NOT EXISTS public.c1_vtvl (
   ma_ngach_chuc_danh text,
   loai_nhan_luc text NOT NULL DEFAULT 'Viên chức',
   che_do_lam_viec text NOT NULL DEFAULT 'Phổ biến (40 giờ/tuần)',
-  gio_chuan_pp2 numeric(10,2) NOT NULL DEFAULT 1904,
+  gio_chuan_pp2 numeric(10,2) NOT NULL DEFAULT 1904 CHECK (gio_chuan_pp2 IN (1760, 1904)),
   phuong_phap text NOT NULL DEFAULT 'PP2',
   gio_b1_nam numeric(12,2) NOT NULL DEFAULT 0,
   gio_b2_tac_dong numeric(12,2) NOT NULL DEFAULT 0,
@@ -80,8 +101,179 @@ CREATE TABLE IF NOT EXISTS public.c1_vtvl (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_c1_vtvl_ma_don_vi ON public.c1_vtvl(ma_don_vi);
+CREATE INDEX IF NOT EXISTS idx_c1_vtvl_ma_khung ON public.c1_vtvl(ma_danh_muc_nd232);
 
--- 6. BẢNG T_TIEN_DO: TỔNG HỢP HỒ SƠ ĐƠN VỊ NỘP TRỰC TUYẾN (BIỂU 14. T_TienDo)
+-- 6. BẢNG A1_NHIEM_VU: Danh mục nhiệm vụ của đơn vị (Biểu 1. A1_NhiemVu)
+CREATE TABLE IF NOT EXISTS public.a1_nhiem_vu (
+  ma_nhiem_vu text PRIMARY KEY,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ten_nhiem_vu text NOT NULL,
+  can_cu_phap_ly text NOT NULL,
+  ky_thong_ke text NOT NULL DEFAULT '01/10/2025–30/9/2026',
+  trang_thai_nv text NOT NULL DEFAULT 'Tiếp tục thực hiện',
+  nguon_nhiem_vu text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_a1_nhiem_vu_ma_don_vi ON public.a1_nhiem_vu(ma_don_vi);
+
+-- 7. BẢNG A2_CONG_VIEC: Danh mục công việc và sản phẩm đầu ra (Biểu 2. A2_CongViec)
+CREATE TABLE IF NOT EXISTS public.a2_cong_viec (
+  ma_cong_viec text PRIMARY KEY,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ma_nhiem_vu text NOT NULL REFERENCES public.a1_nhiem_vu(ma_nhiem_vu) ON DELETE CASCADE,
+  ma_vtvl text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  ma_sp_chuan text REFERENCES public.dm_san_pham(ma_sp_chuan) ON DELETE SET NULL,
+  ten_cong_viec text NOT NULL,
+  ten_san_pham text NOT NULL,
+  nhom_la_ma text NOT NULL CHECK (nhom_la_ma IN ('I', 'II', 'III', 'IV', 'V', 'VI')),
+  don_vi_tinh text NOT NULL,
+  yeu_cau_chat_luong text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_a2_cong_viec_ma_don_vi ON public.a2_cong_viec(ma_don_vi);
+CREATE INDEX IF NOT EXISTS idx_a2_cong_viec_ma_nhiem_vu ON public.a2_cong_viec(ma_nhiem_vu);
+CREATE INDEX IF NOT EXISTS idx_a2_cong_viec_ma_vtvl ON public.a2_cong_viec(ma_vtvl);
+
+-- 8. BẢNG B1_KHOI_LUONG: Thống kê sản lượng & thời gian thực tế 19 cột A–S (Biểu 3. B1_KhoiLuong)
+CREATE TABLE IF NOT EXISTS public.b1_khoi_luong (
+  ma_cong_viec text PRIMARY KEY REFERENCES public.a2_cong_viec(ma_cong_viec) ON DELETE CASCADE,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ma_vtvl text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  ma_sp_chuan text REFERENCES public.dm_san_pham(ma_sp_chuan) ON DELETE SET NULL,
+  so_sp_nam numeric(12,2) NOT NULL DEFAULT 0 CHECK (so_sp_nam >= 0),
+  phut_sp_do_thuc_te numeric(10,2) NOT NULL DEFAULT 0 CHECK (phut_sp_do_thuc_te >= 0),
+  gio_bo_sung_nam numeric(10,2) NOT NULL DEFAULT 0 CHECK (gio_bo_sung_nam >= 0),
+  gio_sp_tinh numeric(12,2) NOT NULL DEFAULT 0,
+  gio_tong_tinh numeric(12,2) NOT NULL DEFAULT 0,
+  nguon_so_luong text,
+  nguon_thoi_gian text,
+  trang_thai_can_cu_tg text NOT NULL DEFAULT 'Có định mức',
+  ky_thong_ke text NOT NULL DEFAULT '01/10/2025–30/9/2026',
+  phut_sp_chuan numeric(10,2) NOT NULL DEFAULT 0,
+  phut_sp_dung_tinh numeric(10,2) NOT NULL DEFAULT 0,
+  canh_bao_cot_r text NOT NULL DEFAULT 'ĐẠT',
+  giai_trinh_cot_s text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_b1_khoi_luong_ma_don_vi ON public.b1_khoi_luong(ma_don_vi);
+CREATE INDEX IF NOT EXISTS idx_b1_khoi_luong_ma_vtvl ON public.b1_khoi_luong(ma_vtvl);
+
+-- 9. BẢNG B2_CT_TAC_DONG: Chi tiết tác động số hóa, tự chủ, thuê dịch vụ (Biểu 4. B2_CT_TacDong)
+CREATE TABLE IF NOT EXISTS public.b2_ct_tac_dong (
+  id_tac_dong text PRIMARY KEY,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ma_cong_viec text NOT NULL REFERENCES public.a2_cong_viec(ma_cong_viec) ON DELETE CASCADE,
+  ma_vtvl text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  loai_tac_dong text NOT NULL DEFAULT 'Chuyển đổi số / UTEx / E-Office',
+  khau_tac_dong text,
+  so_sp_ap_dung numeric(12,2) NOT NULL DEFAULT 0,
+  phut_truoc numeric(10,2) NOT NULL DEFAULT 0,
+  phut_sau numeric(10,2) NOT NULL DEFAULT 0,
+  gio_giam_hop_le numeric(12,2) NOT NULL DEFAULT 0,
+  can_cu_minh_chung text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_b2_ct_ma_don_vi ON public.b2_ct_tac_dong(ma_don_vi);
+CREATE INDEX IF NOT EXISTS idx_b2_ct_ma_cong_viec ON public.b2_ct_tac_dong(ma_cong_viec);
+
+-- 10. BẢNG B2_THAY_DOI: Tổng hợp tác động ròng theo đầu việc (Biểu 5. B2_ThayDoi)
+CREATE TABLE IF NOT EXISTS public.b2_thay_doi (
+  ma_cong_viec text PRIMARY KEY REFERENCES public.a2_cong_viec(ma_cong_viec) ON DELETE CASCADE,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ma_vtvl text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  gio_giam_so_hoa numeric(12,2) NOT NULL DEFAULT 0,
+  gio_giam_thue_tc numeric(12,2) NOT NULL DEFAULT 0,
+  gio_viec_moi numeric(12,2) NOT NULL DEFAULT 0,
+  gio_tac_dong_rong numeric(12,2) NOT NULL DEFAULT 0,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_b2_thay_doi_ma_don_vi ON public.b2_thay_doi(ma_don_vi);
+CREATE INDEX IF NOT EXISTS idx_b2_thay_doi_ma_vtvl ON public.b2_thay_doi(ma_vtvl);
+
+-- 11. BẢNG C2_NANG_LUC: Bản mô tả công việc & Khung năng lực Bậc 1–5 (Biểu 7. C2_NangLuc)
+CREATE TABLE IF NOT EXISTS public.c2_nang_luc (
+  ma_vtvl text PRIMARY KEY REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  muc_tieu_vi_tri text NOT NULL,
+  trach_nhiem_chinh text NOT NULL,
+  khung_nang_luc_bac text NOT NULL,
+  yeu_cau_trinh_do_chuyen_mon text NOT NULL,
+  ma_chuc_danh_nghe_nghiep text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_c2_nang_luc_ma_don_vi ON public.c2_nang_luc(ma_don_vi);
+
+-- 12. BẢNG C3_NHU_CAU: Xác định nhu cầu nhân lực theo PP1, PP2, PP3 (Biểu 8. C3_NhuCau)
+CREATE TABLE IF NOT EXISTS public.c3_nhu_cau (
+  ma_vtvl text PRIMARY KEY REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  phuong_phap text NOT NULL DEFAULT 'PP2',
+  gio_b1_nam numeric(12,2) NOT NULL DEFAULT 0,
+  gio_tac_dong_b2 numeric(12,2) NOT NULL DEFAULT 0,
+  gio_rong_nam numeric(12,2) NOT NULL DEFAULT 0,
+  gio_chuan_pp2 numeric(10,2) NOT NULL DEFAULT 1904,
+  nguoi_quy_doi_pp2 numeric(10,2) NOT NULL DEFAULT 0,
+  nguoi_dinh_bien_pp1 numeric(10,2) NOT NULL DEFAULT 0,
+  nguoi_can_bo_tri numeric(10,2) NOT NULL DEFAULT 1,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_c3_nhu_cau_ma_don_vi ON public.c3_nhu_cau(ma_don_vi);
+
+-- 13. BẢNG D1_NHAN_LUC: Nguồn nhân lực hiện có chốt tại 30/9/2026 (Biểu 9. D1_NhanLuc)
+CREATE TABLE IF NOT EXISTS public.d1_nhan_luc (
+  ma_nguon_luc text PRIMARY KEY,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ma_vtvl text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  ho_va_ten text NOT NULL,
+  chuc_danh_hien_giu text NOT NULL,
+  ma_ngach_chuc_danh text NOT NULL,
+  loai_nhan_luc text NOT NULL DEFAULT 'Viên chức',
+  ty_le_phan_bo_chinh numeric(5,2) NOT NULL DEFAULT 100 CHECK (ty_le_phan_bo_chinh BETWEEN 0 AND 100),
+  gio_quy_doi_nam numeric(10,2) NOT NULL DEFAULT 1904,
+  canh_bao_d1 text NOT NULL DEFAULT 'ĐẠT',
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_d1_nhan_luc_ma_don_vi ON public.d1_nhan_luc(ma_don_vi);
+CREATE INDEX IF NOT EXISTS idx_d1_nhan_luc_ma_vtvl ON public.d1_nhan_luc(ma_vtvl);
+
+-- 14. BẢNG DU_BAO_5_NAM: Dự báo thay đổi khối lượng công việc 2027–2031 (Biểu DU_BAO_5_NAM)
+CREATE TABLE IF NOT EXISTS public.du_bao_5_nam (
+  ma_vtvl text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  nam_du_bao integer NOT NULL CHECK (nam_du_bao BETWEEN 2027 AND 2031),
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ty_le_thay_doi_kl_pct numeric(6,2) NOT NULL DEFAULT 0,
+  nhu_cau_fte_du_kien numeric(10,2) NOT NULL DEFAULT 1,
+  thuyet_minh_du_bao text,
+  PRIMARY KEY (ma_vtvl, nam_du_bao)
+);
+CREATE INDEX IF NOT EXISTS idx_du_bao_5_nam_ma_don_vi ON public.du_bao_5_nam(ma_don_vi);
+
+-- 15. BẢNG D2_PHUONG_AN: Phương án bố trí biên chế giai đoạn 2027–2031 (Biểu 10. D2_PhuongAn)
+CREATE TABLE IF NOT EXISTS public.d2_phuong_an (
+  ma_vtvl text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
+  nam_phuong_an integer NOT NULL CHECK (nam_phuong_an BETWEEN 2027 AND 2031),
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  so_nguoi_can_bo_tri numeric(10,2) NOT NULL DEFAULT 1,
+  so_nguoi_hien_co numeric(10,2) NOT NULL DEFAULT 1,
+  chenh_lech numeric(10,2) NOT NULL DEFAULT 0,
+  phuong_an_dieu_chinh text NOT NULL DEFAULT 'Giữ ổn định',
+  PRIMARY KEY (ma_vtvl, nam_phuong_an)
+);
+CREATE INDEX IF NOT EXISTS idx_d2_phuong_an_ma_don_vi ON public.d2_phuong_an(ma_don_vi);
+
+-- 16. BẢNG K_KIEM_TRA: Bảng kiểm soát chéo tự động 6 chỉ tiêu (Biểu 13. K_KiemTra)
+CREATE TABLE IF NOT EXISTS public.k_kiem_tra (
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  stt_chi_tieu integer NOT NULL CHECK (stt_chi_tieu BETWEEN 1 AND 6),
+  nhom_bieu_doi_soat text NOT NULL,
+  noi_dung_kiem_tra text NOT NULL,
+  so_dong_loi integer NOT NULL DEFAULT 0,
+  ket_luan text NOT NULL DEFAULT 'ĐẠT',
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (ma_don_vi, stt_chi_tieu)
+);
+
+-- 17. BẢNG T_TIEN_DO: Tổng hợp tiến độ hoàn thiện bộ biểu đơn vị (Biểu 14. T_TienDo)
 CREATE TABLE IF NOT EXISTS public.t_tien_do (
   ma_don_vi text PRIMARY KEY REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
   ten_don_vi text NOT NULL,
@@ -95,7 +287,7 @@ CREATE TABLE IF NOT EXISTS public.t_tien_do (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- 7. BẢNG S_NHAT_KY: NHẬT KÝ PHIÊN BẢN VÀ THAO TÁC TRỰC TUYẾN (BIỂU 15. S_NhatKy)
+-- 18. BẢNG S_NHAT_KY: Nhật ký phiên bản và lịch sử cập nhật trực tuyến (Biểu 15. S_NhatKy)
 CREATE TABLE IF NOT EXISTS public.s_nhat_ky (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   ma_don_vi text NOT NULL,
@@ -108,68 +300,87 @@ CREATE TABLE IF NOT EXISTS public.s_nhat_ky (
 CREATE INDEX IF NOT EXISTS idx_s_nhat_ky_ma_don_vi ON public.s_nhat_ky(ma_don_vi);
 
 -- =============================================================================
--- BẢO MẬT ROW LEVEL SECURITY (RLS) THEO CHUẨN SUPABASE
+-- PHẦN III. VIEW TỔNG HỢP & TRIGGER KIỂM SOÁT GIỚI HẠN BẬC NGHỀ NGHIỆP
 -- =============================================================================
-ALTER TABLE public.dm_don_vi ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.dm_chuc_danh_tt31 ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.dm_vtvl_khung_truong ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.dm_san_pham ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.c1_vtvl ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.t_tien_do ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.s_nhat_ky ENABLE ROW LEVEL SECURITY;
 
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT SELECT, INSERT, UPDATE ON public.dm_don_vi, public.dm_chuc_danh_tt31, public.dm_vtvl_khung_truong, public.dm_san_pham, public.c1_vtvl, public.t_tien_do, public.s_nhat_ky TO anon, authenticated;
+-- View tổng hợp toàn Trường phục vụ Ban Đề án VTVL và Phòng TCNS
+CREATE OR REPLACE VIEW public.v_tong_hop_vtvl_toan_truong AS
+SELECT
+  d.ma_don_vi,
+  d.ten_don_vi_vi,
+  d.khoi_don_vi,
+  COALESCE(t.phien_ban, 'Chưa nộp') AS phien_ban,
+  COALESCE(t.so_nhiem_vu_a1, 0) AS so_nhiem_vu_a1,
+  COALESCE(t.so_cong_viec_a2, 0) AS so_cong_viec_a2,
+  COALESCE(t.so_vtvl_c1, 0) AS so_vtvl_c1,
+  COALESCE(t.tong_fte_c3, 0) AS tong_fte_c3,
+  COALESCE(t.trang_thai_ra_soat, 'Chưa khởi tạo') AS trang_thai_ra_soat,
+  t.updated_at
+FROM public.dm_don_vi d
+LEFT JOIN public.t_tien_do t ON t.ma_don_vi = d.ma_don_vi
+ORDER BY d.khoi_don_vi, d.ma_don_vi;
 
-DROP POLICY IF EXISTS "allow_read_dm_don_vi" ON public.dm_don_vi;
-CREATE POLICY "allow_read_dm_don_vi" ON public.dm_don_vi FOR SELECT TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "allow_write_dm_don_vi" ON public.dm_don_vi;
-CREATE POLICY "allow_write_dm_don_vi" ON public.dm_don_vi FOR INSERT TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "allow_upd_dm_don_vi" ON public.dm_don_vi;
-CREATE POLICY "allow_upd_dm_don_vi" ON public.dm_don_vi FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+-- Trigger tự động kiểm tra giới hạn Bậc nghề nghiệp theo Phụ lục I văn bản 1907/HD-ĐHCNKT
+CREATE OR REPLACE FUNCTION public.fn_validate_c1_career_level()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_allowed jsonb;
+BEGIN
+  IF NEW.ma_danh_muc_nd232 IS NOT NULL THEN
+    SELECT ds_bac_cho_phep INTO v_allowed
+    FROM public.dm_vtvl_khung_truong
+    WHERE ma_danh_muc_nd232 = NEW.ma_danh_muc_nd232;
 
-DROP POLICY IF EXISTS "allow_read_dm_chuc_danh_tt31" ON public.dm_chuc_danh_tt31;
-CREATE POLICY "allow_read_dm_chuc_danh_tt31" ON public.dm_chuc_danh_tt31 FOR SELECT TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "allow_write_dm_chuc_danh_tt31" ON public.dm_chuc_danh_tt31;
-CREATE POLICY "allow_write_dm_chuc_danh_tt31" ON public.dm_chuc_danh_tt31 FOR INSERT TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "allow_upd_dm_chuc_danh_tt31" ON public.dm_chuc_danh_tt31;
-CREATE POLICY "allow_upd_dm_chuc_danh_tt31" ON public.dm_chuc_danh_tt31 FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+    IF v_allowed IS NOT NULL AND jsonb_array_length(v_allowed) > 0 THEN
+      IF NOT (v_allowed ? NEW.bac_nghe_nghiep_su_dung) THEN
+        RAISE EXCEPTION 'Bậc nghề nghiệp "%" vượt quá giới hạn cho phép của vị trí khung % (%)',
+          NEW.bac_nghe_nghiep_su_dung, NEW.ten_khung_vtvl_truong, v_allowed::text;
+      END IF;
+    END IF;
+  END IF;
+  NEW.updated_at := now();
+  RETURN NEW;
+END;
+$$;
 
-DROP POLICY IF EXISTS "allow_read_dm_vtvl_khung_truong" ON public.dm_vtvl_khung_truong;
-CREATE POLICY "allow_read_dm_vtvl_khung_truong" ON public.dm_vtvl_khung_truong FOR SELECT TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "allow_write_dm_vtvl_khung_truong" ON public.dm_vtvl_khung_truong;
-CREATE POLICY "allow_write_dm_vtvl_khung_truong" ON public.dm_vtvl_khung_truong FOR INSERT TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "allow_upd_dm_vtvl_khung_truong" ON public.dm_vtvl_khung_truong;
-CREATE POLICY "allow_upd_dm_vtvl_khung_truong" ON public.dm_vtvl_khung_truong FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "allow_read_dm_san_pham" ON public.dm_san_pham;
-CREATE POLICY "allow_read_dm_san_pham" ON public.dm_san_pham FOR SELECT TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "allow_write_dm_san_pham" ON public.dm_san_pham;
-CREATE POLICY "allow_write_dm_san_pham" ON public.dm_san_pham FOR INSERT TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "allow_upd_dm_san_pham" ON public.dm_san_pham;
-CREATE POLICY "allow_upd_dm_san_pham" ON public.dm_san_pham FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "allow_select_c1_vtvl" ON public.c1_vtvl;
-CREATE POLICY "allow_select_c1_vtvl" ON public.c1_vtvl FOR SELECT TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "allow_insert_c1_vtvl" ON public.c1_vtvl;
-CREATE POLICY "allow_insert_c1_vtvl" ON public.c1_vtvl FOR INSERT TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "allow_update_c1_vtvl" ON public.c1_vtvl;
-CREATE POLICY "allow_update_c1_vtvl" ON public.c1_vtvl FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "allow_select_t_tien_do" ON public.t_tien_do;
-CREATE POLICY "allow_select_t_tien_do" ON public.t_tien_do FOR SELECT TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "allow_insert_t_tien_do" ON public.t_tien_do;
-CREATE POLICY "allow_insert_t_tien_do" ON public.t_tien_do FOR INSERT TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "allow_update_t_tien_do" ON public.t_tien_do;
-CREATE POLICY "allow_update_t_tien_do" ON public.t_tien_do FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "allow_select_s_nhat_ky" ON public.s_nhat_ky;
-CREATE POLICY "allow_select_s_nhat_ky" ON public.s_nhat_ky FOR SELECT TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "allow_insert_s_nhat_ky" ON public.s_nhat_ky;
-CREATE POLICY "allow_insert_s_nhat_ky" ON public.s_nhat_ky FOR INSERT TO anon, authenticated WITH CHECK (true);
+DROP TRIGGER IF EXISTS trg_validate_c1_career_level ON public.c1_vtvl;
+CREATE TRIGGER trg_validate_c1_career_level
+BEFORE INSERT OR UPDATE ON public.c1_vtvl
+FOR EACH ROW EXECUTE FUNCTION public.fn_validate_c1_career_level();
 
 -- =============================================================================
--- NẠP DỮ LIỆU GỐC KHUNG 38 VTVL CỦA TRƯỜNG (PHỤ LỤC I — HD 1907/HD-ĐHCNKT)
+-- PHẦN IV. BẢO MẬT ROW LEVEL SECURITY (RLS) CHO TOÀN BỘ 18 BẢNG
+-- =============================================================================
+DO $$
+DECLARE
+  tbl text;
+  tables text[] := ARRAY[
+    'dm_don_vi', 'dm_chuc_danh_tt31', 'dm_vtvl_khung_truong', 'dm_san_pham',
+    'c1_vtvl', 'a1_nhiem_vu', 'a2_cong_viec', 'b1_khoi_luong',
+    'b2_ct_tac_dong', 'b2_thay_doi', 'c2_nang_luc', 'c3_nhu_cau',
+    'd1_nhan_luc', 'du_bao_5_nam', 'd2_phuong_an', 'k_kiem_tra',
+    't_tien_do', 's_nhat_ky'
+  ];
+BEGIN
+  GRANT USAGE ON SCHEMA public TO anon, authenticated;
+  FOREACH tbl IN ARRAY tables LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO anon, authenticated;', tbl);
+    EXECUTE format('DROP POLICY IF EXISTS "rls_select_%s" ON public.%I;', tbl, tbl);
+    EXECUTE format('CREATE POLICY "rls_select_%s" ON public.%I FOR SELECT TO anon, authenticated USING (true);', tbl, tbl);
+    EXECUTE format('DROP POLICY IF EXISTS "rls_insert_%s" ON public.%I;', tbl, tbl);
+    EXECUTE format('CREATE POLICY "rls_insert_%s" ON public.%I FOR INSERT TO anon, authenticated WITH CHECK (true);', tbl, tbl);
+    EXECUTE format('DROP POLICY IF EXISTS "rls_update_%s" ON public.%I;', tbl, tbl);
+    EXECUTE format('CREATE POLICY "rls_update_%s" ON public.%I FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);', tbl, tbl);
+  END LOOP;
+END $$;
+
+-- =============================================================================
+-- PHẦN V. DỮ LIỆU KHỞI TẠO KHUNG 38 VTVL CỦA TRƯỜNG (PHỤ LỤC I — 1907/HD-ĐHCNKT)
 -- =============================================================================
 INSERT INTO public.dm_vtvl_khung_truong (
   ma_danh_muc_nd232, tt_toan_truong, tt_trong_nhom, nhom_vtvl_4,
@@ -219,4 +430,3 @@ ON CONFLICT (ma_danh_muc_nd232) DO UPDATE SET
   gioi_han_bac_nghe_nghiep = EXCLUDED.gioi_han_bac_nghe_nghiep,
   ds_bac_cho_phep = EXCLUDED.ds_bac_cho_phep,
   cong_thuc_ten_cu_the = EXCLUDED.cong_thuc_ten_cu_the;
-

@@ -2,7 +2,7 @@ import { SplitResultSummary } from '@/types/vtvl';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { ND232_2026_VTVL_CATALOG } from '@/configs/hcmute-nd232-catalog';
 import { DM_CHUC_DANH_TT31_TABLE } from '@/configs/hcmute-erd-tables';
-import { STANDARD_PRODUCTS_CATALOG } from '@/configs/hcmute-hd07-catalog';
+import { MISSIONS_BY_GROUP, STANDARD_PRODUCTS_CATALOG } from '@/configs/hcmute-hd07-catalog';
 
 export const SUPABASE_PROJECT_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
 
@@ -125,25 +125,56 @@ export async function seedMasterCatalogsToSupabase(): Promise<boolean> {
 export async function syncUnitSplitToSupabase(summary: SplitResultSummary): Promise<boolean> {
   await seedMasterCatalogsToSupabase();
 
-  const c1Rows = summary.positionBreakdown.map((p) => ({
+  const c1Rows = summary.positionBreakdown.map((p) => {
+    const fwMatch = ND232_2026_VTVL_CATALOG.find(
+      (f) => f.positionName === (p.frameworkTitle || p.vtvlName)
+    );
+    return {
+      ma_vtvl: p.vtvlCode,
+      ma_don_vi: summary.unitCode,
+      ma_danh_muc_nd232: fwMatch?.maDanhMucNd232 || null,
+      nhom_vtvl_4: p.vtvlGroup4 || 'II. Nhóm VTVL Chuyên môn, nghiệp vụ',
+      ten_khung_vtvl_truong: p.frameworkTitle || p.vtvlName,
+      ten_vtvl_cu_the_don_vi: p.vtvlName,
+      bac_nghe_nghiep_su_dung: p.careerLevel || 'Bậc 3',
+      ma_ngach_chuc_danh: p.ngachCode,
+      loai_nhan_luc: 'Viên chức',
+      che_do_lam_viec: p.workingRegime,
+      gio_chuan_pp2: p.standardHoursYear,
+      phuong_phap: p.method,
+      gio_b1_nam: p.b1HoursYear,
+      gio_b2_tac_dong: p.b2NetHoursYear,
+      gio_rong_nam: p.netHoursYear,
+      nhu_cau_fte: p.recommendedFte
+    };
+  });
+
+  const a1Rows = (MISSIONS_BY_GROUP[summary.kind] || []).map((m) => ({
+    ma_nhiem_vu: `${summary.unitCode}-${m.missionSuffix}`,
+    ma_don_vi: summary.unitCode,
+    ten_nhiem_vu: m.missionName,
+    can_cu_phap_ly: m.legalBasis,
+    ky_thong_ke: '01/10/2025–30/9/2026',
+    trang_thai_nv: m.status,
+    nguon_nhiem_vu: m.source
+  }));
+
+  const c3Rows = summary.positionBreakdown.map((p) => ({
     ma_vtvl: p.vtvlCode,
     ma_don_vi: summary.unitCode,
-    nhom_vtvl_4: p.vtvlGroup4 || 'II. Nhóm VTVL Chuyên môn, nghiệp vụ',
-    ten_khung_vtvl_truong: p.frameworkTitle || p.vtvlName,
-    ten_vtvl_cu_the_don_vi: p.vtvlName,
-    bac_nghe_nghiep_su_dung: p.careerLevel || 'Bậc 3',
-    ma_ngach_chuc_danh: p.ngachCode,
-    loai_nhan_luc: 'Viên chức',
-    che_do_lam_viec: p.workingRegime,
-    gio_chuan_pp2: p.standardHoursYear,
     phuong_phap: p.method,
     gio_b1_nam: p.b1HoursYear,
-    gio_b2_tac_dong: p.b2NetHoursYear,
+    gio_tac_dong_b2: p.b2NetHoursYear,
     gio_rong_nam: p.netHoursYear,
-    nhu_cau_fte: p.recommendedFte
+    gio_chuan_pp2: p.standardHoursYear,
+    nguoi_quy_doi_pp2: p.recommendedFte,
+    nguoi_dinh_bien_pp1: p.method.includes('PP1') ? 1 : 0,
+    nguoi_can_bo_tri: p.recommendedFte
   }));
 
   await postRest('c1_vtvl', c1Rows, 'ma_vtvl');
+  await postRest('a1_nhiem_vu', a1Rows, 'ma_nhiem_vu');
+  await postRest('c3_nhu_cau', c3Rows, 'ma_vtvl');
 
   return postRest(
     't_tien_do',
