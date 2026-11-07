@@ -8,7 +8,9 @@ export interface ActivityLogEntry {
   timestamp: string;
   unitCode: string;
   unitName: string;
-  action: 'TAO_TEP' | 'NAP_PHIEU' | 'BAM_GIO' | 'RA_SOAT';
+  actorEmail?: string;
+  actorTitle?: string;
+  action: 'TAO_TEP' | 'NAP_PHIEU' | 'BAM_GIO' | 'RA_SOAT' | 'CHON_DON_VI';
   details: string;
 }
 
@@ -16,6 +18,8 @@ export interface ActiveUnitSession {
   unitCode: string;
   kind: UnitGroupKind;
   customDate: string;
+  actorEmail: string;
+  actorTitle: string;
   ngachOverrides: Record<string, number>;
   customPositionNames: Record<string, string>;
   customCareerLevels: Record<string, string>;
@@ -35,6 +39,8 @@ function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSes
     unitCode: unit.code,
     kind: unit.group,
     customDate: '2026-11-07',
+    actorEmail: '',
+    actorTitle: '',
     ngachOverrides: {},
     customPositionNames: {},
     customCareerLevels: {},
@@ -57,6 +63,8 @@ export function getActiveUnitSession(): ActiveUnitSession {
       unitCode: unit.code,
       kind: unit.group,
       customDate: parsed.customDate || '2026-11-07',
+      actorEmail: parsed.actorEmail || '',
+      actorTitle: parsed.actorTitle || '',
       ngachOverrides: parsed.ngachOverrides || {},
       customPositionNames: parsed.customPositionNames || {},
       customCareerLevels: parsed.customCareerLevels || {},
@@ -83,6 +91,8 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
     unitCode: matchedUnit.code,
     kind: matchedUnit.group,
     customDate: partial.customDate ?? current.customDate,
+    actorEmail: partial.actorEmail ?? current.actorEmail,
+    actorTitle: partial.actorTitle ?? current.actorTitle,
     ngachOverrides: partial.ngachOverrides ?? (isSameUnit ? current.ngachOverrides : {}),
     customPositionNames: partial.customPositionNames ?? (isSameUnit ? current.customPositionNames : {}),
     customCareerLevels: partial.customCareerLevels ?? (isSameUnit ? current.customCareerLevels : {}),
@@ -156,10 +166,14 @@ export function recordActivity(
   unitCode: string,
   unitName: string,
   action: ActivityLogEntry['action'],
-  details: string
+  details: string,
+  actorOverride?: { actorEmail?: string; actorTitle?: string }
 ): void {
   if (typeof window === 'undefined') return;
   try {
+    const session = getActiveUnitSession();
+    const actorEmail = (actorOverride?.actorEmail ?? session.actorEmail ?? '').trim();
+    const actorTitle = (actorOverride?.actorTitle ?? session.actorTitle ?? '').trim();
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const list: ActivityLogEntry[] = raw ? JSON.parse(raw) : [];
     const entry: ActivityLogEntry = {
@@ -167,13 +181,15 @@ export function recordActivity(
       timestamp: new Date().toLocaleString('vi-VN'),
       unitCode,
       unitName,
+      actorEmail,
+      actorTitle,
       action,
       details
     };
-    const updated = [entry, ...list].slice(0, 50);
+    const updated = [entry, ...list].slice(0, 80);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event('vtvl-activity-updated'));
-    void syncActivityToSupabase(unitCode, unitName, action, details);
+    void syncActivityToSupabase(unitCode, unitName, action, details, actorEmail, actorTitle);
   } catch (err) {
     console.error('Failed to record VTVL activity:', err);
   }

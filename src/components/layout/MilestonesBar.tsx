@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Check, ChevronDown, ChevronRight, FileSpreadsheet, Building2, Layers, Timer, GitMerge, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, FileSpreadsheet, Building2, Layers, Timer, GitMerge, ShieldCheck, RefreshCw, UserCheck } from 'lucide-react';
 import { VTVL_MILESTONES } from '@/configs/milestones';
-import { getActiveUnitDefinition } from '@/services/telemetry/activity-log';
+import { getActiveUnitDefinition, getActiveUnitSession } from '@/services/telemetry/activity-log';
 
 export interface InfoTipProps {
   title?: string;
@@ -55,6 +55,7 @@ export const SIDEBAR_FIVE_STEPS: SidebarStepItem[] = [
     num: 1, title: 'Bước 1: Đề xuất VTVL đơn vị', href: '/tao-tep?step=1', badge: 'Đề xuất',
     subTasks: [
       { id: 'task-1-unit', label: 'Chọn đơn vị', statusTag: 'ĐV' },
+      { id: 'task-1-actor', label: 'Email & Chức vụ thực hiện', statusTag: 'USER' },
       { id: 'task-1-add', label: 'Thêm vị trí việc làm', statusTag: '+' },
       { id: 'task-1-name', label: 'Tên VTVL cụ thể', statusTag: 'C1' },
       { id: 'task-1-level', label: 'Bậc nghề nghiệp', statusTag: 'BẬC' },
@@ -120,12 +121,17 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode }: Workflow
   const pathname = usePathname();
   const router = useRouter();
   const [activeUnit, setActiveUnit] = useState(() => getActiveUnitDefinition(unitCode));
+  const [actorInfo, setActorInfo] = useState(() => ({ email: '', title: '' }));
   const [collapsed, setCollapsed] = useState(false);
   const [activeTaskId, setActiveTaskId] = useState<string>('');
 
   useEffect(() => {
-    setActiveUnit(getActiveUnitDefinition(unitCode));
-    const sync = () => setActiveUnit(getActiveUnitDefinition(unitCode));
+    const sync = () => {
+      setActiveUnit(getActiveUnitDefinition(unitCode));
+      const s = getActiveUnitSession();
+      setActorInfo({ email: s.actorEmail, title: s.actorTitle });
+    };
+    sync();
     window.addEventListener('vtvl-unit-session-updated', sync);
     return () => window.removeEventListener('vtvl-unit-session-updated', sync);
   }, [unitCode]);
@@ -181,22 +187,34 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode }: Workflow
         </div>
       </div>
 
-      <div className="px-3.5 py-2 border-b border-[var(--border-subtle)] bg-[var(--primary)]/[0.04] flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Building2 className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" />
-          <span className="text-xs font-bold text-[var(--foreground)] truncate" title={activeUnit.nameVi}>{activeUnit.nameVi}</span>
+      <div className="px-3.5 py-2 border-b border-[var(--border-subtle)] bg-[var(--primary)]/[0.04] space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Building2 className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" />
+            <span className="text-xs font-bold text-[var(--foreground)] truncate" title={activeUnit.nameVi}>{activeUnit.nameVi}</span>
+          </div>
+          {currentStep > 1 && (
+            onSelectStep ? (
+              <button type="button" onClick={() => { onSelectStep(1); focusTaskTarget('task-1-unit'); }} className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--primary)] hover:underline shrink-0 cursor-pointer">
+                <RefreshCw className="w-2.5 h-2.5" /><span>Đổi ĐV</span>
+              </button>
+            ) : (
+              <Link href="/tao-tep?step=1&task=task-1-unit" className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--primary)] hover:underline shrink-0">
+                <RefreshCw className="w-2.5 h-2.5" /><span>Đổi ĐV</span>
+              </Link>
+            )
+          )}
         </div>
-        {currentStep > 1 && (
-          onSelectStep ? (
-            <button type="button" onClick={() => { onSelectStep(1); focusTaskTarget('task-1-unit'); }} className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--primary)] hover:underline shrink-0 cursor-pointer">
-              <RefreshCw className="w-2.5 h-2.5" /><span>Đổi ĐV</span>
-            </button>
+        <div className="flex items-center gap-1.5 text-[11px] text-[var(--ink-muted)] truncate">
+          <UserCheck className="w-3 h-3 text-[var(--primary)] shrink-0" />
+          {actorInfo.email && actorInfo.title ? (
+            <span className="truncate" title={`${actorInfo.title} — ${actorInfo.email}`}>
+              <strong>{actorInfo.title}</strong> · {actorInfo.email}
+            </span>
           ) : (
-            <Link href="/tao-tep?step=1&task=task-1-unit" className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--primary)] hover:underline shrink-0">
-              <RefreshCw className="w-2.5 h-2.5" /><span>Đổi ĐV</span>
-            </Link>
-          )
-        )}
+            <span className="text-[#B45309] font-semibold">Bắt buộc nhập Email &amp; Chức vụ</span>
+          )}
+        </div>
       </div>
 
       {!collapsed && (

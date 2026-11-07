@@ -194,6 +194,8 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
     unitNameVi: opts.unitNameVi,
     kind: opts.kind,
     version: 1,
+    actorEmail: opts.actorEmail,
+    actorTitle: opts.actorTitle,
     missionCount: missions.length,
     taskCount: templates.length,
     vtvlCount: positionBreakdown.length,

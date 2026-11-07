@@ -168,9 +168,16 @@ export default function HomePage() {
               ) : (
                 <ul className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
                   {logs.slice(0, 4).map((log) => (
-                    <li key={log.id} className="rounded-lg border border-[var(--border-subtle)] bg-[var(--background)] px-2.5 py-1.5 text-xs truncate">
-                      <span className="font-mono font-bold text-[var(--primary)] mr-1">[{log.unitCode}]</span>
-                      <span className="text-[var(--foreground)]">{log.details}</span>
+                    <li key={log.id} className="rounded-lg border border-[var(--border-subtle)] bg-[var(--background)] px-2.5 py-1.5 text-xs">
+                      <div className="truncate">
+                        <span className="font-mono font-bold text-[var(--primary)] mr-1">[{log.unitCode}]</span>
+                        <span className="text-[var(--foreground)]">{log.details}</span>
+                      </div>
+                      {(log.actorTitle || log.actorEmail) && (
+                        <div className="text-[10px] text-[var(--ink-muted)] truncate mt-0.5">
+                          Người thực hiện: <strong>{log.actorTitle || 'Chưa khai báo'}</strong> · {log.actorEmail} · {log.timestamp}
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

@@ -125,6 +125,8 @@ export interface UnitSplitOptions {
   period: string;
   exportDate: string;
   includeZipPerPosition: boolean;
+  actorEmail?: string;
+  actorTitle?: string;
   ngachOverrides: Record<string, number>;
   customPositionNames?: Record<string, string>;
   customCareerLevels?: Record<string, string>;
@@ -148,6 +150,8 @@ export interface SplitResultSummary {
   unitNameVi: string;
   kind: UnitGroupKind;
   version: number;
+  actorEmail?: string;
+  actorTitle?: string;
   missionCount: number;
   taskCount: number;
   vtvlCount: number;

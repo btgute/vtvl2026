@@ -282,10 +282,14 @@ CREATE TABLE IF NOT EXISTS public.t_tien_do (
   so_cong_viec_a2 integer NOT NULL DEFAULT 0,
   so_vtvl_c1 integer NOT NULL DEFAULT 0,
   tong_fte_c3 numeric(10,2) NOT NULL DEFAULT 0,
+  email_nguoi_thuc_hien text,
+  chuc_vu_nguoi_thuc_hien text,
   trang_thai_ra_soat text NOT NULL DEFAULT 'Đã khởi tạo trực tuyến',
   du_lieu_ho_so_json jsonb NOT NULL DEFAULT '{}'::jsonb,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.t_tien_do ADD COLUMN IF NOT EXISTS email_nguoi_thuc_hien text;
+ALTER TABLE public.t_tien_do ADD COLUMN IF NOT EXISTS chuc_vu_nguoi_thuc_hien text;
 
 -- 18. BẢNG S_NHAT_KY: Nhật ký phiên bản và lịch sử cập nhật trực tuyến (Biểu 15. S_NhatKy)
 CREATE TABLE IF NOT EXISTS public.s_nhat_ky (
@@ -294,9 +298,13 @@ CREATE TABLE IF NOT EXISTS public.s_nhat_ky (
   ten_don_vi text NOT NULL,
   hanh_dong text NOT NULL,
   chi_tiet text NOT NULL,
+  email_nguoi_thuc_hien text,
+  chuc_vu_nguoi_thuc_hien text,
   phien_ban text NOT NULL DEFAULT 'v1',
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.s_nhat_ky ADD COLUMN IF NOT EXISTS email_nguoi_thuc_hien text;
+ALTER TABLE public.s_nhat_ky ADD COLUMN IF NOT EXISTS chuc_vu_nguoi_thuc_hien text;
 CREATE INDEX IF NOT EXISTS idx_s_nhat_ky_ma_don_vi ON public.s_nhat_ky(ma_don_vi);
 
 -- =============================================================================

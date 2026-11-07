@@ -16,11 +16,17 @@ export function appendHd07GuideAndRefSheets(
   positions: SplitResultSummary['positionBreakdown'],
   compactDate: string
 ): void {
+  const actorDisplay =
+    opts.actorTitle || opts.actorEmail
+      ? `${opts.actorTitle || unitHeadVi} (${opts.actorEmail || 'Chưa khai báo email'})`
+      : unitHeadVi;
+
   // 1. HUONG_DAN
   const wsHuongDan = XLSX.utils.aoa_to_sheet([
     [`BỘ BIỂU XÂY DỰNG ĐỀ ÁN VỊ TRÍ VIỆC LÀM THEO HD 07-HD/BTCTW, NGHỊ ĐỊNH 232/2026/NĐ-CP & TT 31/2026/TT-BGDĐT — ${opts.unitNameVi.toUpperCase()} (${opts.unitCode})`],
     ['Mục', 'Nội dung quy định chuẩn Hướng dẫn số 07-HD/BTCTW, NĐ 232/2026 & TT 31/2026', 'Thông số áp dụng tại HCM-UTE'],
     ['1. Cơ quan / Đơn vị', 'Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)', `[${opts.unitCode}] ${opts.unitNameVi} (${opts.unitNameEn})`],
+    ['2. Người thực hiện hồ sơ', 'Cán bộ / Viên chức lập và rà soát hồ sơ VTVL tại đơn vị', actorDisplay],
     ['2. Danh mục VTVL viên chức', 'Nghị định số 232/2026/NĐ-CP của Chính phủ (Phụ lục I, Phụ lục II, Phụ lục III)', 'Áp dụng Bậc nghề nghiệp từ Bậc 1 đến Bậc 5 theo từng vị trí việc làm'],
     ['3. Căn cứ pháp lý nhà giáo', 'Luật Nhà giáo số 73/2025/QH15; Nghị định 93/2026/NĐ-CP ngày 31/3/2026', 'Thông tư số 31/2026/TT-BGDĐT ngày 14/4/2026 (thay thế Điều 2, 8, 9, 10 TT 40/2020)'],
     ['4. Kỳ số liệu thống kê', '12 tháng liền kề từ 01/10/2025 đến 30/9/2026', opts.period],
@@ -111,12 +117,12 @@ export function appendHd07GuideAndRefSheets(
   // 7. 15. S_NhatKy
   const wsS = XLSX.utils.aoa_to_sheet([
     ['BIỂU 15. S_NhatKy — NHẬT KÝ PHIÊN BẢN VÀ LỊCH SỬ CẬP NHẬT DỮ LIỆU ĐƠN VỊ'],
-    ['Kỳ', 'Biểu', 'Mã', 'Trường', 'Giá trị cũ', 'Giá trị mới', 'Nguồn', 'Người xác nhận', 'Ngày', 'Phiên bản'],
+    ['Kỳ', 'Biểu', 'Mã', 'Trường', 'Giá trị cũ', 'Giá trị mới', 'Nguồn', 'Người thực hiện / xác nhận', 'Ngày', 'Phiên bản'],
     [
       opts.period, 'Toàn bộ 15 biểu', opts.unitCode,
       'Khởi tạo tệp đơn vị chuẩn HD 07-HD/BTCTW, NĐ 232/2026/NĐ-CP & TT 31/2026/TT-BGDĐT',
       'Mẫu gốc XXX', `${opts.unitCode}_K2526_v1_${compactDate}.xlsx`,
-      'Hệ thống VTVL 360 HCM-UTE', unitHeadVi, opts.exportDate, 'v1'
+      'Hệ thống VTVL 360 HCM-UTE', actorDisplay, opts.exportDate, 'v1'
     ]
   ]);
   XLSX.utils.book_append_sheet(wb, wsS, '15. S_NhatKy');
