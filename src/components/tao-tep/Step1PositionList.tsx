@@ -13,6 +13,29 @@ const METHODS: { value: WorkforceMethod; label: string }[] = [
   { value: 'PP2+PP3', label: 'PP2+PP3 (Kết hợp giờ & kiêm nhiệm)' }
 ];
 
+export const SUGGESTED_NGACH_OPTIONS: { code: string; label: string }[] = [
+  { code: 'V.07.01.01', label: 'V.07.01.01 — Giảng viên cao cấp (Hạng I)' },
+  { code: 'V.07.01.02', label: 'V.07.01.02 — Giảng viên chính (Hạng II)' },
+  { code: 'V.07.01.03', label: 'V.07.01.03 — Giảng viên (Hạng III)' },
+  { code: 'V.07.01.23', label: 'V.07.01.23 — Trợ giảng (Hạng III)' },
+  { code: '01.002 / V.07.01.02', label: '01.002 / V.07.01.02 — Quản lý giữ ngạch CV chính / GV chính' },
+  { code: '01.003 / V.07.01.03', label: '01.003 / V.07.01.03 — Quản lý giữ ngạch Chuyên viên / Giảng viên' },
+  { code: '01.001', label: '01.001 — Chuyên viên cao cấp' },
+  { code: '01.002', label: '01.002 — Chuyên viên chính' },
+  { code: '01.003', label: '01.003 — Chuyên viên' },
+  { code: '01.004', label: '01.004 — Cán sự' },
+  { code: '01.005', label: '01.005 — Nhân viên (Hành chính / Văn thư / Thủ quỹ)' },
+  { code: '06.030', label: '06.030 — Kế toán viên chính' },
+  { code: '06.031', label: '06.031 — Kế toán viên' },
+  { code: 'V.05.01.02', label: 'V.05.01.02 — Nghiên cứu viên chính (Hạng II)' },
+  { code: 'V.05.01.03', label: 'V.05.01.03 — Nghiên cứu viên (Hạng III)' },
+  { code: 'V.05.02.06', label: 'V.05.02.06 — Kỹ sư chính (Hạng II)' },
+  { code: 'V.05.02.07', label: 'V.05.02.07 — Kỹ sư / Kỹ thuật viên (Hạng III)' },
+  { code: 'V.10.02.06', label: 'V.10.02.06 — Thư viện viên (Hạng III)' },
+  { code: 'V.08.01.03', label: 'V.08.01.03 — Bác sĩ (Hạng III)' },
+  { code: 'HĐLĐ-NĐ111', label: 'HĐLĐ-NĐ111 — Hợp đồng lao động phục vụ (NĐ 111/2022)' }
+];
+
 interface Step1PositionListProps {
   unitCode: string;
   positions: ProposedVtvlRow[];
@@ -46,6 +69,12 @@ export function Step1PositionList({ unitCode, positions, onUpdateRow, onDuplicat
         <span className="text-xs sm:text-sm font-semibold text-[var(--ink-muted)]">Bấm vào từng vị trí để chỉnh sửa chi tiết hoặc sao chép vị trí tương tự</span>
       </div>
 
+      <datalist id="step1-ngach-datalist">
+        {SUGGESTED_NGACH_OPTIONS.map((opt) => (
+          <option key={opt.code} value={opt.code}>{opt.label}</option>
+        ))}
+      </datalist>
+
       {/* GIAO DIỆN MOBILE (< md): Hiển thị từng Thẻ VTVL, không dùng bảng nhiều cột */}
       <div className="md:hidden space-y-3">
         {positions.map((pos, idx) => {
@@ -66,7 +95,7 @@ export function Step1PositionList({ unitCode, positions, onUpdateRow, onDuplicat
                   )}
                 </div>
                 <h4 className="text-base font-extrabold text-[var(--foreground)] leading-snug">{idx + 1}. {pos.specificName || '(Chưa đặt tên vị trí)'}</h4>
-                <p className="text-xs text-[var(--ink-muted)]">Khung Trường: <strong>{pos.frameworkTitle}</strong> · Mã ngạch: <span className="font-mono">{pos.ngachCode}</span></p>
+                <p className="text-xs text-[var(--ink-muted)]">Khung Trường: <strong>{pos.frameworkTitle}</strong> · Mã ngạch (gợi ý): <span className="font-mono font-bold text-[var(--primary)]">{pos.ngachCode}</span></p>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 pt-1 border-t border-[var(--border-subtle)] text-sm">
@@ -99,6 +128,31 @@ export function Step1PositionList({ unitCode, positions, onUpdateRow, onDuplicat
                   <div>
                     <label htmlFor={`mob-name-${pos.id}`} className="block text-sm font-bold text-[var(--foreground)] mb-1">Tên vị trí việc làm cụ thể tại đơn vị <span className="text-[var(--fix)]">*</span></label>
                     <input id={`mob-name-${pos.id}`} type="text" value={pos.specificName} aria-invalid={!pos.specificName.trim()} onChange={(e) => onUpdateRow(pos.id, { specificName: e.target.value })} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-base font-bold text-[var(--foreground)]" />
+                  </div>
+                  <div className="rounded-xl border border-[var(--review)]/40 bg-[var(--review-soft)]/50 p-2.5 space-y-2">
+                    <label htmlFor={`mob-ngach-${pos.id}`} className="block text-xs font-extrabold text-[var(--foreground)]">
+                      Mã ngạch chức danh <span className="text-[var(--review)] font-bold">(mã có sẵn chỉ là gợi ý — chọn hoặc tự gõ để đổi)</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <select
+                        aria-label={`Chọn nhanh mã ngạch cho ${pos.specificName}`}
+                        value={SUGGESTED_NGACH_OPTIONS.some((o) => o.code === pos.ngachCode) ? pos.ngachCode : ''}
+                        onChange={(e) => { if (e.target.value) onUpdateRow(pos.id, { ngachCode: e.target.value }); }}
+                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-3 py-2 text-sm font-semibold text-[var(--foreground)]"
+                      >
+                        <option value="">— Chọn từ danh mục mã ngạch —</option>
+                        {SUGGESTED_NGACH_OPTIONS.map((opt) => <option key={opt.code} value={opt.code}>{opt.label}</option>)}
+                      </select>
+                      <input
+                        id={`mob-ngach-${pos.id}`}
+                        type="text"
+                        list="step1-ngach-datalist"
+                        value={pos.ngachCode}
+                        onChange={(e) => onUpdateRow(pos.id, { ngachCode: e.target.value })}
+                        placeholder="Nhập mã ngạch thực tế (VD: V.07.01.02, 01.003...)"
+                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-3 py-2 text-sm font-mono font-bold text-[var(--primary)]"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -150,8 +204,8 @@ export function Step1PositionList({ unitCode, positions, onUpdateRow, onDuplicat
           <table className="w-full text-sm border-collapse">
             <thead className="sticky top-0 z-20 bg-[var(--background)] border-b border-[var(--border)] shadow-2xs">
               <tr>
-                <th className="sticky left-0 z-20 bg-[var(--background)] py-3 px-3 text-left min-w-[250px] border-r border-[var(--border-subtle)]">Tên &amp; Mã vị trí việc làm cụ thể (Biểu C1)</th>
-                <th className="py-3 px-3 text-left min-w-[160px]">Khung Trường &amp; Ngạch</th>
+                <th className="sticky left-0 z-20 bg-[var(--background)] py-3 px-3 text-left min-w-[240px] border-r border-[var(--border-subtle)]">Tên &amp; Mã vị trí việc làm cụ thể (Biểu C1)</th>
+                <th className="py-3 px-3 text-left min-w-[220px]">Khung Trường &amp; Mã ngạch <span className="text-xs font-normal text-[var(--review)]">(gợi ý, được đổi)</span></th>
                 <th className="py-3 px-3 text-left min-w-[150px]">Bậc nghề nghiệp</th>
                 <th className="py-3 px-3 text-left min-w-[175px]">Phương pháp &amp; Quỹ giờ</th>
                 <th className="py-3 px-3 text-right min-w-[115px]">Hiện có (D1)</th>
@@ -172,9 +226,31 @@ export function Step1PositionList({ unitCode, positions, onUpdateRow, onDuplicat
                         {!check.valid && <span className="text-xs font-bold text-[var(--fix)]">{check.reason}</span>}
                       </div>
                     </td>
-                    <td className="py-3 px-3 align-top">
-                      <div className="font-bold text-[var(--foreground)]">{pos.frameworkTitle}</div>
-                      <span className="text-xs text-[var(--ink-muted)] block mt-0.5 font-mono">Mã {pos.ngachCode} · {pos.vtvlGroup4.replace('. Nhóm VTVL ', '. ')}</span>
+                    <td className="py-3 px-3 align-top space-y-1.5">
+                      <div className="font-bold text-[var(--foreground)] text-xs sm:text-sm leading-snug">
+                        {pos.frameworkTitle} <span className="text-xs font-normal text-[var(--ink-muted)]">({pos.vtvlGroup4.replace('. Nhóm VTVL ', '. ')})</span>
+                      </div>
+                      <select
+                        aria-label={`Chọn mã ngạch cho vị trí ${pos.specificName}`}
+                        value={SUGGESTED_NGACH_OPTIONS.some((o) => o.code === pos.ngachCode) ? pos.ngachCode : ''}
+                        onChange={(e) => { if (e.target.value) onUpdateRow(pos.id, { ngachCode: e.target.value }); }}
+                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs font-semibold text-[var(--foreground)]"
+                      >
+                        <option value="">— Chọn mã ngạch —</option>
+                        {SUGGESTED_NGACH_OPTIONS.map((opt) => <option key={opt.code} value={opt.code}>{opt.label}</option>)}
+                      </select>
+                      <div className="flex items-center gap-1">
+                        <input
+                          aria-label={`Mã ngạch thực tế của vị trí ${pos.specificName}`}
+                          type="text"
+                          list="step1-ngach-datalist"
+                          value={pos.ngachCode}
+                          onChange={(e) => onUpdateRow(pos.id, { ngachCode: e.target.value })}
+                          placeholder="Gõ hoặc chọn mã ngạch"
+                          className="w-full rounded-lg border border-[var(--review)]/50 bg-[var(--review-soft)]/30 px-2 py-1 text-xs font-mono font-bold text-[var(--primary)]"
+                        />
+                      </div>
+                      <span className="block text-[11px] text-[var(--ink-muted)]">Mã có sẵn là gợi ý, chọn hoặc sửa theo thực tế</span>
                     </td>
                     <td className="py-3 px-3 align-top">
                       <select data-task="task-1-level" aria-label={`Bậc nghề nghiệp của ${pos.specificName}`} value={pos.careerLevel} disabled={pos.allowedLevels.length <= 1} onChange={(e) => onUpdateRow(pos.id, { careerLevel: e.target.value })} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-2 text-sm font-bold text-[var(--primary)] disabled:opacity-65">

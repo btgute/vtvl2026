@@ -178,28 +178,28 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
         </div>
       </div>
 
-      <div className={`${mobileOpen ? 'block' : 'hidden lg:block'} px-3.5 py-2.5 border-b border-[var(--border-subtle)] bg-[var(--primary)]/[0.04] space-y-1`}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Building2 className="w-4 h-4 text-[var(--primary)] shrink-0" />
-            <span className="text-sm font-bold text-[var(--foreground)] truncate" title={activeUnit.nameVi}>{activeUnit.nameVi}</span>
+      <div className={`${mobileOpen ? 'block' : 'hidden lg:block'} px-3.5 py-2.5 border-b border-[var(--border-subtle)] bg-[var(--primary)]/[0.04] space-y-1.5`}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 min-w-0">
+            <Building2 className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" />
+            <span className="text-sm font-bold text-[var(--foreground)] leading-snug break-words">{activeUnit.nameVi}</span>
           </div>
           {currentStep > 1 && (
             onSelectStep ? (
-              <button type="button" onClick={() => { onSelectStep(1); setMobileOpen(false); focusTaskTarget('task-1-unit'); }} className="inline-flex items-center gap-1 min-h-[44px] px-2 text-xs font-bold text-[var(--primary)] hover:underline shrink-0 cursor-pointer">
+              <button type="button" onClick={() => { onSelectStep(1); setMobileOpen(false); focusTaskTarget('task-1-unit'); }} className="inline-flex items-center gap-1 min-h-[36px] px-2 text-xs font-bold text-[var(--primary)] hover:underline shrink-0 cursor-pointer">
                 <RefreshCw className="w-3.5 h-3.5" /><span>Đổi đơn vị</span>
               </button>
             ) : (
-              <Link href="/tao-tep?step=1&task=task-1-unit" className="inline-flex items-center gap-1 min-h-[44px] px-2 text-xs font-bold text-[var(--primary)] hover:underline shrink-0">
+              <Link href="/tao-tep?step=1&task=task-1-unit" className="inline-flex items-center gap-1 min-h-[36px] px-2 text-xs font-bold text-[var(--primary)] hover:underline shrink-0">
                 <RefreshCw className="w-3.5 h-3.5" /><span>Đổi đơn vị</span>
               </Link>
             )
           )}
         </div>
-        <div className="flex items-center gap-2 text-xs text-[var(--ink-muted)] truncate">
-          <UserCheck className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" />
+        <div className="flex items-start gap-2 text-xs text-[var(--ink-muted)] leading-snug break-words">
+          <UserCheck className="w-3.5 h-3.5 text-[var(--primary)] shrink-0 mt-0.5" />
           {actorInfo.email && actorInfo.title ? (
-            <span className="truncate" title={`${actorInfo.title} — ${actorInfo.email}`}><strong>{actorInfo.title}</strong> · {actorInfo.email}</span>
+            <span><strong>{actorInfo.title}</strong> · {actorInfo.email}</span>
           ) : (
             <span className="text-[var(--warn)] font-semibold">Chưa khai báo người thực hiện</span>
           )}
@@ -216,7 +216,7 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
           const statusText = hasError ? 'Cần sửa lỗi' : isCurrent ? 'Đang thực hiện' : isDone ? 'Đã hoàn thành' : 'Chưa thực hiện';
 
           const stepHeaderRow = (
-            <div className={`group flex items-center gap-2.5 px-3 min-h-[44px] rounded-xl transition-all ${hasError ? 'bg-[var(--fix-soft)] ring-1 ring-[var(--fix)]' : isCurrent ? 'bg-[var(--primary)]/[0.10] ring-1 ring-[var(--primary)]/50' : 'hover:bg-[var(--background)]'}`}>
+            <div className={`group flex items-center gap-2.5 px-3 min-h-[44px] py-1.5 rounded-xl transition-all ${hasError ? 'bg-[var(--fix-soft)] ring-1 ring-[var(--fix)]' : isCurrent ? 'bg-[var(--primary)]/[0.10] ring-1 ring-[var(--primary)]/50' : 'hover:bg-[var(--background)]'}`}>
               <span className="relative flex items-center justify-center w-5 h-5 shrink-0">
                 {hasError ? <AlertTriangle className="w-4 h-4 text-[var(--fix)]" /> : isCurrent ? (
                   <span className="w-4 h-4 rounded-full border-2 border-[var(--primary)] bg-[var(--sheet)] flex items-center justify-center"><span className="w-2 h-2 rounded-full bg-[var(--primary)]" /></span>
@@ -227,7 +227,7 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
                 )}
               </span>
               <div className="flex-1 min-w-0">
-                <div className={`text-sm truncate ${hasError ? 'font-extrabold text-[var(--fix)]' : isCurrent ? 'font-extrabold text-[var(--primary)]' : isDone ? 'font-bold text-[var(--foreground)]' : 'font-semibold text-[var(--ink-muted)]'}`}>{s.title}</div>
+                <div className={`text-sm leading-snug ${hasError ? 'font-extrabold text-[var(--fix)]' : isCurrent ? 'font-extrabold text-[var(--primary)]' : isDone ? 'font-bold text-[var(--foreground)]' : 'font-semibold text-[var(--ink-muted)]'}`}>{s.title}</div>
                 <div className={`text-xs ${hasError ? 'text-[var(--fix)] font-bold' : isDone ? 'text-[var(--ok)] font-semibold' : 'text-[var(--ink-subtle)]'}`}>{statusText}</div>
               </div>
             </div>

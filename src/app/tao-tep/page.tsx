@@ -134,13 +134,13 @@ export default function TaoTepPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-5 pb-28">
+    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 pt-5 pb-28">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        <div className="lg:col-span-4 xl:col-span-3">
+        <div className="lg:col-span-3">
           <WorkflowSidebar activeStep={activeStep} errorStep={validationErrors.length > 0 && activeStep > 1 ? 1 : null} onSelectStep={(s) => { setActiveStep(s); persistState({ activeStep: s }); }} unitCode={currentUnit.code} />
         </div>
 
-        <div className="lg:col-span-8 xl:col-span-9 space-y-5 min-w-0">
+        <div className="lg:col-span-9 space-y-5 min-w-0">
           {activeStep === 1 && (
             <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-6 space-y-5 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
@@ -273,7 +273,7 @@ export default function TaoTepPage() {
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border)] bg-[var(--sheet)]/95 backdrop-blur-xs shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-2.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-[var(--ink-muted)]">
             <span className="inline-block w-2 h-2 rounded-full bg-[var(--ok)]" />
             <span>Đã lưu lúc <strong>{lastSavedAt}</strong></span>

@@ -10,7 +10,7 @@ export function Footer() {
         aria-hidden="true"
       />
       <section className="relative z-10 w-full py-9 sm:py-11">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
+        <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           <div className="flex flex-col space-y-3">
             <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
               Trình tự thực hiện nghiệp vụ
@@ -147,7 +147,7 @@ export function Footer() {
       </section>
 
       <div className="relative z-10 w-full py-4 bg-[#06366E] border-t border-white/10">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3">
             <img
               src="/horizontal-ute-logo-white.png"

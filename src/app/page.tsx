@@ -67,15 +67,15 @@ export default function HomePage() {
   const progressPercent = Math.min(100, Math.round(((currentStepNum - 1) * 20) + (session.wizardStage * 4)));
 
   return (
-    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6 space-y-6">
+    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6 space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Thanh tiến trình 5 bước (thu gọn trên Mobile, đầy đủ trên Desktop) */}
-        <div className="lg:col-span-4 xl:col-span-3">
+        <div className="lg:col-span-3">
           <WorkflowSidebar activeStep={currentStepNum} unitCode={activeUnit.code} />
         </div>
 
         {/* Khu vực chính: Tập trung 5 thông tin cốt lõi, không lặp lại danh sách 5 bước */}
-        <div className="lg:col-span-8 xl:col-span-9 space-y-5 min-w-0">
+        <div className="lg:col-span-9 space-y-5 min-w-0">
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 sm:p-7 shadow-2xs space-y-5">
             <div className="space-y-1.5">
               <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-3 py-1 rounded-full">

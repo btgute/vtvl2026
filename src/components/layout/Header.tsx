@@ -42,8 +42,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--sheet)] border-b border-[var(--border)] shadow-2xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between w-full gap-2">
-        <div className="flex items-center gap-1 min-w-0">
+      <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 flex h-16 items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 min-w-0 shrink-0">
           <Link
             href="/"
             aria-label="Trang chủ hệ thống Vị trí việc làm HCM-UTE"
@@ -60,10 +60,10 @@ export function Header() {
               className="hidden h-10 w-auto md:block object-contain shrink-0"
             />
             <div className="border-l border-[var(--border)] pl-2.5 flex flex-col min-w-0">
-              <span className="text-sm sm:text-base font-extrabold tracking-tight text-[var(--foreground)] leading-tight truncate">
+              <span className="text-sm sm:text-base font-extrabold tracking-tight text-[var(--foreground)] leading-tight whitespace-nowrap">
                 Vị trí việc làm
               </span>
-              <span className="text-xs text-[var(--ink-muted)] font-medium hidden sm:inline truncate">
+              <span className="text-xs text-[var(--ink-muted)] font-medium hidden sm:inline whitespace-nowrap">
                 Đề án VTVL 2026–2030 · HCM-UTE
               </span>
             </div>

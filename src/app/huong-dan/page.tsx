@@ -57,7 +57,7 @@ export default function HuongDanDonViPage() {
   const completedCount = Object.values(checkedSteps).filter(Boolean).length;
 
   return (
-    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         <div className="lg:col-span-3">
           <WorkflowSidebar activeStep={1} />
