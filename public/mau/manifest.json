@@ -1,0 +1,26 @@
+{
+  "mau_khoa_vien_v1": {
+    "name": "mau_khoa_vien_v1.xlsx",
+    "url": "/mau/mau_khoa_vien_v1.xlsx",
+    "sha256": "e76f5cdddbe010c6abb24cdaee28863cf43ebaad036bfe2dc9d51d3d8cb82ecd",
+    "bytes": 32574
+  },
+  "mau_phong_ban_v1": {
+    "name": "mau_phong_ban_v1.xlsx",
+    "url": "/mau/mau_phong_ban_v1.xlsx",
+    "sha256": "4cc2c3edd6b7d693a2049d417b259b405d17834ba3c5057983b9915741a702db",
+    "bytes": 32496
+  },
+  "mau_trung_tam_v1": {
+    "name": "mau_trung_tam_v1.xlsx",
+    "url": "/mau/mau_trung_tam_v1.xlsx",
+    "sha256": "e7ecca7db694b70049a0c1a349e2dfe575557c01bbcb166b25d78560a9f20ec4",
+    "bytes": 32574
+  },
+  "mau_dang_doanthe_v1": {
+    "name": "mau_dang_doanthe_v1.xlsx",
+    "url": "/mau/mau_dang_doanthe_v1.xlsx",
+    "sha256": "2c84e699d9bb696582a76c5d5a90c9dd152e53b04dc175c9e30fe8a68e4ceaab",
+    "bytes": 32730
+  }
+}

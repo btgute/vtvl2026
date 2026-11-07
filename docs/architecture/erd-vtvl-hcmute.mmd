@@ -1,0 +1,211 @@
+erDiagram
+    DON_VI ||--o{ A1_NHIEM_VU : "thuc_hien"
+    DON_VI ||--o{ C1_VTVL : "quan_ly"
+    DON_VI ||--o{ D1_NHAN_LUC : "chot_nhan_su_30_09_2026"
+    DON_VI ||--o{ S_NHAT_KY : "ghi_lich_su"
+    DON_VI ||--o{ K_KIEM_TRA : "kiem_soat_cheo"
+
+    DM_VTVL_ND232 ||--o{ C1_VTVL : "chuan_hoa_vi_tri_va_bac_1_5"
+    DM_CHUC_DANH_TT31 ||--o{ C1_VTVL : "gan_ma_chuc_danh_va_he_so_luong"
+    DM_CHUC_DANH_TT31 ||--o{ D1_NHAN_LUC : "xep_luong_va_chuyen_tiep"
+
+    A1_NHIEM_VU ||--|{ A2_CONG_VIEC : "phan_ra_thanh"
+    C1_VTVL ||--o{ A2_CONG_VIEC : "dam_nhiem"
+    DM_SAN_PHAM ||--o{ A2_CONG_VIEC : "gan_san_pham_chuan_I_VI"
+
+    A2_CONG_VIEC ||--|| B1_KHOI_LUONG : "thong_ke_san_luong_thoi_gian"
+    DM_SAN_PHAM ||--o{ B1_KHOI_LUONG : "doi_chieu_dinh_muc_phut_sp"
+
+    A2_CONG_VIEC ||--o{ B2_CT_TAC_DONG : "ke_khai_so_hoa_tu_chu"
+    B1_KHOI_LUONG ||--o{ B2_CT_TAC_DONG : "lam_co_so_tinh_gio_giam"
+    A2_CONG_VIEC ||--|| B2_THAY_DOI : "tong_hop_tac_dong_rong"
+    B2_CT_TAC_DONG }o--|| B2_THAY_DOI : "cong_don_gio_hop_le"
+
+    C1_VTVL ||--|{ C2_NANG_LUC : "mo_ta_khung_nang_luc"
+    C1_VTVL ||--|| C3_NHU_CAU : "xac_dinh_fte_PP1_PP2_PP3"
+    B1_KHOI_LUONG }o--|| C3_NHU_CAU : "tong_hop_gio_B1"
+    B2_THAY_DOI }o--|| C3_NHU_CAU : "ket_chuyen_gio_tac_dong_B2"
+
+    C1_VTVL ||--o{ D1_NHAN_LUC : "bo_tri_nhan_su_hien_co"
+    C1_VTVL ||--|{ DU_BAO_5_NAM : "du_bao_khoi_luong_2027_2031"
+    C1_VTVL ||--|{ D2_PHUONG_AN : "lap_phuong_an_bien_che_2027_2031"
+    C3_NHU_CAU ||--|{ D2_PHUONG_AN : "lam_nam_co_so_2026"
+    DU_BAO_5_NAM ||--|| D2_PHUONG_AN : "dieu_chinh_nhu_cau_theo_nam"
+
+    DON_VI {
+        string ma_don_vi PK "VD: FME, FIT, TCNS, TPC (51 don vi)"
+        string ten_don_vi_vi "Ten tieng Viet chuan HCM-UTE"
+        string ten_don_vi_en "Ten tieng Anh chuan HCM-UTE"
+        string khoi_don_vi "khoa-vien | phong-ban | trung-tam | dang-doanthe"
+        string chuc_danh_thu_truong "Dean | Director | President"
+    }
+
+    DM_VTVL_ND232 {
+        string ma_danh_muc_nd232 PK "Ma danh muc VTVL theo ND 232/2026/ND-CP"
+        string phu_luc "Phu luc I (Quan ly) | Phu luc II (Chuyen mon) | Phu luc III (Ho tro)"
+        string ten_vtvl_chuan "25 nhom VTVL truong dai hoc cong lap"
+        string bac_nghe_nghiep "Bac 1 | Bac 2 | Bac 3 | Bac 4 | Bac 5"
+        string pham_vi_ap_dung "Khoa/Vien, Phong/Ban, Trung tam"
+    }
+
+    DM_CHUC_DANH_TT31 {
+        string ma_so_chuc_danh PK "VD: V.07.01.01, V.07.01.02, V.07.01.03, V.09.02.05"
+        string ten_chuc_danh "Giang vien cao cap | Giang vien chinh | Giang vien | GV trung cap..."
+        string khoan_dieu_tt31 "Khoan 1..9 Dieu 2 va Dieu 6..14 TT 31/2026/TT-BGDDT"
+        string loai_vien_chuc "A3.1 | A3.2 | A2.1 | A2.2 | A1 | A0 | Loai B"
+        string khung_he_so_luong "6,20-8,00 | 4,40-6,78 | 2,34-4,98 | 2,10-4,89 | 1,86-4,06"
+        boolean dien_chuyen_tiep "True doi voi Tro giang V.07.01.23 (Khoan 5 Dieu 15)"
+    }
+
+    DM_SAN_PHAM {
+        string ma_sp_chuan PK "Bieu 11 (Cot A) - VD: SP-I-01..SP-VI-01"
+        string ten_loai_san_pham "Cot B - Ten san pham dau ra chuan"
+        string khoi_nganh_linh_vuc "Cot C - Linh vuc ap dung"
+        string nhom_la_ma "Cot D - Nhom I, II, III, IV, V, VI"
+        int phut_sp_chuan "Cot E - Dinh muc phut/SP chuan"
+        string van_ban_xac_nhan "Cot F - Nguon van ban phap ly"
+        string trang_thai_sp "Cot G - Da xac nhan | Cho xac nhan"
+    }
+
+    A1_NHIEM_VU {
+        string ma_nhiem_vu PK "Bieu 1 (Cot A) - [MA_DV]-NV01..99"
+        string ma_don_vi FK "Lien ket DON_VI"
+        string ten_nhiem_vu "Cot B - Ten nhiem vu theo chuc nang"
+        string can_cu_phap_ly "Cot D - Luat Nha giao 73/2025, ND 232/2026, TT 31/2026"
+        string ky_thong_ke "Cot E - 01/10/2025-30/9/2026"
+        string trang_thai_nv "Cot F - Tiep tuc thuc hien | Moi tiep nhan..."
+    }
+
+    A2_CONG_VIEC {
+        string ma_cong_viec PK "Bieu 2 (Cot A) - [MA_DV]-NVxx-CVxx"
+        string ma_nhiem_vu FK "Cot B - Lien ket A1_NHIEM_VU"
+        string ma_vtvl FK "Cot C - Lien ket C1_VTVL"
+        string ma_sp_chuan FK "Lien ket DM_SAN_PHAM"
+        string ten_cong_viec "Cot D - Ten dau viec cu the"
+        string ten_san_pham "Cot E - San pham dau ra"
+        string don_vi_tinh "Cot F - ĐVT (Hoc phan, Ho so, Van ban...)"
+        string yeu_cau_chat_luong "Cot G - Tieu chuan chat luong"
+        string can_cu_nguon "Cot H - Khong dan chieu TT 40/2020 da het hieu luc"
+    }
+
+    B1_KHOI_LUONG {
+        string ma_cong_viec PK,FK "Bieu 3 (Cot A) - 19 cot A..S"
+        string ma_vtvl FK "Cot B - Lien ket C1_VTVL"
+        string ma_sp_chuan FK "Cot L - Ma SP trong danh muc"
+        int so_sp_nam "Cot C - San luong thuc te ky 01/10/2025-30/9/2026"
+        float phut_sp_do_thuc_te "Cot D - TB phut/SP tu Bam gio / Phieu khao sat"
+        float gio_bo_sung_nam "Cot E - Gio cong viec lien quan"
+        float gio_sp_tinh "Cot F - (So SP * Phut/SP) / 60"
+        float gio_tong_tinh "Cot G - Gio SP + Gio bo sung"
+        string nguon_san_luong "Cot H - Nguon xac thuc san luong"
+        string nguon_thoi_gian "Cot I - Nguon do thoi gian"
+        string trang_thai_can_cu "Cot J - Co dinh muc | Kiem dem thuc te"
+        string canh_bao_cot_r "Cot R - DAT hoac Ma loi tu dong"
+        string giai_trinh_cot_s "Cot S - Giai trinh khi lech >30% so voi chuan"
+    }
+
+    B2_CT_TAC_DONG {
+        string id_tac_dong PK "Bieu 4 - Dong chi tiet tac dong (19 cot A..S)"
+        string ma_cong_viec FK "Cot A - Lien ket A2_CONG_VIEC"
+        string ma_vtvl FK "Cot B - Lien ket C1_VTVL"
+        string loai_tac_dong "Cot C - So hoa | Cai tien | Thue DV | Tu chu | XHH | Viec moi"
+        string cong_doan "Cot D - Cong doan nghiep vu"
+        int sp_ap_dung "Cot E - So SP chiu tac dong"
+        float phut_truoc "Cot F - Phut/SP truoc thay doi"
+        float phut_sau "Cot G - Phut/SP sau thay doi"
+        float gio_giam_hop_le "Cot N - Gio giam duoc xac nhan"
+        float gio_tang_hop_le "Cot O - Gio viec moi phat sinh"
+        string doi_chieu_trung "Cot S - Da doi chieu"
+    }
+
+    B2_THAY_DOI {
+        string ma_cong_viec PK,FK "Bieu 5 (Cot A) - 9 cot A..I"
+        string ma_vtvl FK "Cot B - Lien ket C1_VTVL"
+        float gio_giam_so_hoa "Cot C - Tong gio giam do so hoa/cai tien"
+        float gio_giam_thue_tc "Cot D - Tong gio giam do thue DV/tu chu"
+        float gio_viec_moi "Cot E - Tong gio viec moi"
+        float gio_tac_dong_rong "Cot F - Gio tac dong rong (-giam / +tang)"
+    }
+
+    C1_VTVL {
+        string ma_vtvl PK "Bieu 6 (Cot A) - [MA_DV]-[NHOM]-[xx]"
+        string ma_don_vi FK "Lien ket DON_VI"
+        string ma_danh_muc_nd232 FK "Lien ket DM_VTVL_ND232 (Phu luc I, II, III)"
+        string ma_so_chuc_danh FK "Lien ket DM_CHUC_DANH_TT31"
+        string ten_vtvl "Cot B - Ten VTVL kem Bac nghe nghiep (Bac 1..5)"
+        string loai_nhan_luc "Cot C - Vien chuc | Hop dong"
+        int gio_chuan_pp2 "Cot E - 1904 gio/nam (Pho bien) hoac 1760 gio/nam (Dac thu)"
+        string che_do_lam_viec "Cot J - Pho bien (40 gio/tuan) | Dac thu"
+        string kiem_tra_quy_gio "Cot K - DAT"
+    }
+
+    C2_NANG_LUC {
+        string id_mo_ta PK "Bieu 7 - 7 cot A..G"
+        string ma_vtvl FK "Cot A - Lien ket C1_VTVL"
+        string trach_nhiem_chinh "Cot B - Trach nhiem theo A2"
+        string nang_luc_chung "Cot C - Khung nang luc chung"
+        string nang_luc_chuyen_mon "Cot D - Bac nghe nghiep (Bac 1..5 theo ND 232/2026)"
+        string nang_luc_lanh_dao "Cot E - Khung nang luc quan ly (Phu luc I)"
+        string can_cu_phap_ly "Cot F - ND 232/2026/ND-CP & TT 31/2026/TT-BGDDT"
+    }
+
+    C3_NHU_CAU {
+        string ma_vtvl PK,FK "Bieu 8 (Cot A) - 14 cot A..N"
+        string phuong_phap "Cot B - PP1 | PP2 | PP3 | PP1+PP2..."
+        float gio_b1 "Cot C - Tong gio tu B1_KHOI_LUONG"
+        float gio_tac_dong_b2 "Cot D - Tong gio tu B2_THAY_DOI"
+        float gio_rong "Cot E - Gio B1 + Gio tac dong B2"
+        int gio_pp2_tu_c1 "Cot F - 1904h hoac 1760h"
+        float nguoi_quy_doi_pp2 "Cot G - Gio rong / Gio PP2"
+        int nguoi_pp1 "Cot H - Dinh bien theo quy dinh (PP1)"
+        float nguoi_can_bo_tri "Cot J - Nhu cau nhan luc nam co so (FTE)"
+    }
+
+    D1_NHAN_LUC {
+        string ma_nguon_luc PK "Bieu 9 (Cot A) - [MA_DV]-NL001..999"
+        string ma_don_vi FK "Lien ket DON_VI"
+        string ma_vtvl FK "Cot B - Lien ket C1_VTVL"
+        string ma_so_chuc_danh FK "Lien ket DM_CHUC_DANH_TT31"
+        string loai_nhan_luc "Cot C - Vien chuc chot tai 30/9/2026"
+        int gio_quy_doi_nam "Cot D - Quy gio chuan ca nhan"
+        float gio_danh_cho_vtvl "Cot E - Gio thuc te lam VTVL"
+        float gio_viec_khac "Cot F - Gio kiem nhiem/viec khac"
+        string canh_bao_d1 "Cot J - Kiem tra vuot quy gio & chuyen tiep Tro giang"
+    }
+
+    DU_BAO_5_NAM {
+        string id_du_bao PK "Sheet DU_BAO_5_NAM"
+        string ma_vtvl FK "Cot A - Lien ket C1_VTVL"
+        int nam_du_bao "Cot B - 2027 | 2028 | 2029 | 2030 | 2031"
+        float ty_le_thay_doi_kl "Cot C - % thay doi khoi luong cong viec"
+        string thuyet_minh_du_bao "Cot D - Can cu quy mo dao tao & chuyen doi so"
+        float nhu_cau_du_kien "Cot F - So nguoi du kien"
+    }
+
+    D2_PHUONG_AN {
+        string id_phuong_an PK "Bieu 10 - 14 cot A..N"
+        string ma_vtvl FK "Cot A - Lien ket C1_VTVL"
+        int nam_phuong_an "Cot B - 2027 | 2028 | 2029 | 2030 | 2031"
+        float so_nguoi_can_bo_tri "Cot C - Nhu cau trong nam phuong an"
+        int so_nguoi_hien_co "Cot D - Nhan luc co the bo tri tu D1"
+        int bien_che_duoc_giao "Cot E - Bien che giao"
+        float de_nghi_dieu_chinh "Cot G - Chenh lech tang/giam"
+    }
+
+    K_KIEM_TRA {
+        int stt_chi_tieu PK "Bieu 13 - 6 chi tieu kiem soat cheo H3:H8"
+        string ma_don_vi FK "Lien ket DON_VI"
+        string nhom_bieu "A2<->A1 | A2/B1<->C1 | B1(Cot R) | B2_CT<->B1 | D1<->C1 | C3<->D2"
+        int so_dong_loi "So dong vi pham"
+        string ket_luan "DAT | CAN RA SOAT | LOI"
+    }
+
+    S_NHAT_KY {
+        string id_nhat_ky PK "Bieu 15 - Lich su phien ban"
+        string ma_don_vi FK "Lien ket DON_VI"
+        string bieu_cap_nhat "Ten sheet thay doi"
+        string gia_tri_cu "Gia tri truoc khi gop phieu"
+        string gia_tri_moi "Gia tri sau khi gop phieu"
+        string nguoi_xac_nhan "Thu truong don vi / Nguoi do"
+        string phien_ban "v1, v2..."
+    }

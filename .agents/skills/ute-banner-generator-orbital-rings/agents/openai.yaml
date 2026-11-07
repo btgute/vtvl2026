@@ -1,0 +1,5 @@
+interface:
+  display_name: "UTE Banner Generator – Orbital Rings"
+  short_description: "Create consistent UTE porcelain-white banners"
+  brand_color: "#0072BC"
+  default_prompt: "Use $ute-banner-generator-orbital-rings to create or standardize a 3000 × 1000 UTE banner."

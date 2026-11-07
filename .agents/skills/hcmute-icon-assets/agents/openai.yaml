@@ -1,0 +1,5 @@
+interface:
+  display_name: "HCM-UTE Icon Assets"
+  short_description: "Generate HCM-UTE 3D icons from prompts"
+  brand_color: "#0072BC"
+  default_prompt: "Use $hcmute-icon-assets to turn the HCM-UTE prompt files into matching transparent 3D PNG icons."

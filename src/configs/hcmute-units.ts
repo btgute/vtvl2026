@@ -1,0 +1,110 @@
+import { HcmuteUnit, UnitGroupKind } from '@/types/vtvl';
+
+export const UNIT_GROUPS: {
+  id: UnitGroupKind;
+  label: string;
+  shortDesc: string;
+  sampleFrom: string;
+  sampleTo: string;
+  factsText: string;
+  sourceRule: string;
+}[] = [
+  {
+    id: 'khoa-vien',
+    label: 'Khối Khoa & Viện đào tạo',
+    shortDesc: '16 Khoa, Viện đào tạo chuyên ngành và Trường Trung học Kỹ thuật thực hành',
+    sampleFrom: 'XXX-DT-GV-01',
+    sampleTo: 'FME-DT-GV-01',
+    factsText: '18 nhiệm vụ · 52 công việc · 14 VTVL chuẩn giảng dạy & nghiên cứu',
+    sourceRule: 'Quy chế Tổ chức và Hoạt động Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)'
+  },
+  {
+    id: 'phong-ban',
+    label: 'Khối Phòng ban chức năng',
+    shortDesc: '14 Phòng chuyên môn, Ban Quản lý Ký túc xá và Trạm Y tế trường',
+    sampleFrom: 'XXX-HC-CV-01',
+    sampleTo: 'BMC-TT-CV-01',
+    factsText: '15 nhiệm vụ · 44 công việc · 12 VTVL tham mưu & quản trị đại học',
+    sourceRule: 'Đề án Vị trí việc làm khối hành chính – quản trị HCM-UTE'
+  },
+  {
+    id: 'trung-tam',
+    label: 'Khối Trung tâm & Phân hiệu',
+    shortDesc: 'Phân hiệu Bình Phước và 15 Trung tâm đào tạo, nghiên cứu, dịch vụ, học liệu số',
+    sampleFrom: 'XXX-DV-KT-01',
+    sampleTo: 'CISAT-KN-CV-01',
+    factsText: '14 nhiệm vụ · 38 công việc · 10 VTVL chuyển giao công nghệ & dịch vụ',
+    sourceRule: 'Quy định chức năng nhiệm vụ các Trung tâm & Phân hiệu trực thuộc HCM-UTE'
+  },
+  {
+    id: 'dang-doanthe',
+    label: 'Khối Quản trị & Đảng – Đoàn thể',
+    shortDesc: 'Hội đồng trường, Ban Giám hiệu, Văn phòng Đảng ủy, Công đoàn, Đoàn Thanh niên – Hội SV',
+    sampleFrom: 'XXX-CT-CV-01',
+    sampleTo: 'VPDU-TC-CV-01',
+    factsText: '12 nhiệm vụ · 32 công việc · 9 VTVL công tác Đảng, đoàn thể & quản trị',
+    sourceRule: 'Quy định tổ chức bộ máy Đảng ủy, Hội đồng trường và Đoàn thể HCM-UTE'
+  }
+];
+
+export const HCMUTE_UNITS: HcmuteUnit[] = [
+  // 1. Khối Khoa & Viện đào tạo (16 đơn vị)
+  { code: 'FME', nameVi: 'Khoa Cơ khí', nameEn: 'Faculty of Mechanical Engineering', group: 'khoa-vien', domain: 'fme.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Mechanical Engineering', defaultStaffCount: 78 },
+  { code: 'FEET', nameVi: 'Khoa Giao thông và Năng lượng', nameEn: 'Faculty of Energy Engineering and Transport', group: 'khoa-vien', domain: 'feet.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Energy Engineering and Transport', defaultStaffCount: 64 },
+  { code: 'FEEE', nameVi: 'Khoa Điện - Điện tử', nameEn: 'Faculty of Electrical and Electronics Engineering', group: 'khoa-vien', domain: 'feee.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Electrical and Electronics Engineering', defaultStaffCount: 82 },
+  { code: 'FIT', nameVi: 'Khoa Công nghệ Thông tin', nameEn: 'Faculty of Information Technology', group: 'khoa-vien', domain: 'fit.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Information Technology', defaultStaffCount: 68 },
+  { code: 'FCFT', nameVi: 'Khoa Hóa học và Khoa học sự sống', nameEn: 'Faculty of Chemistry and Life Sciences', group: 'khoa-vien', domain: 'fcft.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Chemistry and Life Sciences', defaultStaffCount: 46 },
+  { code: 'FCE', nameVi: 'Khoa Xây dựng', nameEn: 'Faculty of Civil Engineering', group: 'khoa-vien', domain: 'fce.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Civil Engineering', defaultStaffCount: 52 },
+  { code: 'FE', nameVi: 'Khoa Kinh tế', nameEn: 'Faculty of Economics', group: 'khoa-vien', domain: 'fe.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Economics', defaultStaffCount: 54 },
+  { code: 'FAE', nameVi: 'Khoa Đào tạo Tiên tiến', nameEn: 'Faculty of Advanced Education', group: 'khoa-vien', domain: 'fae.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Advanced Education', defaultStaffCount: 38 },
+  { code: 'FGAM', nameVi: 'Khoa Mỹ thuật và Truyền thông', nameEn: 'Faculty of Arts and Media', group: 'khoa-vien', domain: 'fgam.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Arts and Media', defaultStaffCount: 48 },
+  { code: 'FPI', nameVi: 'Khoa Chính trị và Luật', nameEn: 'Faculty of Political Science and Law', group: 'khoa-vien', domain: 'fpi.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Political Science and Law', defaultStaffCount: 36 },
+  { code: 'FAS', nameVi: 'Khoa Khoa học Ứng dụng', nameEn: 'Faculty of Applied Sciences', group: 'khoa-vien', domain: 'fas.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Applied Sciences', defaultStaffCount: 44 },
+  { code: 'FFL', nameVi: 'Khoa Ngoại ngữ', nameEn: 'Faculty of Foreign Languages', group: 'khoa-vien', domain: 'ffl.hcmute.edu.vn', headTitleVi: 'Trưởng khoa', headTitleEn: 'Dean of the Faculty of Foreign Languages', defaultStaffCount: 42 },
+  { code: 'IIE', nameVi: 'Viện Đào tạo quốc tế', nameEn: 'Institute of International Education', group: 'khoa-vien', domain: 'iie.hcmute.edu.vn', headTitleVi: 'Viện trưởng', headTitleEn: 'Director of the Institute of International Education', defaultStaffCount: 28 },
+  { code: 'ITE', nameVi: 'Viện Sư phạm Kỹ thuật', nameEn: 'Institute of Technical Education', group: 'khoa-vien', domain: 'ite.hcmute.edu.vn', headTitleVi: 'Viện trưởng', headTitleEn: 'Director of the Institute of Technical Education', defaultStaffCount: 30 },
+  { code: 'SDH', nameVi: 'Viện Sau đại học', nameEn: 'Postgraduate School', group: 'khoa-vien', domain: 'sdh.hcmute.edu.vn', headTitleVi: 'Viện trưởng', headTitleEn: 'Director of the Postgraduate School', defaultStaffCount: 18 },
+  { code: 'TPC', nameVi: 'Trường Trung học Kỹ thuật thực hành', nameEn: 'Technical Practice College', group: 'khoa-vien', domain: 'tpc.hcmute.edu.vn', headTitleVi: 'Hiệu trưởng', headTitleEn: 'Principal of the Technical Practice College', defaultStaffCount: 24 },
+
+  // 2. Khối Phòng ban chức năng (14 đơn vị)
+  { code: 'BMC', nameVi: 'Phòng Quản trị thương hiệu và Truyền thông', nameEn: 'Office of Brand Management and Communications', group: 'phong-ban', domain: 'bmc.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of Brand Management and Communications', defaultStaffCount: 18 },
+  { code: 'TCNS', nameVi: 'Phòng Tổ chức - Nhân sự', nameEn: 'Office of Organization and Personnel', group: 'phong-ban', domain: 'tcns.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of Organization and Personnel', defaultStaffCount: 16 },
+  { code: 'AAO', nameVi: 'Phòng Đào tạo', nameEn: 'Academic Affairs Office', group: 'phong-ban', domain: 'aao.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Academic Affairs Office', defaultStaffCount: 26 },
+  { code: 'OIA', nameVi: 'Phòng Quan hệ Quốc tế', nameEn: 'International Affairs Office', group: 'phong-ban', domain: 'oia.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of International Affairs', defaultStaffCount: 12 },
+  { code: 'ERO', nameVi: 'Phòng Quan hệ doanh nghiệp', nameEn: 'Enterprise Relations Office', group: 'phong-ban', domain: 'pr.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Enterprise Relations Office', defaultStaffCount: 12 },
+  { code: 'FPO', nameVi: 'Phòng Kế hoạch Tài chính', nameEn: 'Finance and Planning Office', group: 'phong-ban', domain: 'fpo.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Finance and Planning Office', defaultStaffCount: 22 },
+  { code: 'STIAO', nameVi: 'Phòng Khoa học Công nghệ', nameEn: 'Office of Science and Technology', group: 'phong-ban', domain: 'stiao.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of Science and Technology', defaultStaffCount: 14 },
+  { code: 'OGA', nameVi: 'Phòng Hành chính - Tổng hợp', nameEn: 'Office of General Administration', group: 'phong-ban', domain: 'uteoffice.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of General Administration', defaultStaffCount: 28 },
+  { code: 'SAO', nameVi: 'Phòng Công tác Sinh viên', nameEn: 'Office of Student Affairs', group: 'phong-ban', domain: 'sao.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of Student Affairs', defaultStaffCount: 20 },
+  { code: 'QAO', nameVi: 'Phòng Khảo thí và Đảm bảo Chất lượng', nameEn: 'Office of Testing and Quality Assurance', group: 'phong-ban', domain: 'qao.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of Testing and Quality Assurance', defaultStaffCount: 16 },
+  { code: 'EMO', nameVi: 'Phòng Quản trị cơ sở vật chất', nameEn: 'Office of Facilities Management', group: 'phong-ban', domain: 'emo.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of Facilities Management', defaultStaffCount: 32 },
+  { code: 'CPM', nameVi: 'Phòng Quản lý đầu tư xây dựng và Đấu thầu', nameEn: 'Office of Construction Project Management and Bidding', group: 'phong-ban', domain: 'cpm.hcmute.edu.vn', headTitleVi: 'Trưởng phòng', headTitleEn: 'Director of the Office of Construction Project Management and Bidding', defaultStaffCount: 14 },
+  { code: 'KTX', nameVi: 'Ban Quản lý Ký túc xá', nameEn: 'Dormitory Management Office', group: 'phong-ban', domain: 'ktx.hcmute.edu.vn', headTitleVi: 'Trưởng ban', headTitleEn: 'Director of the Dormitory Management Office', defaultStaffCount: 24 },
+  { code: 'TYT', nameVi: 'Trạm Y tế', nameEn: 'Health Care Office', group: 'phong-ban', domain: 'hd.hcmute.edu.vn', headTitleVi: 'Trưởng trạm', headTitleEn: 'Head of the Health Care Office', defaultStaffCount: 10 },
+
+  // 3. Khối Trung tâm & Phân hiệu (16 đơn vị)
+  { code: 'PHBP', nameVi: 'Phân hiệu HCM-UTE tại Bình Phước', nameEn: 'HCM-UTE Binh Phuoc Campus', group: 'trung-tam', subType: 'PHAN_HIEU', domain: 'binhphuoc.hcmute.edu.vn', headTitleVi: 'Giám đốc Phân hiệu', headTitleEn: 'Director of Binh Phuoc Campus', defaultStaffCount: 35 },
+  { code: 'HLDHS', nameVi: 'Trung tâm Học liệu và Dạy học số', nameEn: 'Center for Learning Resources and Digital Learning', group: 'trung-tam', subType: 'HOC_LIEU_SO', domain: 'lib.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Center for Learning Resources and Digital Learning', defaultStaffCount: 26 },
+  { code: 'CISAT', nameVi: 'Trung tâm Sáng tạo, Khởi nghiệp và Chuyển giao công nghệ', nameEn: 'Center of Innovation, Startup and Technology Transfer', group: 'trung-tam', subType: 'KHOI_NGHIEP', domain: 'cisat.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Center of Innovation, Startup and Technology Transfer', defaultStaffCount: 14 },
+  { code: 'INC', nameVi: 'Trung tâm Thông tin máy tính', nameEn: 'Information and Network Center', group: 'trung-tam', subType: 'HA_TANG_SO', domain: 'inc.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Information and Network Center', defaultStaffCount: 16 },
+  { code: 'ITC', nameVi: 'Trung tâm Công nghệ thông tin', nameEn: 'Information Technology Center', group: 'trung-tam', subType: 'DAO_TAO_DV', domain: 'itc.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Information Technology Center', defaultStaffCount: 14 },
+  { code: 'GDQPAN', nameVi: 'Trung tâm Giáo dục Quốc phòng và An ninh', nameEn: 'National Defense and Security Training Center', group: 'trung-tam', subType: 'DAO_TAO_CHUNG', domain: 'gdqp.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the National Defense and Security Training Center', defaultStaffCount: 20 },
+  { code: 'GDTC', nameVi: 'Trung tâm Giáo dục thể chất', nameEn: 'Physical Education Center', group: 'trung-tam', subType: 'DAO_TAO_CHUNG', domain: 'gdtc.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Physical Education Center', defaultStaffCount: 22 },
+  { code: 'STC', nameVi: 'Trung tâm Công nghiệp phần mềm', nameEn: 'Software Technology Center', group: 'trung-tam', subType: 'NGHIEN_CUU_CG', domain: 'stc.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Software Technology Center', defaultStaffCount: 12 },
+  { code: 'CFL', nameVi: 'Trung tâm Ngoại ngữ', nameEn: 'Center for Foreign Languages', group: 'trung-tam', subType: 'DAO_TAO_DV', domain: 'cfl.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Center for Foreign Languages', defaultStaffCount: 15 },
+  { code: 'VGC', nameVi: 'Trung tâm Việt Đức', nameEn: 'Vietnam - Germany Center', group: 'trung-tam', subType: 'HOP_TAC_QT', domain: 'vgc.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Vietnam - Germany Center', defaultStaffCount: 12 },
+  { code: 'SRC', nameVi: 'Trung tâm Robot thông minh', nameEn: 'Smart Robotic Center', group: 'trung-tam', subType: 'NGHIEN_CUU_CG', domain: 'src.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Smart Robotic Center', defaultStaffCount: 10 },
+  { code: 'ESC', nameVi: 'Trung tâm Kỹ thuật tổng hợp', nameEn: 'Engineering Synthesis Center', group: 'trung-tam', subType: 'NGHIEN_CUU_CG', domain: 'esc.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Engineering Synthesis Center', defaultStaffCount: 12 },
+  { code: 'EETC', nameVi: 'Trung tâm Kỹ thuật và Công nghệ môi trường', nameEn: 'Environmental Engineering and Technology Center', group: 'trung-tam', subType: 'NGHIEN_CUU_CG', domain: 'eetc.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Environmental Engineering and Technology Center', defaultStaffCount: 10 },
+  { code: 'CERAC', nameVi: 'Trung tâm Nghiên cứu và Ứng dụng kỹ thuật xây dựng', nameEn: 'Civil Engineering Research and Application Center', group: 'trung-tam', subType: 'NGHIEN_CUU_CG', domain: 'cerac.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Civil Engineering Research and Application Center', defaultStaffCount: 10 },
+  { code: 'TRTC', nameVi: 'Trung tâm Nghiên cứu và Chuyển giao công nghệ', nameEn: 'Technology Research and Transfer Center', group: 'trung-tam', subType: 'NGHIEN_CUU_CG', domain: 'trtc.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Technology Research and Transfer Center', defaultStaffCount: 11 },
+  { code: 'IDDF', nameVi: 'Trung tâm Tư vấn thiết kế và Chế tạo thiết bị công nghiệp', nameEn: 'Industrial Device Design and Fabrication Advisor Center', group: 'trung-tam', subType: 'NGHIEN_CUU_CG', domain: 'iddf.hcmute.edu.vn', headTitleVi: 'Giám đốc trung tâm', headTitleEn: 'Director of the Industrial Device Design and Fabrication Advisor Center', defaultStaffCount: 12 },
+
+  // 4. Khối Quản trị & Đảng - Đoàn thể (5 đơn vị)
+  { code: 'HDT', nameVi: 'Hội đồng trường', nameEn: 'University Council', group: 'dang-doanthe', domain: 'hcmute.edu.vn', headTitleVi: 'Chủ tịch Hội đồng trường', headTitleEn: 'Chair of the University Council', defaultStaffCount: 6 },
+  { code: 'BGH', nameVi: 'Ban Giám hiệu', nameEn: 'Presidential Board', group: 'dang-doanthe', domain: 'hcmute.edu.vn', headTitleVi: 'Hiệu trưởng', headTitleEn: 'President', defaultStaffCount: 5 },
+  { code: 'VPDU', nameVi: 'Văn phòng Đảng ủy', nameEn: 'Office of University Party Committee', group: 'dang-doanthe', domain: 'danguy.hcmute.edu.vn', headTitleVi: 'Bí thư Đảng ủy', headTitleEn: 'Secretary of the Party Committee', defaultStaffCount: 8 },
+  { code: 'CDT', nameVi: 'Công đoàn Trường', nameEn: 'University Trade Union', group: 'dang-doanthe', domain: 'congdoan.hcmute.edu.vn', headTitleVi: 'Chủ tịch Công đoàn Trường', headTitleEn: 'President of the University Trade Union', defaultStaffCount: 6 },
+  { code: 'DTN', nameVi: 'Đoàn Thanh niên - Hội Sinh viên', nameEn: 'Ho Chi Minh Communist Youth Union & Students Association', group: 'dang-doanthe', domain: 'doanthanhnien.hcmute.edu.vn', headTitleVi: 'Bí thư Đoàn Thanh niên', headTitleEn: 'Secretary of the Ho Chi Minh Communist Youth Union', defaultStaffCount: 9 }
+];
+

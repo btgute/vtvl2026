@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f6f9;
+  --sheet: #ffffff;
+  --foreground: rgb(0, 71, 118);
+  --ink-muted: #355975;
+  --ink-subtle: #5c7b94;
+  --primary: #0072bc;
+  --primary-deep: #004776;
+  --primary-foreground: #ffffff;
+  --accent-red: #ed1c24;
+  --border: #d5e0eb;
+  --border-subtle: #e6eef5;
+  --card: #ffffff;
+  --muted: #eaf0f6;
+  --fix: #b42318;
+  --fix-soft: #fdeceb;
+  --warn: #9a5a06;
+  --warn-soft: #fdf2e1;
+  --ok: #157347;
+  --ok-soft: #e3f5ec;
+}
+
+.dark {
+  --background: #0b1520;
+  --sheet: #112030;
+  --foreground: #ebf4fc;
+  --ink-muted: #9ebbd4;
+  --ink-subtle: #6f90ad;
+  --primary: #38bdf8;
+  --primary-deep: #0284c7;
+  --primary-foreground: #061523;
+  --accent-red: #f87171;
+  --border: #1f364d;
+  --border-subtle: #16293d;
+  --card: #112030;
+  --muted: #172a3e;
+  --fix: #f87171;
+  --fix-soft: #3b1818;
+  --warn: #fbbf24;
+  --warn-soft: #382810;
+  --ok: #4ade80;
+  --ok-soft: #113022;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Be Vietnam Pro", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, p, li, span, td, th, strong, b, label {
+  color: inherit;
+}
+
+input, textarea, select {
+  line-height: 1.65 !important;
+  overflow: visible !important;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

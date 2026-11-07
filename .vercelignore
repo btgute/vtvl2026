@@ -1,0 +1,14 @@
+# BẢO MẬT NỘI BỘ (TUYỆT ĐỐI KHÔNG ĐƯA LÊN VERCEL CLOUD)
+/Tai lieu huong dan kem theo Huong dan so 07-HDVTVL/
+/Tai lieu huong dan kem theo Huong dan so 07-HDVTVL.rar
+/20skill-van-phong-main/
+/outputs/
+*.xlsx
+*.docx
+*.zip
+*.rar
+*.pdf
+.git
+node_modules
+.next
+
