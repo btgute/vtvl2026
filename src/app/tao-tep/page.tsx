@@ -186,12 +186,10 @@ export default function TaoTepPage() {
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 pt-5 page-with-sticky-bar">
       <ToastRegion toasts={toasts} onDismiss={(id) => setToasts((p) => p.filter((t) => t.id !== id))} />
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        <div className="lg:col-span-3">
-          <WorkflowSidebar activeStep={activeStep} errorStep={validationErrors.length > 0 && activeStep > 1 ? 1 : null} onSelectStep={(s) => { setActiveStep(s); persistState({ activeStep: s }); }} unitCode={currentUnit.code} />
-        </div>
+      <div className="flex flex-col lg:flex-row gap-5 items-start">
+        <WorkflowSidebar activeStep={activeStep} errorStep={validationErrors.length > 0 && activeStep > 1 ? 1 : null} onSelectStep={(s) => { setActiveStep(s); persistState({ activeStep: s }); }} unitCode={currentUnit.code} />
 
-        <div className="lg:col-span-9 space-y-6 min-w-0">
+        <div className="flex-1 w-full space-y-6 min-w-0">
           {activeStep === 1 && (
             <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6 sm:space-y-7">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">

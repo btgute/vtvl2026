@@ -212,6 +212,20 @@ a.btn-touch {
   color: var(--foreground);
 }
 
+@media (min-width: 1024px) {
+  .workflow-sidebar {
+    width: 288px;
+    min-width: 288px;
+    flex-basis: 288px;
+    transition: width var(--transition-ui), min-width var(--transition-ui), flex-basis var(--transition-ui);
+  }
+  .workflow-sidebar[data-collapsed="true"] {
+    width: 76px;
+    min-width: 76px;
+    flex-basis: 76px;
+  }
+}
+
 .dark .sticky-action-bar {
   background: rgba(17, 32, 48, 0.94);
   border-top: 1px solid rgba(136, 172, 201, 0.14);

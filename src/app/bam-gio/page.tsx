@@ -157,9 +157,9 @@ export default function BamGioPage() {
 
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        <div className="lg:col-span-3"><WorkflowSidebar activeStep={3} unitCode={unit.code} /></div>
-        <div className="lg:col-span-9 space-y-5 min-w-0">
+      <div className="flex flex-col lg:flex-row gap-5 items-start">
+        <WorkflowSidebar activeStep={3} unitCode={unit.code} />
+        <div className="flex-1 w-full space-y-5 min-w-0">
           <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
               <div className="flex items-center">

@@ -30,32 +30,11 @@ export interface StepSubTask { id: string; label: string; }
 export interface SidebarStepItem { num: number; shortTitle: string; title: string; href: string; subTasks: StepSubTask[]; }
 
 export const SIDEBAR_FIVE_STEPS: SidebarStepItem[] = [
-  {
-    num: 1, shortTitle: 'Đề xuất vị trí việc làm', title: 'Giai đoạn 1 — Đề xuất vị trí việc làm', href: '/tao-tep?step=1',
-    subTasks: [
-      { id: 'task-1-unit', label: 'Chặng 1/5 — Chọn đơn vị' },
-      { id: 'task-1-actor', label: 'Chặng 2/5 — Người thực hiện' },
-      { id: 'task-1-add', label: 'Chặng 3/5 — Chọn VTVL' },
-      { id: 'task-1-name', label: 'Chặng 4/5 — Chi tiết VTVL' },
-      { id: 'task-1-staff', label: 'Chặng 5/5 — Xác nhận' }
-    ]
-  },
-  {
-    num: 2, shortTitle: 'Xuất bộ biểu gốc', title: 'Giai đoạn 2 — Xuất bộ biểu gốc', href: '/tao-tep?step=2',
-    subTasks: [{ id: 'task-2-zip', label: 'Tùy chọn gói phiếu khảo sát (.zip)' }, { id: 'task-2-export', label: 'Khởi tạo & tải bộ biểu đơn vị' }]
-  },
-  {
-    num: 3, shortTitle: 'Đo định mức thời gian', title: 'Giai đoạn 3 — Đo định mức thời gian', href: '/bam-gio',
-    subTasks: [{ id: 'task-3-vtvl', label: 'Chọn vị trí việc làm cần đo' }, { id: 'task-3-timer', label: 'Bấm giờ đo trực tiếp' }]
-  },
-  {
-    num: 4, shortTitle: 'Gộp phiếu khảo sát', title: 'Giai đoạn 4 — Gộp phiếu khảo sát', href: '/tao-tep?step=4',
-    subTasks: [{ id: 'task-4-root', label: 'Tệp đơn vị gốc' }, { id: 'task-4-forms', label: 'Tải lên các phiếu khảo sát' }]
-  },
-  {
-    num: 5, shortTitle: 'Thẩm định hồ sơ', title: 'Giai đoạn 5 — Thẩm định hồ sơ', href: '/ra-soat',
-    subTasks: [{ id: 'task-5-run', label: 'Kiểm tra chéo hồ sơ đơn vị' }, { id: 'task-5-export', label: 'Xuất báo cáo thẩm định (.xlsx)' }]
-  }
+  { num: 1, shortTitle: 'Đề xuất vị trí việc làm', title: 'Giai đoạn 1 — Đề xuất vị trí việc làm', href: '/tao-tep?step=1', subTasks: [{ id: 'task-1-unit', label: 'Chặng 1/5 — Chọn đơn vị' }, { id: 'task-1-actor', label: 'Chặng 2/5 — Người thực hiện' }, { id: 'task-1-add', label: 'Chặng 3/5 — Chọn VTVL' }, { id: 'task-1-name', label: 'Chặng 4/5 — Chi tiết VTVL' }, { id: 'task-1-staff', label: 'Chặng 5/5 — Xác nhận' }] },
+  { num: 2, shortTitle: 'Xuất bộ biểu gốc', title: 'Giai đoạn 2 — Xuất bộ biểu gốc', href: '/tao-tep?step=2', subTasks: [{ id: 'task-2-zip', label: 'Tùy chọn gói phiếu khảo sát (.zip)' }, { id: 'task-2-export', label: 'Khởi tạo & tải bộ biểu đơn vị' }] },
+  { num: 3, shortTitle: 'Đo định mức thời gian', title: 'Giai đoạn 3 — Đo định mức thời gian', href: '/bam-gio', subTasks: [{ id: 'task-3-vtvl', label: 'Chọn vị trí việc làm cần đo' }, { id: 'task-3-timer', label: 'Bấm giờ đo trực tiếp' }] },
+  { num: 4, shortTitle: 'Gộp phiếu khảo sát', title: 'Giai đoạn 4 — Gộp phiếu khảo sát', href: '/tao-tep?step=4', subTasks: [{ id: 'task-4-root', label: 'Tệp đơn vị gốc' }, { id: 'task-4-forms', label: 'Tải lên các phiếu khảo sát' }] },
+  { num: 5, shortTitle: 'Thẩm định hồ sơ', title: 'Giai đoạn 5 — Thẩm định hồ sơ', href: '/ra-soat', subTasks: [{ id: 'task-5-run', label: 'Kiểm tra chéo hồ sơ đơn vị' }, { id: 'task-5-export', label: 'Xuất báo cáo thẩm định (.xlsx)' }] }
 ];
 
 export function focusTaskTarget(taskId: string) {
@@ -91,14 +70,9 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
       setActiveUnit(getActiveUnitDefinition(unitCode));
       const s = getActiveUnitSession();
       setActorInfo({
-        email: s.actorEmail,
-        title: s.actorTitle,
-        lastSavedAt: s.lastSavedAt,
-        wizardStage: s.wizardStage || 1,
-        posCount: s.proposedPositions?.length || 0,
-        exportedFile: s.lastExportedFileName || '',
-        timerCount: s.timeSessions?.length || 0,
-        mergedVer: s.lastMergedVersion ? `v${s.lastMergedVersion}` : '',
+        email: s.actorEmail, title: s.actorTitle, lastSavedAt: s.lastSavedAt, wizardStage: s.wizardStage || 1,
+        posCount: s.proposedPositions?.length || 0, exportedFile: s.lastExportedFileName || '',
+        timerCount: s.timeSessions?.length || 0, mergedVer: s.lastMergedVersion ? `v${s.lastMergedVersion}` : '',
         auditFixCount: typeof s.lastAuditFixCount === 'number' ? s.lastAuditFixCount : null
       });
     };
@@ -106,15 +80,8 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
     window.addEventListener('vtvl-unit-session-updated', sync);
     window.addEventListener('storage', sync);
     let bc: BroadcastChannel | null = null;
-    if ('BroadcastChannel' in window) {
-      bc = new BroadcastChannel('hcmute_vtvl_realtime');
-      bc.onmessage = sync;
-    }
-    return () => {
-      window.removeEventListener('vtvl-unit-session-updated', sync);
-      window.removeEventListener('storage', sync);
-      bc?.close();
-    };
+    if ('BroadcastChannel' in window) { bc = new BroadcastChannel('hcmute_vtvl_realtime'); bc.onmessage = sync; }
+    return () => { window.removeEventListener('vtvl-unit-session-updated', sync); window.removeEventListener('storage', sync); bc?.close(); };
   }, [unitCode]);
 
   useEffect(() => { if (drawerOpen) closeBtnRef.current?.focus(); }, [drawerOpen]);
@@ -141,32 +108,67 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
   };
 
   const renderStagesList = (compactMode: boolean, inMobileDrawer = false) => (
-    <ol className="space-y-0.5">
-      {SIDEBAR_FIVE_STEPS.map((s) => {
+    <ol className={compactMode ? 'flex flex-col items-center w-full' : 'space-y-0.5'}>
+      {SIDEBAR_FIVE_STEPS.map((s, idx) => {
         const isCurrent = currentStep === s.num;
         const isDone = !isCurrent && stageDoneFlags[s.num - 1];
         const hasError = errorStep === s.num || (s.num === 5 && (actorInfo.auditFixCount ?? 0) > 0);
+        const needsSupplement = !isCurrent && !isDone && !hasError && s.num === 1 && (!actorInfo.email || !actorInfo.title);
         const handleInternal = onSelectStep && (s.num === 1 || s.num === 2 || s.num === 4);
+        const isLast = idx === SIDEBAR_FIVE_STEPS.length - 1;
         const statusText = hasError
           ? (s.num === 5 && actorInfo.auditFixCount ? `Có lỗi · ${actorInfo.auditFixCount} mục phải sửa` : 'Có lỗi')
           : isCurrent
             ? (s.num === 1 ? `Đang thực hiện · Chặng ${actorInfo.wizardStage}/5` : 'Đang thực hiện')
             : isDone
               ? (s.num === 3 && actorInfo.timerCount > 0 ? `Hoàn thành · ${actorInfo.timerCount} phiên đo` : s.num === 4 && actorInfo.mergedVer ? `Hoàn thành · ${actorInfo.mergedVer}` : 'Hoàn thành')
-              : 'Chưa thực hiện';
+              : needsSupplement ? 'Cần bổ sung' : 'Chưa thực hiện';
 
-        const rowContent = compactMode ? (
-          <div title={`${s.title} (${statusText})`} className={`flex items-center justify-center w-11 h-11 rounded-lg transition-colors ${hasError ? 'bg-[var(--fix-soft)] text-[var(--fix)] border-l-[3px] border-[var(--fix)]' : isCurrent ? 'bg-[var(--surface-tint)] text-[var(--primary)] border-l-[3px] border-[var(--primary)] font-bold' : isDone ? 'bg-[var(--ok-soft)]/60 text-[var(--ok)]' : 'text-[var(--ink-muted)] hover:bg-[var(--sheet)]'}`}>
-            {isDone ? <Check className="w-4 h-4" /> : <span className="text-sm font-bold">{s.num}</span>}
-          </div>
-        ) : (
+        if (compactMode) {
+          const railCircleClass = hasError
+            ? 'bg-[var(--fix-soft)] text-[var(--fix)] border border-[var(--fix)]/45'
+            : isCurrent
+              ? 'bg-[var(--primary)] text-white border-2 border-[var(--primary)] shadow-xs'
+              : isDone
+                ? 'bg-[var(--ok-soft)] text-[var(--ok)] border border-[var(--ok)]/25'
+                : needsSupplement
+                  ? 'bg-[var(--warn-soft)] text-[var(--warn)] border border-[var(--warn)]/40'
+                  : 'bg-[var(--sheet)] text-[var(--foreground)] border border-[var(--border)] group-hover:border-[var(--primary)]';
+
+          const railNode = (
+            <div className="group relative flex items-center justify-center w-full py-0.5">
+              {(isCurrent || hasError) && <span aria-hidden="true" className={`absolute left-1.5 w-1 h-6 rounded-full ${hasError ? 'bg-[var(--fix)]' : 'bg-[var(--primary)]'}`} />}
+              <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold transition-all ${railCircleClass}`}>
+                {hasError ? <AlertTriangle className="w-4 h-4" /> : isDone ? <Check className="w-4 h-4 stroke-[2.4]" /> : <span className={isCurrent ? 'text-white' : ''}>{s.num}</span>}
+              </span>
+              <div role="tooltip" className="pointer-events-none invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-visible:visible group-focus-visible:opacity-100 group-focus-within:visible group-focus-within:opacity-100 transition-opacity duration-150 absolute left-full ml-3 top-1/2 -translate-y-1/2 z-50 w-max max-w-[260px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-3.5 py-2.5 text-left shadow-md">
+                <span aria-hidden="true" className="absolute -left-[6px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-[var(--sheet)] border-l border-b border-[var(--border)]" />
+                <div className="text-xs sm:text-sm font-bold text-[var(--foreground)] leading-snug">{s.title}</div>
+                <div className={`text-xs mt-0.5 ${hasError ? 'text-[var(--fix)] font-semibold' : isCurrent ? 'text-[var(--ink-muted)]' : isDone ? 'text-[var(--ok)] font-semibold' : needsSupplement ? 'text-[var(--warn)] font-semibold' : 'text-[var(--ink-subtle)]'}`}>{statusText}</div>
+              </div>
+            </div>
+          );
+
+          return (
+            <li key={s.num} className="flex flex-col items-center w-full">
+              {handleInternal ? (
+                <button type="button" aria-label={`${s.title} (${statusText})`} aria-current={isCurrent ? 'step' : undefined} onClick={() => onSelectStep(s.num)} className="w-full cursor-pointer focus:outline-none">{railNode}</button>
+              ) : (
+                <Link href={s.href} aria-label={`${s.title} (${statusText})`} aria-current={isCurrent ? 'step' : undefined} className="w-full block focus:outline-none">{railNode}</Link>
+              )}
+              {!isLast && <span aria-hidden="true" className="w-[1.5px] h-5 bg-[var(--border)]" />}
+            </li>
+          );
+        }
+
+        const expandedRow = (
           <div className={`group flex items-start gap-2.5 px-3 py-2.5 min-h-[44px] rounded-r-lg transition-colors border-l-[3px] ${hasError ? 'border-[var(--fix)] bg-[var(--fix-soft)]' : isCurrent ? 'border-[var(--primary)] bg-[var(--surface-tint)]' : 'border-transparent hover:bg-[var(--sheet)]/70'}`}>
-            <span className={`mt-0.5 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 ${hasError ? 'bg-[var(--fix)] text-white' : isCurrent ? 'bg-[var(--primary)] text-white' : isDone ? 'bg-[var(--ok-soft)] text-[var(--ok)]' : 'bg-[var(--muted)] text-[var(--ink-subtle)]'}`}>
+            <span className={`mt-0.5 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 ${hasError ? 'bg-[var(--fix)] text-white' : isCurrent ? 'bg-[var(--primary)] text-white' : isDone ? 'bg-[var(--ok-soft)] text-[var(--ok)]' : needsSupplement ? 'bg-[var(--warn-soft)] text-[var(--warn)]' : 'bg-[var(--muted)] text-[var(--ink-subtle)]'}`}>
               {hasError ? <AlertTriangle className="w-3.5 h-3.5" /> : isDone ? <Check className="w-3.5 h-3.5" /> : s.num}
             </span>
             <div className="flex-1 min-w-0">
               <div className={`text-sm leading-snug ${hasError ? 'font-bold text-[var(--fix)]' : isCurrent ? 'font-bold text-[var(--primary)]' : isDone ? 'font-semibold text-[var(--foreground)]' : 'text-[var(--ink-muted)]'}`}>{s.title}</div>
-              <div className={`text-xs mt-0.5 flex items-center gap-1 ${hasError ? 'text-[var(--fix)] font-semibold' : isDone ? 'text-[var(--ok)] font-semibold' : isCurrent ? 'text-[var(--primary)] font-semibold' : 'text-[var(--ink-subtle)]'}`}>
+              <div className={`text-xs mt-0.5 flex items-center gap-1 ${hasError ? 'text-[var(--fix)] font-semibold' : isDone ? 'text-[var(--ok)] font-semibold' : isCurrent ? 'text-[var(--primary)] font-semibold' : needsSupplement ? 'text-[var(--warn)] font-semibold' : 'text-[var(--ink-subtle)]'}`}>
                 {stepIcon(s.num)}<span>{statusText}</span>
               </div>
             </div>
@@ -176,9 +178,9 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
         return (
           <li key={s.num}>
             {handleInternal ? (
-              <button type="button" aria-current={isCurrent ? 'step' : undefined} onClick={() => { onSelectStep(s.num); if (inMobileDrawer) closeDrawer(); }} className="w-full text-left cursor-pointer">{rowContent}</button>
+              <button type="button" aria-current={isCurrent ? 'step' : undefined} onClick={() => { onSelectStep(s.num); if (inMobileDrawer) closeDrawer(); }} className="w-full text-left cursor-pointer">{expandedRow}</button>
             ) : (
-              <Link href={s.href} aria-current={isCurrent ? 'step' : undefined} onClick={() => { if (inMobileDrawer) closeDrawer(); }} className="block">{rowContent}</Link>
+              <Link href={s.href} aria-current={isCurrent ? 'step' : undefined} onClick={() => { if (inMobileDrawer) closeDrawer(); }} className="block">{expandedRow}</Link>
             )}
           </li>
         );
@@ -187,8 +189,8 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
   );
 
   return (
-    <aside aria-label="Tiến trình 5 giai đoạn" className="surface-secondary rounded-xl lg:rounded-none lg:bg-[var(--surface-secondary)] lg:border-r lg:border-[var(--border-subtle)] lg:sticky lg:top-20 select-none">
-      {/* MOBILE BAR: Gọn nhẹ + Nút mở Bottom Sheet Drawer */}
+    <aside aria-label="Tiến trình 5 giai đoạn" data-collapsed={desktopCollapsed ? 'true' : 'false'} className="workflow-sidebar w-full lg:w-auto surface-secondary rounded-xl lg:rounded-2xl border border-[var(--border-subtle)] lg:sticky lg:top-20 select-none">
+      {/* MOBILE BAR + BOTTOM SHEET DRAWER */}
       <div className="lg:hidden px-3.5 py-2.5 flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center justify-between text-xs font-semibold text-[var(--primary)]">
@@ -204,15 +206,11 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
         </button>
       </div>
 
-      {/* MOBILE BOTTOM SHEET DRAWER */}
       {drawerOpen && (
         <div role="dialog" aria-modal="true" aria-label="Toàn bộ tiến trình 5 giai đoạn" onKeyDown={(e) => { if (e.key === 'Escape') closeDrawer(); }} className="lg:hidden fixed inset-0 z-50 bg-black/45 flex items-end justify-center" onClick={closeDrawer}>
           <div className="w-full max-h-[82vh] overflow-y-auto rounded-t-2xl bg-[var(--sheet)] border-t border-[var(--border)] p-4 space-y-3 shadow-xl pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2.5">
-              <div>
-                <div className="text-sm font-bold text-[var(--foreground)]">Tiến trình 5 giai đoạn ({progressPercent}%)</div>
-                <div className="text-xs text-[var(--ink-muted)]">{activeUnit.nameVi}</div>
-              </div>
+              <div><div className="text-sm font-bold text-[var(--foreground)]">Tiến trình 5 giai đoạn ({progressPercent}%)</div><div className="text-xs text-[var(--ink-muted)]">{activeUnit.nameVi}</div></div>
               <button ref={closeBtnRef} type="button" onClick={closeDrawer} aria-label="Đóng tiến trình" className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl border border-[var(--border)]"><X className="w-5 h-5" /></button>
             </div>
             {renderStagesList(false, true)}
@@ -220,52 +218,56 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
         </div>
       )}
 
-      {/* DESKTOP SIDEBAR: Chỉ hiển thị 5 giai đoạn chính, cho phép thu gọn thành dải số */}
+      {/* DESKTOP SIDEBAR: Mở rộng hoặc Navigation Rail (76px) */}
       <div className="hidden lg:block">
-        <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-subtle)]">
-          {!desktopCollapsed && <span className="text-xs font-bold text-[var(--ink-muted)]">Tiến trình 5 giai đoạn ({progressPercent}%)</span>}
-          <div className="flex items-center gap-1 ml-auto">
-            {!desktopCollapsed && (
-              <InfoTip title="Mốc tiến độ triển khai toàn Trường" align="right">
-                {VTVL_MILESTONES.map((ms) => (
-                  <div key={ms.id} className="py-1 border-b border-[var(--border-subtle)] last:border-0">
-                    <strong className="text-[var(--foreground)] block">{ms.day} {ms.month}: {ms.title} ({ms.badgeText})</strong>
-                    <span>{ms.description}</span>
-                  </div>
-                ))}
-              </InfoTip>
-            )}
-            <button type="button" onClick={() => setDesktopCollapsed((p) => !p)} aria-label={desktopCollapsed ? 'Mở rộng thanh tiến trình' : 'Thu gọn thanh tiến trình'} title={desktopCollapsed ? 'Mở rộng thanh tiến trình' : 'Thu gọn chỉ còn số giai đoạn'} className="w-11 h-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl hover:bg-[var(--background)] text-[var(--primary)] cursor-pointer">
-              {desktopCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+        {desktopCollapsed ? (
+          <div className="flex flex-col items-center py-3.5 px-2">
+            <button type="button" onClick={() => setDesktopCollapsed(false)} aria-label="Mở rộng thanh tiến trình" title="Mở rộng thanh tiến trình" className="w-10 h-10 min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-xl border border-[var(--primary)]/50 bg-[var(--sheet)] hover:bg-[var(--surface-tint)] text-[var(--primary)] shadow-2xs cursor-pointer transition-colors mb-4">
+              <PanelLeftOpen className="w-4 h-4" />
             </button>
+            {renderStagesList(true, false)}
           </div>
-        </div>
-
-        {!desktopCollapsed && (
-          <div className="px-3.5 py-2.5 border-b border-[var(--border-subtle)] bg-[var(--background)]/50 space-y-1">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-start gap-2 min-w-0">
-                <Building2 className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" />
-                <span className="text-sm font-bold text-[var(--foreground)] leading-snug break-words">{activeUnit.nameVi}</span>
+        ) : (
+          <>
+            <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-subtle)]">
+              <span className="text-xs font-bold text-[var(--ink-muted)]">Tiến trình 5 giai đoạn ({progressPercent}%)</span>
+              <div className="flex items-center gap-1 ml-auto">
+                <InfoTip title="Mốc tiến độ triển khai toàn Trường" align="right">
+                  {VTVL_MILESTONES.map((ms) => (
+                    <div key={ms.id} className="py-1 border-b border-[var(--border-subtle)] last:border-0">
+                      <strong className="text-[var(--foreground)] block">{ms.day} {ms.month}: {ms.title} ({ms.badgeText})</strong><span>{ms.description}</span>
+                    </div>
+                  ))}
+                </InfoTip>
+                <button type="button" onClick={() => setDesktopCollapsed(true)} aria-label="Thu gọn thanh tiến trình" title="Thu gọn chỉ còn số giai đoạn" className="w-9 h-9 min-h-[38px] min-w-[38px] inline-flex items-center justify-center rounded-xl hover:bg-[var(--background)] text-[var(--primary)] cursor-pointer">
+                  <PanelLeftClose className="w-4 h-4" />
+                </button>
               </div>
-              {currentStep > 1 && (
-                onSelectStep ? (
-                  <button type="button" onClick={() => { onSelectStep(1); focusTaskTarget('task-1-unit'); }} className="inline-flex items-center gap-1 min-h-[36px] px-2 text-xs font-bold text-[var(--primary)] hover:underline shrink-0 cursor-pointer"><RefreshCw className="w-3.5 h-3.5" /><span>Đổi đơn vị</span></button>
-                ) : (
-                  <Link href="/tao-tep?step=1&task=task-1-unit" className="inline-flex items-center gap-1 min-h-[36px] px-2 text-xs font-bold text-[var(--primary)] hover:underline shrink-0"><RefreshCw className="w-3.5 h-3.5" /><span>Đổi đơn vị</span></Link>
-                )
-              )}
             </div>
-            <div className="flex items-start gap-2 text-xs text-[var(--ink-muted)] leading-snug break-words">
-              <UserCheck className="w-3.5 h-3.5 text-[var(--primary)] shrink-0 mt-0.5" />
-              {actorInfo.email && actorInfo.title ? <span><strong>{actorInfo.title}</strong> · {actorInfo.email}</span> : <span className="text-[var(--warn)] font-semibold">Chưa khai báo người thực hiện</span>}
-            </div>
-          </div>
-        )}
 
-        <div className={`p-2.5 ${desktopCollapsed ? 'flex flex-col items-center' : ''}`}>
-          {renderStagesList(desktopCollapsed, false)}
-        </div>
+            <div className="px-3.5 py-2.5 border-b border-[var(--border-subtle)] bg-[var(--background)]/50 space-y-1">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2 min-w-0">
+                  <Building2 className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" />
+                  <span className="text-sm font-bold text-[var(--foreground)] leading-snug break-words">{activeUnit.nameVi}</span>
+                </div>
+                {currentStep > 1 && (
+                  onSelectStep ? (
+                    <button type="button" onClick={() => { onSelectStep(1); focusTaskTarget('task-1-unit'); }} className="inline-flex items-center gap-1 min-h-[36px] px-2 text-xs font-bold text-[var(--primary)] hover:underline shrink-0 cursor-pointer"><RefreshCw className="w-3.5 h-3.5" /><span>Đổi đơn vị</span></button>
+                  ) : (
+                    <Link href="/tao-tep?step=1&task=task-1-unit" className="inline-flex items-center gap-1 min-h-[36px] px-2 text-xs font-bold text-[var(--primary)] hover:underline shrink-0"><RefreshCw className="w-3.5 h-3.5" /><span>Đổi đơn vị</span></Link>
+                  )
+                )}
+              </div>
+              <div className="flex items-start gap-2 text-xs text-[var(--ink-muted)] leading-snug break-words">
+                <UserCheck className="w-3.5 h-3.5 text-[var(--primary)] shrink-0 mt-0.5" />
+                {actorInfo.email && actorInfo.title ? <span><strong>{actorInfo.title}</strong> · {actorInfo.email}</span> : <span className="text-[var(--warn)] font-semibold">Chưa khai báo người thực hiện</span>}
+              </div>
+            </div>
+
+            <div className="p-2.5">{renderStagesList(false, false)}</div>
+          </>
+        )}
       </div>
     </aside>
   );
