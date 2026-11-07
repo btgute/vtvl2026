@@ -74,8 +74,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6, p, li, span, td, th, strong, b, label {
-  color: inherit;
+.text-white {
+  color: #ffffff !important;
 }
 
 /* Giảm độ đậm (bold) của toàn bộ chữ xuống 75% so với mức trước đó */
