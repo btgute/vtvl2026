@@ -250,21 +250,24 @@ export default function TaoTepPage() {
             </section>
           )}
           {activeStep === 2 && (
-            <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6">
+            <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
-                <h1 className="text-base sm:text-xl font-bold text-[var(--foreground)]">Giai đoạn 2/5 — Xuất bộ biểu gốc (4 tệp đầu ra)</h1>
-                <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Giai đoạn 1</span></button>
+                <h1 className="text-base sm:text-xl font-bold text-[var(--foreground)]">Giai đoạn 2/5 — Xuất bộ biểu gốc</h1>
+                <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Giai đoạn 1</span></button>
               </div>
-              <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} onCopied={(fn) => pushToast('success', `Đã sao chép tên tệp: ${fn}`)} />
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-b border-[var(--border-subtle)]">
-                <label className="flex items-center gap-3 text-sm font-semibold text-[var(--foreground)] cursor-pointer"><input id="task-2-zip" type="checkbox" checked={includeZip} onChange={(e) => setIncludeZip(e.target.checked)} className="w-5 h-5 accent-[var(--primary)]" /><span>Kèm gói phiếu riêng từng vị trí (.zip, không có D1 để tránh tính trùng kiêm nhiệm) cho {positions.length} vị trí của <strong>[{currentUnit.code}]</strong></span></label>
-                <button id="task-2-export" type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white font-bold text-sm cursor-pointer"><FileSpreadsheet className="w-4 h-4" /><span>{result && !stale ? 'Tạo lại 4 tệp' : `Khởi tạo 4 tệp ${currentUnit.code}`}</span></button>
+              <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} hasGenerated={Boolean(result && !stale)} onCopied={(fn) => pushToast('success', `Đã sao chép tên tệp: ${fn}`)} />
+              <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input id="task-2-zip" type="checkbox" checked={includeZip} onChange={(e) => setIncludeZip(e.target.checked)} className="w-5 h-5 mt-0.5 accent-[var(--primary)] shrink-0" />
+                  <span className="space-y-0.5"><span className="block text-sm font-bold text-[var(--foreground)]">Kèm gói phiếu riêng từng vị trí</span><span className="block text-xs text-[var(--ink-muted)]">Xuất thêm 1 tệp .zip, trong đó mỗi vị trí có 1 bộ phiếu riêng (không có D1) để tránh tính trùng kiêm nhiệm cho {positions.length} vị trí của <strong>[{currentUnit.code}]</strong>.</span></span>
+                </label>
+                <button id="task-2-export" type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white font-bold text-sm shrink-0 cursor-pointer shadow-2xs"><FileSpreadsheet className="w-4 h-4" /><span>{result && !stale ? 'Tạo lại 4 tệp' : `Khởi tạo 4 tệp ${currentUnit.code}`}</span></button>
               </div>
-              {result ? <SplitResultBanner result={result} onDownload={triggerDownload} /> : <p className="py-4 text-sm text-[var(--ink-muted)]">Bấm <strong>Khởi tạo 4 tệp {currentUnit.code}</strong> để sinh Tệp đơn vị gốc, Tệp dự thảo ô cam gợi ý, Phiếu thu số liệu đầy đủ và Gói .zip từng vị trí.</p>}
+              {result && <SplitResultBanner result={result} onDownload={triggerDownload} />}
               <RegenFormsFromUnitBox exportDate={customDate} includeZip={includeZip} onDownload={triggerDownload} />
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border-subtle)]">
-                <Link href="/bam-gio" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold text-[var(--foreground)]"><Timer className="w-4 h-4 text-[var(--primary)]" /><span>Sang Giai đoạn 3: Đo định mức</span></Link>
-                <button type="button" onClick={() => setActiveStep(4)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-[var(--primary)] text-white text-sm font-bold cursor-pointer"><span>Sang Giai đoạn 4: Gộp phiếu</span><ArrowRight className="w-4 h-4" /></button>
+                <Link href="/bam-gio" className="btn-touch inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold text-[var(--foreground)]"><Timer className="w-4 h-4 text-[var(--primary)]" /><span>Sang Giai đoạn 3: Đo định mức</span></Link>
+                <button type="button" onClick={() => setActiveStep(4)} className="inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold cursor-pointer"><span>Sang Giai đoạn 4: Gộp phiếu</span><ArrowRight className="w-4 h-4" /></button>
               </div>
             </section>
           )}
