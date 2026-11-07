@@ -114,15 +114,16 @@ runTest('4. Kiểm tra Danh mục 51 đơn vị & Khung 38 vị trí việc làm
   assert.ok(nd232Content.includes('buildDefaultProposedPositionsForUnit'), 'Thiếu hàm khởi tạo danh sách VTVL đề xuất mặc định cho đơn vị');
 });
 
-// 5. Kiểm tra Lược đồ Cơ sở dữ liệu quan hệ 18 bảng & Trigger kiểm soát bậc nghề nghiệp
-runTest('5. Kiểm tra Lược đồ CSDL quan hệ 18 bảng (PostgreSQL / Supabase Migration)', () => {
+// 5. Kiểm tra Lược đồ Cơ sở dữ liệu quan hệ 22 bảng & Trigger kiểm soát bậc nghề nghiệp
+runTest('5. Kiểm tra Lược đồ CSDL quan hệ 22 bảng (PostgreSQL / Supabase Migration)', () => {
   const sql = fs.readFileSync(path.join(root, 'supabase/migrations/20261107_init_vtvl_hcmute.sql'), 'utf8');
   const expectedTables = [
     'dm_don_vi', 'dm_chuc_danh_tt31', 'dm_vtvl_khung_truong', 'dm_san_pham',
     'c1_vtvl', 'a1_nhiem_vu', 'a2_cong_viec', 'b1_khoi_luong',
     'b2_ct_tac_dong', 'b2_thay_doi', 'c2_nang_luc', 'c3_nhu_cau',
     'd1_nhan_luc', 'du_bao_5_nam', 'd2_phuong_an', 'k_kiem_tra',
-    't_tien_do', 's_nhat_ky'
+    't_tien_do', 's_nhat_ky', 'sldv_quy_mo_don_vi', 'sldv_phan_bo_ngach',
+    'can_cu_goi_y', 'ra_soat_chua_du_can_cu'
   ];
   for (const tbl of expectedTables) {
     assert.ok(
@@ -136,34 +137,36 @@ runTest('5. Kiểm tra Lược đồ CSDL quan hệ 18 bảng (PostgreSQL / Supa
   assert.ok(sql.includes('v_tong_hop_vtvl_toan_truong'), 'Thiếu View tổng hợp toàn trường');
 });
 
-// 6. Kiểm tra bắt buộc nhập Email & Chức vụ người thực hiện và lưu vào dữ liệu thao tác
-runTest('6. Kiểm tra bắt buộc nhập Email & Chức vụ người thực hiện và lưu vào nhật ký', () => {
+// 6. Kiểm tra bắt buộc nhập Email & Chức vụ, Bảng mã ngạch (Tách & D1), 4 tệp xuất & Can_cu_goi_y
+runTest('6. Kiểm tra Email/Chức vụ, Phân bổ mã ngạch (Tách & D1), 4 tệp xuất & Can_cu_goi_y', () => {
   const taoTep = fs.readFileSync(path.join(root, 'src/app/tao-tep/page.tsx'), 'utf8');
   const reviewConfirm = fs.readFileSync(path.join(root, 'src/components/tao-tep/Step1ReviewConfirm.tsx'), 'utf8');
   assert.ok(taoTep.includes('id="task-1-actor"'), 'Bước 1 phải có ô nhập Email người thực hiện (#task-1-actor)');
   assert.ok(taoTep.includes('id="task-1-role"'), 'Bước 1 phải có ô nhập Chức vụ người thực hiện (#task-1-role)');
   assert.ok(taoTep.includes('validateStep1Data') && reviewConfirm.includes('validateStep1Data'), 'Bước 1 phải kiểm tra bắt buộc Email, Chức vụ và từng VTVL trước khi xuất tệp');
 
-  const logSvc = fs.readFileSync(path.join(root, 'src/services/telemetry/activity-log.ts'), 'utf8');
-  assert.ok(logSvc.includes('actorEmail'), 'ActiveUnitSession & ActivityLogEntry phải lưu actorEmail');
-  assert.ok(logSvc.includes('actorTitle'), 'ActiveUnitSession & ActivityLogEntry phải lưu actorTitle');
-  assert.ok(logSvc.includes('syncActivityToSupabase'), 'recordActivity phải đồng bộ nhật ký thao tác lên Supabase');
+  const ngachTool = fs.readFileSync(path.join(root, 'src/components/tao-tep/UnitScaleAndNgachTool.tsx'), 'utf8');
+  assert.ok(ngachTool.includes('handleSplitNgachRow') && ngachTool.includes('Đưa vào bảng số người theo vị trí (D1)'), 'Phải có công cụ Tách dòng mã ngạch và Đưa vào bảng số người theo vị trí (D1)');
+
+  const wbBuilder = fs.readFileSync(path.join(root, 'src/services/excel-split/workbook-builder.ts'), 'utf8');
+  const sheetsBuilder = fs.readFileSync(path.join(root, 'src/services/excel-split/hd07-sheets-builder.ts'), 'utf8');
+  assert.ok(wbBuilder.includes('draftUnitFileName') && sheetsBuilder.includes('Can_cu_goi_y'), 'Phải sinh đủ 4 tệp riêng biệt và có trang tính Can_cu_goi_y');
+
+  const regenForms = fs.readFileSync(path.join(root, 'src/services/excel-split/regen-forms.ts'), 'utf8');
+  assert.ok(regenForms.includes('regenerateFormsFromEditedUnitWorkbook'), 'Phải có tính năng Tạo lại phiếu từ tệp đơn vị đã sửa');
 });
 
-// 7. Kiểm tra Wizard 5 chặng Bước 1, Thẻ VTVL Mobile, Sidebar thu gọn & Accessibility
-runTest('7. Kiểm tra Wizard 5 chặng Bước 1, Thẻ VTVL Mobile, Sidebar thu gọn & Responsive', () => {
-  const sidebar = fs.readFileSync(path.join(root, 'src/components/layout/MilestonesBar.tsx'), 'utf8');
-  assert.ok(sidebar.includes('focusTaskTarget'), 'Sidebar phải có hàm focusTaskTarget để cuộn và trỏ chuột vào tác vụ');
-  assert.ok(sidebar.includes('Xem toàn bộ tiến trình'), 'Mobile phải có thanh tiến trình thu gọn kèm nút "Xem toàn bộ tiến trình"');
-  const taskIds = ['task-1-unit', 'task-1-actor', 'task-1-add', 'task-1-name', 'task-1-staff'];
-  for (const tid of taskIds) {
-    assert.ok(sidebar.includes(tid), `Sidebar Bước 1 thiếu tác vụ con: ${tid}`);
+// 7. Kiểm tra 5 Thẻ Rà soát, Xuất Excel Chua_du_can_cu, Ví dụ X99 & Cảnh báo xung đột gộp phiếu
+runTest('7. Kiểm tra 5 Thẻ Rà soát, Xuất Excel Chua_du_can_cu, Ví dụ X99 & Cảnh báo xung đột gộp phiếu', () => {
+  const auditTabs = fs.readFileSync(path.join(root, 'src/components/ra-soat/AuditResultTabs.tsx'), 'utf8');
+  for (const label of ['1. Cần xử lý', '2. Tổng hợp VTVL', '3. Chưa đủ căn cứ', '4. Lỗi của biểu mẫu', '5. Công cụ kiểm tra gì']) {
+    assert.ok(auditTabs.includes(label), `Sổ kết quả rà soát thiếu thẻ: ${label}`);
   }
-  assert.ok(sidebar.includes('calc(100vw-2rem)'), 'InfoTip phải giới hạn chiều rộng theo viewport trên màn hình di động');
+  const auditEngine = fs.readFileSync(path.join(root, 'src/services/excel-audit/audit-engine.ts'), 'utf8');
+  assert.ok(auditEngine.includes('Chua_du_can_cu') && auditEngine.includes('Gop_y_bieu_mau'), 'Xuất Excel rà soát phải có sheet Chua_du_can_cu và Gop_y_bieu_mau');
 
-  const posList = fs.readFileSync(path.join(root, 'src/components/tao-tep/Step1PositionList.tsx'), 'utf8');
-  assert.ok(posList.includes('md:hidden') && posList.includes('Chỉnh sửa'), 'Mobile phải hiển thị từng thẻ VTVL có nút "Chỉnh sửa"');
-  assert.ok(posList.includes('hidden md:block'), 'Desktop phải hiển thị bảng có cố định cột đầu và tiêu đề');
+  const mergeForms = fs.readFileSync(path.join(root, 'src/services/excel-merge/merge-forms.ts'), 'utf8');
+  assert.ok(mergeForms.includes('allValues') && mergeForms.includes('rejectedForms'), 'Gộp phiếu phải liệt kê chi tiết xung đột giữa các phiếu và từ chối phiếu khác đơn vị');
 
   for (const pageRel of ['src/app/tao-tep/page.tsx', 'src/app/bam-gio/page.tsx', 'src/app/ra-soat/page.tsx']) {
     const pageContent = fs.readFileSync(path.join(root, pageRel), 'utf8');

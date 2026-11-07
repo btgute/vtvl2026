@@ -18,17 +18,30 @@ function toWorkbookBlob(wb: XLSX.WorkBook): Blob {
   return new Blob([out], { type: XLSX_MIME });
 }
 
+export function previewGeneratedFileNames(unitCode: string, exportDate: string) {
+  const compactDate = (exportDate || '2026-11-07').replace(/-/g, '');
+  return {
+    unitFileName: `${unitCode}_K2526_v1_${compactDate}.xlsx`,
+    draftUnitFileName: `${unitCode}_K2526_DuThao_GoiY_v1_${compactDate}.xlsx`,
+    fullFormFileName: `Phieu_Thu_So_Lieu_${unitCode}_K2526_${compactDate}.xlsx`,
+    zipFileName: `Phieu_TungViTri_${unitCode}_K2526_${compactDate}.zip`
+  };
+}
+
 export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitResultSummary> {
   const unit = HCMUTE_UNITS.find((u) => u.code === opts.unitCode) || HCMUTE_UNITS[0];
   const groupMeta = UNIT_GROUPS.find((g) => g.id === opts.kind) || UNIT_GROUPS[0];
   const ngachList = NGACH_LIST_BY_GROUP[opts.kind];
   const missions = MISSIONS_BY_GROUP[opts.kind];
-  const templates = TASK_TEMPLATES_BY_GROUP[opts.kind];
+  const scaleMult = opts.scaleMetrics?.scaleMultiplier || 1;
+  const templates = TASK_TEMPLATES_BY_GROUP[opts.kind].map((t) => ({
+    ...t,
+    defaultQtyPerYear: Math.max(1, Math.round(t.defaultQtyPerYear * scaleMult))
+  }));
   const compactDate = opts.exportDate.replace(/-/g, '');
 
   const vtvlMap = new Map<string, SplitResultSummary['positionBreakdown'][number]>();
 
-  // Nếu đơn vị đã tự tạo & cấu hình danh sách VTVL đề xuất tại Bước 1
   if (opts.proposedPositions && opts.proposedPositions.length > 0) {
     opts.proposedPositions.forEach((pos) => {
       const cleanSuffix = pos.vtvlSuffix.replace(new RegExp(`^${opts.unitCode}-`), '');
@@ -40,13 +53,7 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
         matchedTasks.length > 0
           ? Number(
               matchedTasks
-                .reduce(
-                  (acc, t) =>
-                    acc +
-                    (t.defaultQtyPerYear * t.defaultMinutesPerProduct) / 60 +
-                    t.extraRelatedHoursYear,
-                  0
-                )
+                .reduce((acc, t) => acc + (t.defaultQtyPerYear * t.defaultMinutesPerProduct) / 60 + t.extraRelatedHoursYear, 0)
                 .toFixed(1)
             )
           : Number((pos.proposedFte * pos.standardHoursYear).toFixed(1));
@@ -56,10 +63,7 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
               matchedTasks
                 .reduce(
                   (acc, t) =>
-                    acc +
-                    (t.digitalMinutesBefore && t.digitalMinutesAfter
-                      ? ((t.digitalMinutesBefore - t.digitalMinutesAfter) * t.defaultQtyPerYear) / 60
-                      : 0),
+                    acc + (t.digitalMinutesBefore && t.digitalMinutesAfter ? ((t.digitalMinutesBefore - t.digitalMinutesAfter) * t.defaultQtyPerYear) / 60 : 0),
                   0
                 )
                 .toFixed(1)
@@ -98,19 +102,9 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
       const workingRegime = ngach ? ngach.workingRegime : 'Phổ biến (40 giờ/tuần)';
       const frameworkTitle = t.frameworkTitle || ngach?.frameworkTitle || t.vtvlName;
       const vtvlGroup4 = t.vtvlGroup4 || ngach?.vtvlGroup4 || 'II. Nhóm VTVL Chuyên môn, nghiệp vụ';
-      const defaultSpecificName = buildDefaultSpecificVtvlName(
-        frameworkTitle,
-        opts.unitNameVi,
-        ngach?.specificNameSuffix,
-        opts.kind
-      );
-      const specificVtvlName =
-        opts.customPositionNames?.[t.ngachCode]?.trim() || defaultSpecificName;
-      const selectedCareerLevel =
-        opts.customCareerLevels?.[t.ngachCode] ||
-        t.defaultCareerLevel ||
-        ngach?.defaultCareerLevel ||
-        'Bậc 3';
+      const defaultSpecificName = buildDefaultSpecificVtvlName(frameworkTitle, opts.unitNameVi, ngach?.specificNameSuffix, opts.kind);
+      const specificVtvlName = opts.customPositionNames?.[t.ngachCode]?.trim() || defaultSpecificName;
+      const selectedCareerLevel = opts.customCareerLevels?.[t.ngachCode] || t.defaultCareerLevel || ngach?.defaultCareerLevel || 'Bậc 3';
 
       const existing = vtvlMap.get(vtvlCode);
       if (existing) {
@@ -118,24 +112,13 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
         existing.b1HoursYear = Number((existing.b1HoursYear + totalB1Hours).toFixed(1));
         existing.b2NetHoursYear = Number((existing.b2NetHoursYear - b2ReductionHours).toFixed(1));
         existing.netHoursYear = Number((existing.b1HoursYear + existing.b2NetHoursYear).toFixed(1));
-        existing.recommendedFte =
-          t.method === 'PP1' ? 1 : Math.max(1, Number((existing.netHoursYear / stdHours).toFixed(2)));
+        existing.recommendedFte = t.method === 'PP1' ? 1 : Math.max(1, Number((existing.netHoursYear / stdHours).toFixed(2)));
       } else {
         const netH = Number((totalB1Hours - b2ReductionHours).toFixed(1));
         vtvlMap.set(vtvlCode, {
-          vtvlCode,
-          vtvlName: specificVtvlName,
-          frameworkTitle,
-          vtvlGroup4,
-          careerLevel: selectedCareerLevel,
-          ngachCode: t.ngachCode,
-          method: t.method,
-          workingRegime,
-          standardHoursYear: stdHours,
-          taskCount: 1,
-          b1HoursYear: totalB1Hours,
-          b2NetHoursYear: -b2ReductionHours,
-          netHoursYear: netH,
+          vtvlCode, vtvlName: specificVtvlName, frameworkTitle, vtvlGroup4, careerLevel: selectedCareerLevel,
+          ngachCode: t.ngachCode, method: t.method, workingRegime, standardHoursYear: stdHours, taskCount: 1,
+          b1HoursYear: totalB1Hours, b2NetHoursYear: -b2ReductionHours, netHoursYear: netH,
           recommendedFte: t.method === 'PP1' ? 1 : Math.max(1, Number((netH / stdHours).toFixed(2)))
         });
       }
@@ -143,32 +126,45 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
   }
 
   const positionBreakdown = Array.from(vtvlMap.values());
-  const totalStandardFte = Number(
-    positionBreakdown.reduce((acc, p) => acc + p.recommendedFte, 0).toFixed(2)
-  );
+  const totalStandardFte = Number(positionBreakdown.reduce((acc, p) => acc + p.recommendedFte, 0).toFixed(2));
 
+  // 1. Tệp đơn vị gốc (wb)
   const wb = XLSX.utils.book_new();
   const { b1Header, b1Rows, wsB1, wsB2Ct, wsD1 } = buildHd07CoreSheets(
-    wb,
-    opts,
-    groupMeta.sourceRule,
-    ngachList,
-    templates,
-    positionBreakdown
+    wb, opts, groupMeta.sourceRule, ngachList, templates, positionBreakdown
   );
-
   appendHd07GuideAndRefSheets(wb, opts, unit.headTitleVi, positionBreakdown, compactDate);
 
+  // 2. Tệp đơn vị dự thảo điền sẵn gợi ý ô cam (draftWb)
+  const draftWb = XLSX.utils.book_new();
+  wb.SheetNames.forEach((sName) => {
+    XLSX.utils.book_append_sheet(draftWb, wb.Sheets[sName], sName);
+  });
+
+  // 3. Phiếu thu số liệu đầy đủ cho đầu mối đơn vị (formWb)
   const formWb = XLSX.utils.book_new();
+  const wsThongTinDonVi = XLSX.utils.aoa_to_sheet([
+    [`TRANG THÔNG TIN ĐƠN VỊ — [${opts.unitCode}] ${opts.unitNameVi.toUpperCase()}`],
+    ['Chỉ tiêu', 'Giá trị tại đơn vị', 'Ghi chú hướng dẫn'],
+    ['Mã đơn vị', opts.unitCode, 'Do đầu mối đơn vị kiểm tra'],
+    ['Tên đơn vị', opts.unitNameVi, 'Ghi đúng tên chính thức theo Quyết định của HCM-UTE'],
+    ['Hệ số quy mô nội suy', scaleMult, 'Dùng để điền sẵn gợi ý ô màu cam'],
+    ['Lưu ý kiêm nhiệm', 'Trang Thong_tin_don_vi và 9. D1_NhanLuc chỉ có ở Phiếu đầy đủ của đầu mối', 'Phiếu từng vị trí không có D1 để 1 người giữ 2 vị trí không bị tính 2 lần']
+  ]);
+  XLSX.utils.book_append_sheet(formWb, wsThongTinDonVi, 'Thong_tin_don_vi');
   XLSX.utils.book_append_sheet(formWb, wsB1, '3. B1_KhoiLuong');
   XLSX.utils.book_append_sheet(formWb, wsB2Ct, '4. B2_CT_TacDong');
   XLSX.utils.book_append_sheet(formWb, wsD1, '9. D1_NhanLuc');
+  if (wb.Sheets['Can_cu_goi_y']) {
+    XLSX.utils.book_append_sheet(formWb, wb.Sheets['Can_cu_goi_y'], 'Can_cu_goi_y');
+  }
 
-  const unitFileName = `${opts.unitCode}_K2526_v1_${compactDate}.xlsx`;
-  const fullFormFileName = `Phieu_KhaoSat_B1_B2_${opts.unitCode}_K2526_${compactDate}.xlsx`;
+  const names = previewGeneratedFileNames(opts.unitCode, opts.exportDate);
   const unitBlob = toWorkbookBlob(wb);
+  const draftUnitBlob = toWorkbookBlob(draftWb);
   const fullFormBlob = toWorkbookBlob(formWb);
 
+  // 4. Gói .zip phiếu riêng từng vị trí (không có D1 và Thong_tin_don_vi để không tính trùng kiêm nhiệm)
   let zipFileName: string | undefined;
   let zipBlob: Blob | undefined;
   if (opts.includeZipPerPosition) {
@@ -177,15 +173,22 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
       const posWb = XLSX.utils.book_new();
       const posRows = b1Rows.filter((r) => r[1] === pos.vtvlCode);
       const wsPosB1 = XLSX.utils.aoa_to_sheet([
-        [`PHIẾU KHẢO SÁT KHỐI LƯỢNG B1 VỊ TRÍ ${pos.vtvlCode} — ${pos.vtvlName} (Khung: ${pos.frameworkTitle} · ${pos.careerLevel})`],
+        [`PHIẾU KHẢO SÁT KHỐI LƯỢNG B1 VỊ TRÍ ${pos.vtvlCode} — ${pos.vtvlName} (Ô màu cam là gợi ý — sửa theo thực tế; đếm số sản phẩm thật từ sổ sách)`],
         b1Header,
         ...posRows
       ]);
       XLSX.utils.book_append_sheet(posWb, wsPosB1, '3. B1_KhoiLuong');
+      const wsPosCanCu = XLSX.utils.aoa_to_sheet([
+        [`CĂN CỨ GỢI Ý Ô MÀU CAM CỦA VỊ TRÍ ${pos.vtvlCode} — ${pos.vtvlName}`],
+        ['Mục', 'Nội dung hướng dẫn'],
+        ['Thông tin đơn vị & Nhân lực D1', 'Do đầu mối điền ở phiếu đầy đủ của đơn vị; phiếu vị trí không có 2 trang này để 1 người kiêm nhiệm 2 vị trí không bị tính 2 lần.'],
+        ['Ô màu cam điền sẵn gợi ý', 'Sửa theo thực tế; dòng giữ nguyên phút gợi ý sẽ ghi là "mức tham khảo, chưa đo thực tế".']
+      ]);
+      XLSX.utils.book_append_sheet(posWb, wsPosCanCu, 'Can_cu_goi_y');
       const posBuf = XLSX.write(posWb, { bookType: 'xlsx', type: 'array' });
       zip.file(`Phieu_ViTri_${pos.vtvlCode}_${compactDate}.xlsx`, posBuf);
     });
-    zipFileName = `Phieu_TungViTri_${opts.unitCode}_K2526_${compactDate}.zip`;
+    zipFileName = names.zipFileName;
     zipBlob = await zip.generateAsync({ type: 'blob' });
   }
 
@@ -200,9 +203,11 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
     taskCount: templates.length,
     vtvlCount: positionBreakdown.length,
     totalStandardFte,
-    unitFileName,
+    unitFileName: names.unitFileName,
     unitBlob,
-    fullFormFileName,
+    draftUnitFileName: names.draftUnitFileName,
+    draftUnitBlob,
+    fullFormFileName: names.fullFormFileName,
     fullFormBlob,
     zipFileName,
     zipBlob,

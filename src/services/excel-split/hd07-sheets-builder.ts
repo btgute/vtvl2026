@@ -177,4 +177,23 @@ export function appendHd07GuideAndRefSheets(
     ...duBaoRows
   ]);
   XLSX.utils.book_append_sheet(wb, wsDuBao, 'DU_BAO_5_NAM');
+
+  // 11. Can_cu_goi_y (Cơ chế Ô màu cam điền sẵn gợi ý & Căn cứ tham khảo theo quy mô đơn vị)
+  const scaleMult = opts.scaleMetrics?.scaleMultiplier || 1;
+  const wsCanCuGoiY = XLSX.utils.aoa_to_sheet([
+    [`TRANG CAN_CU_GOI_Y — CĂN CỨ ĐIỀN SẴN Ô MÀU CAM THEO QUY MÔ ĐƠN VỊ [${opts.unitCode}] (HỆ SỐ NỘI SUY: ×${scaleMult})`],
+    ['Lưu ý vận hành: Ô màu cam là số liệu điền sẵn theo gợi ý — mỗi đơn vị/cá nhân sửa theo thực tế, đếm số sản phẩm từ sổ sách E-Office/PMS. Dòng giữ nguyên số gợi ý sẽ được ghi là "mức tham khảo, chưa đo thực tế" và đưa vào danh sách Chưa đủ căn cứ.'],
+    ['Mã VTVL', 'Tên VTVL cụ thể tại đơn vị', 'Phương pháp', 'Hệ số quy mô đơn vị', 'Giờ B1 gợi ý (ô cam)', 'Phân loại mức độ', 'Nguồn căn cứ gợi ý (Phụ lục III & Định mức tham khảo HCM-UTE)', 'Trạng thái xác thực'],
+    ...positions.map((p) => [
+      p.vtvlCode,
+      p.vtvlName,
+      p.method,
+      scaleMult,
+      Number((p.b1HoursYear * scaleMult).toFixed(1)),
+      'Thông thường',
+      `Nội suy từ quy mô đơn vị [${opts.unitCode}] & Định mức tham khảo HCM-UTE (1907/HD-ĐHCNKT)`,
+      'Ô cam gợi ý — mức tham khảo, chưa đo thực tế'
+    ])
+  ]);
+  XLSX.utils.book_append_sheet(wb, wsCanCuGoiY, 'Can_cu_goi_y');
 }

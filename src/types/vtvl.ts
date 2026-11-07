@@ -16,7 +16,6 @@ export type WorkforceMethod =
   | 'PP1+PP2+PP3';
 
 export type WorkingRegime = 'Phổ biến (40 giờ/tuần)' | 'Đặc thù';
-
 export type ProductGroupRoman = 'I' | 'II' | 'III' | 'IV' | 'V' | 'VI';
 
 export interface HcmuteUnit {
@@ -102,9 +101,9 @@ export interface JobTaskTemplate {
 
 export interface ProposedVtvlRow {
   id: string;
-  frameworkId: string; // maDanhMucNd232 (HD1907-I-01 .. HD1907-IV-04)
-  vtvlSuffix: string; // e.g. QL-01, DT-GV-02, CM-CV-01
-  ngachCode: string; // e.g. V.07.01.02, 01.003
+  frameworkId: string;
+  vtvlSuffix: string;
+  ngachCode: string;
   vtvlGroup4: HcmuteVtvlGroup4;
   frameworkTitle: string;
   specificName: string;
@@ -117,6 +116,26 @@ export interface ProposedVtvlRow {
   proposedFte: number;
 }
 
+export interface UnitScaleMetrics {
+  studentCount: number;
+  programCount: number;
+  courseSectionCount: number;
+  labWorkshopCount: number;
+  researchTopicCount: number;
+  adminDocCount: number;
+  scaleMultiplier: number;
+}
+
+export interface NgachAllocationRow {
+  id: string;
+  ngachCode: string;
+  ngachName: string;
+  count: number;
+  targetPositionId: string;
+  isSplitRow?: boolean;
+  note?: string;
+}
+
 export interface UnitSplitOptions {
   kind: UnitGroupKind;
   unitCode: string;
@@ -127,6 +146,8 @@ export interface UnitSplitOptions {
   includeZipPerPosition: boolean;
   actorEmail?: string;
   actorTitle?: string;
+  scaleMetrics?: UnitScaleMetrics;
+  ngachAllocations?: NgachAllocationRow[];
   ngachOverrides: Record<string, number>;
   customPositionNames?: Record<string, string>;
   customCareerLevels?: Record<string, string>;
@@ -158,6 +179,8 @@ export interface SplitResultSummary {
   totalStandardFte: number;
   unitFileName: string;
   unitBlob: Blob;
+  draftUnitFileName: string;
+  draftUnitBlob: Blob;
   fullFormFileName: string;
   fullFormBlob: Blob;
   zipFileName?: string;
@@ -196,22 +219,7 @@ export interface TimeSessionRow {
 }
 
 export type AuditSeverity = 'fix' | 'evidence' | 'review';
-
-export type AuditSheetCode =
-  | 'Tệp'
-  | 'A1'
-  | 'A2'
-  | 'B1'
-  | 'B2_CT'
-  | 'B2'
-  | 'C1'
-  | 'C2'
-  | 'C3'
-  | 'D1'
-  | 'D2'
-  | 'DM'
-  | 'DU_BAO'
-  | 'K';
+export type AuditSheetCode = 'Tệp' | 'A1' | 'A2' | 'B1' | 'B2_CT' | 'B2' | 'C1' | 'C2' | 'C3' | 'D1' | 'D2' | 'DM' | 'DU_BAO' | 'K';
 
 export interface AuditIssue {
   id: string;
@@ -226,8 +234,45 @@ export interface AuditIssue {
   suggestion: string;
 }
 
+export interface AuditVtvlRecalcRow {
+  unitCode: string;
+  vtvlCode: string;
+  vtvlName: string;
+  careerLevel: string;
+  method: string;
+  standardHours: number;
+  taskCount: number;
+  recalcB1Hours: number;
+  b2DeltaHours: number;
+  recalcNetHours: number;
+  recalcPp2Fte: number;
+  c3ProposedFte: number;
+  d1CurrentStaff: number;
+  hasData: boolean;
+}
+
+export interface AuditEvidenceItem {
+  unitCode: string;
+  fileName: string;
+  sheet: AuditSheetCode;
+  cellRef: string;
+  refCode: string;
+  taskOrPositionName: string;
+  currentSourceText: string;
+  reasonHint: string;
+}
+
+export interface AuditTemplateFeedbackItem {
+  unitCode: string;
+  sheet: string;
+  cellOrColumn: string;
+  templateIssue: string;
+  unitFeedbackSuggestion: string;
+}
+
 export interface AuditReportResult {
   filesCount: number;
+  isSampleDemo?: boolean;
   totalIssues: number;
   countsBySeverity: Record<AuditSeverity, number>;
   countsBySheet: Record<string, number>;
@@ -245,4 +290,7 @@ export interface AuditReportResult {
     reviewCount: number;
   }[];
   issues: AuditIssue[];
+  vtvlRecalcRows: AuditVtvlRecalcRow[];
+  evidenceItems: AuditEvidenceItem[];
+  templateFeedbackItems: AuditTemplateFeedbackItem[];
 }

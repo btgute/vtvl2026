@@ -7,15 +7,16 @@ import { WorkflowSidebar, focusTaskTarget } from '@/components/layout/Milestones
 import { HCMUTE_UNITS, UNIT_GROUPS } from '@/configs/hcmute-units';
 import { HD07_CONSTANTS } from '@/configs/hcmute-hd07-catalog';
 import { buildDefaultProposedPositionsForUnit, buildProposedPositionFromFramework } from '@/configs/hcmute-nd232-catalog';
-import { ProposedVtvlRow, SplitResultSummary, UnitGroupKind } from '@/types/vtvl';
+import { NgachAllocationRow, ProposedVtvlRow, SplitResultSummary, UnitGroupKind, UnitScaleMetrics } from '@/types/vtvl';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
 import { MergeStepSection } from '@/components/tao-tep/MergeStepSection';
-import { SplitResultBanner } from '@/components/tao-tep/SplitResultBanner';
+import { SplitResultBanner, SplitFileNamesPreview, RegenFormsFromUnitBox } from '@/components/tao-tep/SplitResultBanner';
 import { Hd07OrderGuideCard } from '@/components/tao-tep/Hd07OrderGuideCard';
 import { Step1CatalogSelector } from '@/components/tao-tep/Step1CatalogSelector';
 import { Step1PositionList, isPositionRowValid } from '@/components/tao-tep/Step1PositionList';
 import { Step1ReviewConfirm, validateStep1Data } from '@/components/tao-tep/Step1ReviewConfirm';
-import { getActiveUnitSession, recordActivity, saveActiveUnitSession, setSessionRootWorkbook } from '@/services/telemetry/activity-log';
+import { UnitScaleAndNgachTool } from '@/components/tao-tep/UnitScaleAndNgachTool';
+import { buildDefaultNgachAllocations, buildDefaultScaleMetrics, getActiveUnitSession, recordActivity, saveActiveUnitSession, setSessionRootWorkbook } from '@/services/telemetry/activity-log';
 import { syncUnitSplitToSupabase } from '@/services/supabase/vtvl-sync';
 
 const ROLE_PRESETS = ['Trưởng đơn vị (Trưởng khoa / Viện trưởng / Trưởng phòng / Giám đốc)', 'Phó Trưởng đơn vị phụ trách VTVL', 'Thư ký Tổ công tác VTVL đơn vị', 'Trưởng Bộ môn / Trưởng Ngành', 'Chuyên viên / Thư ký khoa tổng hợp hồ sơ'];
@@ -32,6 +33,8 @@ export default function TaoTepPage() {
   const [lastSavedAt, setLastSavedAt] = useState<string>('19:00');
   const [includeZip, setIncludeZip] = useState<boolean>(true);
   const [positions, setPositions] = useState<ProposedVtvlRow[]>(() => buildDefaultProposedPositionsForUnit('Khoa Cơ khí Chế tạo máy', 'khoa-vien'));
+  const [scaleMetrics, setScaleMetrics] = useState<UnitScaleMetrics>(() => buildDefaultScaleMetrics('khoa-vien'));
+  const [ngachAllocations, setNgachAllocations] = useState<NgachAllocationRow[]>(() => buildDefaultNgachAllocations(buildDefaultProposedPositionsForUnit('Khoa Cơ khí Chế tạo máy', 'khoa-vien')));
   const [undoSnapshot, setUndoSnapshot] = useState<ProposedVtvlRow[] | undefined>(undefined);
   const [confirmAction, setConfirmAction] = useState<{ type: 'reset' | 'delete'; row?: ProposedVtvlRow } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -44,12 +47,11 @@ export default function TaoTepPage() {
     setActorEmail(saved.actorEmail); setActorTitle(saved.actorTitle);
     setWizardStage(saved.wizardStage || 1); setLastSavedAt(saved.lastSavedAt);
     setPositions(saved.proposedPositions); setUndoSnapshot(saved.previousPositionsSnapshot);
+    if (saved.scaleMetrics) setScaleMetrics(saved.scaleMetrics);
+    if (saved.ngachAllocations) setNgachAllocations(saved.ngachAllocations);
     const sp = new URLSearchParams(window.location.search).get('step');
-    if (sp === '2' || window.location.hash === '#buoc-3') setActiveStep(2);
-    else if (sp === '4' || window.location.hash === '#buoc-4') setActiveStep(4);
-    else setActiveStep(1);
+    setActiveStep(sp === '2' || window.location.hash === '#buoc-3' ? 2 : sp === '4' || window.location.hash === '#buoc-4' ? 4 : 1);
   }, []);
-
   useEffect(() => {
     const onFocusTask = (e: Event) => {
       const detail = (e as CustomEvent<{ step: number; taskId: string }>).detail;
@@ -59,8 +61,7 @@ export default function TaoTepPage() {
         if (map[detail.taskId]) setWizardStage(map[detail.taskId]);
       }
     };
-    window.addEventListener('vtvl-focus-task', onFocusTask);
-    return () => window.removeEventListener('vtvl-focus-task', onFocusTask);
+    window.addEventListener('vtvl-focus-task', onFocusTask); return () => window.removeEventListener('vtvl-focus-task', onFocusTask);
   }, []);
 
   const unitsOfGroup = useMemo(() => HCMUTE_UNITS.filter((u) => u.group === kind), [kind]);
@@ -74,11 +75,16 @@ export default function TaoTepPage() {
   };
   const handleGroupChange = (newKind: UnitGroupKind) => {
     setKind(newKind); const first = HCMUTE_UNITS.find((u) => u.group === newKind) || HCMUTE_UNITS[0];
-    setSelectedUnitCode(first.code); syncPositions(buildDefaultProposedPositionsForUnit(first.nameVi, newKind), first.code, newKind);
+    const nextPos = buildDefaultProposedPositionsForUnit(first.nameVi, newKind);
+    const nextScale = buildDefaultScaleMetrics(newKind); const nextNgach = buildDefaultNgachAllocations(nextPos);
+    setSelectedUnitCode(first.code); setScaleMetrics(nextScale); setNgachAllocations(nextNgach);
+    setPositions(nextPos); persistState({ unitCode: first.code, kind: newKind, proposedPositions: nextPos, scaleMetrics: nextScale, ngachAllocations: nextNgach });
   };
   const handleUnitChange = (newCode: string) => {
     setSelectedUnitCode(newCode); const u = HCMUTE_UNITS.find((x) => x.code === newCode) || HCMUTE_UNITS[0];
-    syncPositions(buildDefaultProposedPositionsForUnit(u.nameVi, u.group), u.code, u.group);
+    const nextPos = buildDefaultProposedPositionsForUnit(u.nameVi, u.group);
+    const nextNgach = buildDefaultNgachAllocations(nextPos);
+    setNgachAllocations(nextNgach); syncPositions(nextPos, u.code, u.group); persistState({ ngachAllocations: nextNgach });
   };
   const handleActorChange = (nextEmail: string, nextTitle: string) => { setActorEmail(nextEmail); setActorTitle(nextTitle); persistState({ actorEmail: nextEmail, actorTitle: nextTitle }); };
   const handleStageChange = (st: 1 | 2 | 3 | 4 | 5) => { setWizardStage(st); persistState({ activeStep: 1, wizardStage: st }); };
@@ -102,7 +108,7 @@ export default function TaoTepPage() {
   const stageDone: Record<1 | 2 | 3 | 4 | 5, boolean> = { 1: Boolean(currentUnit.code), 2: actorValid, 3: positions.length > 0, 4: allRowsValid, 5: validationErrors.length === 0 };
 
   const handleSaveDraft = () => {
-    persistState({ unitCode: currentUnit.code, kind, customDate, actorEmail, actorTitle, activeStep, wizardStage, proposedPositions: positions });
+    persistState({ unitCode: currentUnit.code, kind, customDate, actorEmail, actorTitle, activeStep, wizardStage, scaleMetrics, ngachAllocations, proposedPositions: positions });
     recordActivity(currentUnit.code, currentUnit.nameVi, 'LUU_NHAP', `Lưu nháp hồ sơ đơn vị (${positions.length} vị trí việc làm)`);
   };
 
@@ -110,15 +116,15 @@ export default function TaoTepPage() {
     if (validationErrors.length > 0) { setActiveStep(1); handleStageChange(5); return; }
     setLoading(true); setStale(false);
     try {
-      persistState({ unitCode: currentUnit.code, kind, customDate, actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), activeStep: 2, proposedPositions: positions });
+      persistState({ unitCode: currentUnit.code, kind, customDate, actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), activeStep: 2, scaleMetrics, ngachAllocations, proposedPositions: positions });
       const res = await generateUnitFiles({
         kind, unitCode: currentUnit.code, unitNameVi: currentUnit.nameVi, unitNameEn: currentUnit.nameEn,
         period: HD07_CONSTANTS.STATISTICAL_PERIOD, exportDate: customDate, includeZipPerPosition: includeZip,
-        actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), ngachOverrides: {}, proposedPositions: positions
+        actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), scaleMetrics, ngachAllocations, ngachOverrides: {}, proposedPositions: positions
       });
       setResult(res); setActiveStep(2);
       setSessionRootWorkbook(res.unitCode, res.unitBlob, res.unitFileName);
-      recordActivity(res.unitCode, res.unitNameVi, 'TAO_TEP', `Khởi tạo bộ biểu (${positions.length} VTVL đề xuất): ${res.unitFileName}`, { actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim() });
+      recordActivity(res.unitCode, res.unitNameVi, 'TAO_TEP', `Khởi tạo 4 tệp chuẩn (${positions.length} VTVL · hệ số ×${scaleMetrics.scaleMultiplier}): ${res.unitFileName}`, { actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim() });
       void syncUnitSplitToSupabase(res);
     } finally { setLoading(false); }
   };
@@ -154,14 +160,7 @@ export default function TaoTepPage() {
                 <div role="alertdialog" aria-labelledby="confirm-title" className="rounded-2xl border-2 border-[var(--fix)] bg-[var(--fix-soft)] p-4 space-y-3">
                   <div className="flex items-start gap-2.5">
                     <ShieldAlert className="w-5 h-5 text-[var(--fix)] shrink-0 mt-0.5" />
-                    <div className="space-y-1 text-sm">
-                      <strong id="confirm-title" className="text-[var(--fix)] block text-base">Xác nhận thay đổi dữ liệu vị trí việc làm</strong>
-                      <p className="text-[var(--foreground)]">
-                        {confirmAction.type === 'reset'
-                          ? `Hành động này sẽ đặt lại toàn bộ ${positions.length} vị trí việc làm đang kê khai của [${currentUnit.code}] ${currentUnit.nameVi} về danh mục gợi ý mặc định.`
-                          : `Hành động này sẽ xóa vị trí "${confirmAction.row?.specificName}" (${currentUnit.code}-${confirmAction.row?.vtvlSuffix}) khỏi danh sách đề xuất của đơn vị.`}
-                      </p>
-                    </div>
+                    <div className="space-y-1 text-sm"><strong id="confirm-title" className="text-[var(--fix)] block text-base">Xác nhận thay đổi dữ liệu vị trí việc làm</strong><p className="text-[var(--foreground)]">{confirmAction.type === 'reset' ? `Đặt lại toàn bộ ${positions.length} vị trí việc làm của [${currentUnit.code}] về mặc định?` : `Xóa vị trí "${confirmAction.row?.specificName}" (${currentUnit.code}-${confirmAction.row?.vtvlSuffix}) khỏi danh sách đề xuất?`}</p></div>
                   </div>
                   <div className="flex flex-wrap items-center justify-end gap-2.5">
                     <button type="button" onClick={() => setConfirmAction(null)} className="min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-bold text-[var(--foreground)] cursor-pointer">Hủy bỏ</button>
@@ -169,7 +168,6 @@ export default function TaoTepPage() {
                   </div>
                 </div>
               )}
-
               <nav aria-label="Các chặng trong Bước 1" className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {WIZARD_STAGES.map((st) => {
                   const isCurr = wizardStage === st.num; const done = stageDone[st.num];
@@ -181,31 +179,18 @@ export default function TaoTepPage() {
                   );
                 })}
               </nav>
-
               {wizardStage === 1 && (
                 <div className="space-y-4 pt-1">
                   <h2 className="text-base font-extrabold text-[var(--foreground)]">Chặng 1/5: Chọn khối đơn vị và đơn vị lập đề án</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    {UNIT_GROUPS.map((g) => (
-                      <button key={g.id} type="button" onClick={() => handleGroupChange(g.id)} className={`rounded-xl border px-3 py-3 text-center transition-all cursor-pointer ${kind === g.id ? 'border-[var(--primary)] bg-[var(--primary)]/10 font-extrabold text-[var(--primary)] ring-1 ring-[var(--primary)]/30' : 'border-[var(--border)] bg-[var(--background)] font-bold text-[var(--foreground)]'}`}><span className="text-sm block">{g.label}</span></button>
-                    ))}
+                    {UNIT_GROUPS.map((g) => <button key={g.id} type="button" onClick={() => handleGroupChange(g.id)} className={`rounded-xl border px-3 py-3 text-center transition-all cursor-pointer ${kind === g.id ? 'border-[var(--primary)] bg-[var(--primary)]/10 font-extrabold text-[var(--primary)] ring-1 ring-[var(--primary)]/30' : 'border-[var(--border)] bg-[var(--background)] font-bold text-[var(--foreground)]'}`}><span className="text-sm block">{g.label}</span></button>)}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                    <div className="sm:col-span-7">
-                      <label htmlFor="task-1-unit" className="block text-sm font-bold text-[var(--foreground)] mb-1">Đơn vị thuộc HCM-UTE ({unitsOfGroup.length} đơn vị)</label>
-                      <select id="task-1-unit" value={currentUnit.code} onChange={(e) => handleUnitChange(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-base sm:text-sm font-bold">
-                        {unitsOfGroup.map((u) => <option key={u.code} value={u.code}>[{u.code}] {u.nameVi}</option>)}
-                      </select>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label htmlFor="unit-code-ro" className="block text-sm font-bold text-[var(--foreground)] mb-1">Mã đơn vị</label>
-                      <input id="unit-code-ro" type="text" readOnly value={currentUnit.code} className="w-full rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3.5 py-2.5 text-base sm:text-sm font-mono font-extrabold text-[var(--primary)]" />
-                    </div>
-                    <div className="sm:col-span-3">
-                      <label htmlFor="unit-date" className="block text-sm font-bold text-[var(--foreground)] mb-1">Ngày lập hồ sơ</label>
-                      <input id="unit-date" type="date" value={customDate} onChange={(e) => { setCustomDate(e.target.value); persistState({ customDate: e.target.value }); }} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2 text-base sm:text-sm" />
-                    </div>
+                    <div className="sm:col-span-7"><label htmlFor="task-1-unit" className="block text-sm font-bold text-[var(--foreground)] mb-1">Đơn vị thuộc HCM-UTE ({unitsOfGroup.length} đơn vị)</label><select id="task-1-unit" value={currentUnit.code} onChange={(e) => handleUnitChange(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-base sm:text-sm font-bold">{unitsOfGroup.map((u) => <option key={u.code} value={u.code}>[{u.code}] {u.nameVi}</option>)}</select></div>
+                    <div className="sm:col-span-2"><label htmlFor="unit-code-ro" className="block text-sm font-bold text-[var(--foreground)] mb-1">Mã đơn vị</label><input id="unit-code-ro" type="text" readOnly value={currentUnit.code} className="w-full rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3.5 py-2.5 text-base sm:text-sm font-mono font-extrabold text-[var(--primary)]" /></div>
+                    <div className="sm:col-span-3"><label htmlFor="unit-date" className="block text-sm font-bold text-[var(--foreground)] mb-1">Ngày lập hồ sơ</label><input id="unit-date" type="date" value={customDate} onChange={(e) => { setCustomDate(e.target.value); persistState({ customDate: e.target.value }); }} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2 text-base sm:text-sm" /></div>
                   </div>
+                  <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} />
                 </div>
               )}
 
@@ -229,7 +214,17 @@ export default function TaoTepPage() {
               )}
 
               {wizardStage === 3 && <Step1CatalogSelector unitNameVi={currentUnit.nameVi} kind={kind} existingFrameworkIds={positions.map((p) => p.frameworkId)} onAddMultiplePositions={handleAddMultiplePositions} />}
-              {wizardStage === 4 && <Step1PositionList unitCode={currentUnit.code} positions={positions} onUpdateRow={handleUpdateRow} onDuplicateRow={handleDuplicateRow} onRequestRemoveRow={(row) => setConfirmAction({ type: 'delete', row })} />}
+              {wizardStage === 4 && (
+                <div className="space-y-4">
+                  <UnitScaleAndNgachTool
+                    unitCode={currentUnit.code} kind={kind} scaleMetrics={scaleMetrics} ngachAllocations={ngachAllocations} positions={positions}
+                    onChangeScaleMetrics={(next) => { setScaleMetrics(next); persistState({ scaleMetrics: next }); }}
+                    onChangeNgachAllocations={(next) => { setNgachAllocations(next); persistState({ ngachAllocations: next }); }}
+                    onPushToPositionStaffCounts={(staffByPos) => syncPositions(positions.map((p) => (staffByPos[p.id] !== undefined ? { ...p, staffCount: staffByPos[p.id] } : p)), currentUnit.code, kind, positions)}
+                  />
+                  <Step1PositionList unitCode={currentUnit.code} positions={positions} onUpdateRow={handleUpdateRow} onDuplicateRow={handleDuplicateRow} onRequestRemoveRow={(row) => setConfirmAction({ type: 'delete', row })} />
+                </div>
+              )}
               {wizardStage === 5 && <Step1ReviewConfirm unit={currentUnit} actorEmail={actorEmail} actorTitle={actorTitle} customDate={customDate} positions={positions} loading={loading} onJumpToError={(err) => { handleStageChange(err.stage); focusTaskTarget(err.targetId); }} onConfirmExport={() => void handleCreateFiles()} />}
             </section>
           )}
@@ -237,17 +232,19 @@ export default function TaoTepPage() {
           {activeStep === 2 && (
             <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-6 space-y-4 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
-                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 2: Xuất bộ biểu gốc 21 trang tính &amp; gói phiếu khảo sát (.zip)</h1>
+                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 2: Xuất đồng thời 4 tệp (22 trang tính) &amp; Tái tạo phiếu</h1>
                 <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm font-bold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Bước 1</span></button>
               </div>
+              <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} />
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-[var(--border)] bg-[var(--background)]">
                 <label className="flex items-center gap-3 text-sm font-semibold text-[var(--foreground)] cursor-pointer">
                   <input id="task-2-zip" type="checkbox" checked={includeZip} onChange={(e) => setIncludeZip(e.target.checked)} className="w-5 h-5 accent-[var(--primary)]" />
-                  <span>Kết xuất kèm gói tệp nén (.zip) chứa phiếu khảo sát riêng cho {positions.length} vị trí của <strong>[{currentUnit.code}]</strong></span>
+                  <span>Thêm gói phiếu riêng từng vị trí (.zip, không có D1 để tránh tính trùng kiêm nhiệm) cho {positions.length} vị trí của <strong>[{currentUnit.code}]</strong></span>
                 </label>
-                <button id="task-2-export" type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white font-extrabold text-sm cursor-pointer"><FileSpreadsheet className="w-4 h-4" /><span>{result && !stale ? 'Tạo lại bộ biểu' : `Khởi tạo bộ biểu ${currentUnit.code}`}</span></button>
+                <button id="task-2-export" type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white font-extrabold text-sm cursor-pointer"><FileSpreadsheet className="w-4 h-4" /><span>{result && !stale ? 'Tạo lại 4 tệp' : `Khởi tạo 4 tệp ${currentUnit.code}`}</span></button>
               </div>
-              {result ? <SplitResultBanner result={result} onDownload={triggerDownload} /> : <div className="rounded-xl border border-dashed border-[var(--border)] p-6 text-center text-sm text-[var(--ink-muted)]">Bấm <strong>Khởi tạo bộ biểu {currentUnit.code}</strong> để sinh tệp Excel 21 trang tính.</div>}
+              {result ? <SplitResultBanner result={result} onDownload={triggerDownload} /> : <div className="rounded-xl border border-dashed border-[var(--border)] p-6 text-center text-sm text-[var(--ink-muted)]">Bấm <strong>Khởi tạo 4 tệp {currentUnit.code}</strong> để sinh Tệp đơn vị gốc, Tệp dự thảo ô cam gợi ý, Phiếu thu số liệu đầy đủ và Gói .zip từng vị trí.</div>}
+              <RegenFormsFromUnitBox exportDate={customDate} includeZip={includeZip} onDownload={triggerDownload} />
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border-subtle)]">
                 <Link href="/bam-gio" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm font-bold text-[var(--foreground)]"><Timer className="w-4 h-4 text-[var(--primary)]" /><span>Sang Bước 3: Đo định mức</span></Link>
                 <button type="button" onClick={() => setActiveStep(4)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-[var(--primary)] text-white text-sm font-bold cursor-pointer"><span>Sang Bước 4: Gộp phiếu</span><ArrowRight className="w-4 h-4" /></button>
@@ -280,13 +277,13 @@ export default function TaoTepPage() {
           <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-[var(--ink-muted)]">
             <span className="inline-block w-2 h-2 rounded-full bg-[var(--ok)]" />
             <span>Đã lưu lúc <strong>{lastSavedAt}</strong></span>
-            <span className="hidden sm:inline">· [{currentUnit.code}] {positions.length} vị trí việc làm</span>
+            <span className="hidden sm:inline">· [{currentUnit.code}] {positions.length} VTVL · Hệ số ×{scaleMetrics.scaleMultiplier}</span>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             {activeStep === 1 && wizardStage > 1 && <button type="button" onClick={() => handleStageChange((wizardStage - 1) as 1 | 2 | 3 | 4 | 5)} className="inline-flex items-center gap-1 min-h-[44px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs sm:text-sm font-bold text-[var(--foreground)] cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại</span></button>}
             <button type="button" onClick={handleSaveDraft} className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs sm:text-sm font-bold text-[var(--primary)] cursor-pointer"><Save className="w-4 h-4" /><span>Lưu nháp</span></button>
             <button type="button" onClick={() => { setActiveStep(1); handleStageChange(5); }} className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs sm:text-sm font-bold text-[var(--foreground)] cursor-pointer">{validationErrors.length > 0 ? <AlertTriangle className="w-4 h-4 text-[var(--fix)]" /> : <Check className="w-4 h-4 text-[var(--ok)]" />}<span>Kiểm tra dữ liệu ({validationErrors.length})</span></button>
-            <button type="button" onClick={() => { if (activeStep === 1 && wizardStage < 5) handleStageChange((wizardStage + 1) as 1 | 2 | 3 | 4 | 5); else void handleCreateFiles(); }} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-extrabold cursor-pointer shadow-2xs"><span>{activeStep === 1 && wizardStage < 5 ? 'Tiếp tục' : 'Xuất bộ biểu'}</span><ArrowRight className="w-4 h-4" /></button>
+            <button type="button" onClick={() => { if (activeStep === 1 && wizardStage < 5) handleStageChange((wizardStage + 1) as 1 | 2 | 3 | 4 | 5); else void handleCreateFiles(); }} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-extrabold cursor-pointer shadow-2xs"><span>{activeStep === 1 && wizardStage < 5 ? 'Tiếp tục' : 'Xuất 4 tệp'}</span><ArrowRight className="w-4 h-4" /></button>
           </div>
         </div>
       </div>

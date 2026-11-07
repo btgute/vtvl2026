@@ -1,6 +1,6 @@
-# Thiết kế Cơ sở dữ liệu quan hệ (Relational Database Schema — 18 bảng)
+# Thiết kế Cơ sở dữ liệu quan hệ (Relational Database Schema — 22 bảng)
 
-Tài liệu này mô tả kiến trúc **Cơ sở dữ liệu quan hệ (PostgreSQL / Supabase)** của hệ thống **HCM-UTE VTVL 360** dành cho **Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)**, ánh xạ 1-1 với bộ 21 trang tính theo **Hướng dẫn số 07-HD/BTCTW**, **Nghị định số 232/2026/NĐ-CP**, **Thông tư số 31/2026/TT-BGDĐT** và **Hướng dẫn số 02 (`1907/HD-ĐHCNKT` ngày 17/6/2026 của Hiệu trưởng HCM-UTE)**.
+Tài liệu này mô tả kiến trúc **Cơ sở dữ liệu quan hệ (PostgreSQL / Supabase)** của hệ thống **HCM-UTE VTVL 360** dành cho **Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)**, ánh xạ 1-1 với bộ 22 trang tính theo **Hướng dẫn số 07-HD/BTCTW**, **Nghị định số 232/2026/NĐ-CP**, **Thông tư số 31/2026/TT-BGDĐT** và **Hướng dẫn số 02 (`1907/HD-ĐHCNKT` ngày 17/6/2026 của Hiệu trưởng HCM-UTE)**.
 
 Tệp SQL khởi tạo: [`20261107_init_vtvl_hcmute.sql`](file:///Users/macaz/Documents/0. App/VTVL /supabase/migrations/20261107_init_vtvl_hcmute.sql)
 
@@ -16,15 +16,22 @@ erDiagram
     dm_don_vi ||--|| t_tien_do : "tổng hợp tiến độ"
     dm_don_vi ||--o{ k_kiem_tra : "kiểm tra 6 chỉ tiêu"
     dm_don_vi ||--o{ s_nhat_ky : "ghi nhận lịch sử"
+    dm_don_vi ||--|| sldv_quy_mo_don_vi : "khai báo quy mô để nội suy SP"
+    dm_don_vi ||--o{ sldv_phan_bo_ngach : "đối chiếu bảng lương & tách ngạch"
+    dm_don_vi ||--o{ can_cu_goi_y : "lưu gợi ý ô cam & căn cứ"
+    dm_don_vi ||--o{ ra_soat_chua_du_can_cu : "theo dõi mục chưa đủ căn cứ"
 
     dm_chuc_danh_tt31 ||--o{ dm_vtvl_khung_truong : "quy định mã chức danh"
+    dm_chuc_danh_tt31 ||--o{ sldv_phan_bo_ngach : "chuẩn hóa mã ngạch bảng lương"
     dm_vtvl_khung_truong ||--o{ c1_vtvl : "chuẩn hóa tên khung & giới hạn bậc"
 
     a1_nhiem_vu ||--o{ a2_cong_viec : "phân rã đầu việc"
     c1_vtvl ||--o{ a2_cong_viec : "đảm nhận công việc"
+    c1_vtvl ||--o{ sldv_phan_bo_ngach : "nhận số người từ mã ngạch"
     dm_san_pham ||--o{ a2_cong_viec : "chuẩn hóa sản phẩm I-VI"
 
     a2_cong_viec ||--|| b1_khoi_luong : "đo lường sản lượng & phút/SP"
+    a2_cong_viec ||--o{ can_cu_goi_y : "điền sẵn gợi ý ô cam"
     a2_cong_viec ||--o{ b2_ct_tac_dong : "kê khai tác động số hóa"
     a2_cong_viec ||--|| b2_thay_doi : "tổng hợp giờ giảm ròng"
 
@@ -37,7 +44,7 @@ erDiagram
 
 ---
 
-## 2. Phân nhóm 18 bảng dữ liệu quan hệ
+## 2. Phân nhóm 22 bảng dữ liệu quan hệ
 
 ### Nhóm I — 04 bảng danh mục chuẩn cấp Trường & Bộ (`Master Catalogs`)
 1. **`public.dm_don_vi`** (PK: `ma_don_vi`): Lưu trữ danh mục 51 đơn vị thuộc/trực thuộc HCM-UTE thuộc 04 khối (`khoa-vien`, `phong-ban`, `trung-tam`, `dang-doanthe`).
@@ -45,8 +52,8 @@ erDiagram
 3. **`public.dm_vtvl_khung_truong`** (PK: `ma_danh_muc_nd232`): Lưu trữ Khung 38 vị trí việc làm của Trường theo 04 nhóm (`I. Quản lý`, `II. Chuyên môn, nghiệp vụ`, `III. Hỗ trợ`, `IV. Phục vụ`), giới hạn bậc nghề nghiệp (`gioi_han_bac_nghe_nghiep`), mảng bậc cho phép (`ds_bac_cho_phep` kiểu `jsonb`) và công thức đặt Tên VTVL cụ thể (`cong_thuc_ten_cu_the`) theo Phụ lục I văn bản `1907/HD-ĐHCNKT`.
 4. **`public.dm_san_pham`** (PK: `ma_sp_chuan`): Danh mục sản phẩm chuẩn 06 nhóm La Mã (`I`–`VI`, Biểu `11. DM_SAN_PHAM`) và định mức phút/sản phẩm chuẩn.
 
-### Nhóm II — 14 bảng dữ liệu nghiệp vụ theo đơn vị (`Unit Operational Tables`)
-5. **`public.c1_vtvl`** (PK: `ma_vtvl`, FK: `ma_don_vi`, `ma_danh_muc_nd232`): Danh mục VTVL cụ thể tại đơn vị (Biểu `6. C1_VTVL` & Phụ lục II `1907/HD-ĐHCNKT`), lưu trữ song song **Tên khung VTVL của Trường** (`ten_khung_vtvl_truong`), **Tên VTVL cụ thể tại đơn vị** (`ten_vtvl_cu_the_don_vi`), **Bậc nghề nghiệp sử dụng** (`bac_nghe_nghiep_su_dung`) và **Quỹ giờ chuẩn PP2** (`1.760` giờ đối với Giảng viên/Trợ giảng hoặc `1.904` giờ đối với Chế độ phổ biến).
+### Nhóm II — 14 bảng dữ liệu nghiệp vụ cốt lõi theo đơn vị (`Unit Core Operational Tables`)
+5. **`public.c1_vtvl`** (PK: `ma_vtvl`, FK: `ma_don_vi`, `ma_danh_muc_nd232`): Danh mục VTVL cụ thể tại đơn vị (Biểu `6. C1_VTVL` & Phụ lục II `1907/HD-ĐHCNKT`), lưu trữ song song **Tên khung VTVL của Trường**, **Tên VTVL cụ thể tại đơn vị**, **Bậc nghề nghiệp sử dụng** và **Quỹ giờ chuẩn PP2** (`1.760` hoặc `1.904` giờ).
 6. **`public.a1_nhiem_vu`** (PK: `ma_nhiem_vu`, FK: `ma_don_vi`): Danh mục nhiệm vụ của đơn vị (Biểu `1. A1_NhiemVu`).
 7. **`public.a2_cong_viec`** (PK: `ma_cong_viec`, FK: `ma_don_vi`, `ma_nhiem_vu`, `ma_vtvl`, `ma_sp_chuan`): Danh mục công việc và sản phẩm đầu ra (Biểu `2. A2_CongViec`).
 8. **`public.b1_khoi_luong`** (PK: `ma_cong_viec`, FK: `ma_don_vi`, `ma_vtvl`, `ma_sp_chuan`): Thống kê sản lượng và thời gian thực tế 19 cột A–S (Biểu `3. B1_KhoiLuong`).
@@ -61,10 +68,15 @@ erDiagram
 17. **`public.t_tien_do`** (PK: `ma_don_vi`): Tổng hợp tiến độ hoàn thiện bộ biểu của đơn vị (Biểu `14. T_TienDo`).
 18. **`public.s_nhat_ky`** (PK: `id`): Nhật ký phiên bản và thao tác trực tuyến (Biểu `15. S_NhatKy`).
 
+### Nhóm III — 04 bảng mở rộng cho Nội suy Quy mô, Phân bổ Mã ngạch, Gợi ý Ô cam & Rà soát Chuyên sâu
+19. **`public.sldv_quy_mo_don_vi`** (PK: `ma_don_vi`, FK: `dm_don_vi`): Lưu các chỉ số quy mô đơn vị trong kỳ thống kê (`01/10/2025–30/9/2026`) gồm: `so_sinh_vien_quy_doi`, `so_nganh_ctdt`, `so_lop_hoc_phan_nam`, `so_phong_tn_xuong`, `so_de_tai_nckh_nam`, `so_van_ban_ho_so_nam` và `he_so_quy_mo` dùng để nội suy số sản phẩm điền sẵn.
+20. **`public.sldv_phan_bo_ngach`** (PK: `id`, FK: `ma_don_vi`, `ma_vtvl`): Bảng đối chiếu nhân sự theo mã ngạch từ bảng lương tháng 9/2026 (`ma_ngach`, `ten_ngach`, `so_nguoi`, `ma_vtvl_xep_vao`, `la_dong_tach`). Hỗ trợ nghiệp vụ **“Tách dòng mã ngạch”** (khi 1 mã ngạch như `V.07.01.01` hoặc `01.003` có người giữ chức vụ lãnh đạo/quản lý hoặc kiêm nhiệm vị trí khác) và tự động cộng dồn vào cột Nhân sự hiện có (`D1`).
+21. **`public.can_cu_goi_y`** (PK: `(ma_don_vi, ma_cong_viec)`): Ánh xạ với trang tính **`Can_cu_goi_y`** — lưu giá trị điền sẵn ở **ô màu cam** (`so_sp_goi_y`, `phut_sp_goi_y`, `muc_do_phuc_tap`, `nguon_can_cu_goi_y`, `da_sua_thuc_te`). Những dòng giữ nguyên gợi ý mà chưa đo thực tế được gắn cờ `da_sua_thuc_te = false` để đưa vào danh sách *“Chưa đủ căn cứ”*.
+22. **`public.ra_soat_chua_du_can_cu`** (PK: `id`, FK: `ma_don_vi`): Ánh xạ với 2 trang tính xuất ra từ bộ máy Rà soát (**`Chua_du_can_cu`** và **`Gop_y_bieu_mau`**), lưu trữ `ma_cong_viec`, `noi_dung_thieu_can_cu`, `nguyen_nhan`, `thoi_han_bo_sung`, `dau_moi_phu_trach` và `loai_canh_bao` (`evidence` hoặc `template`).
+
 ---
 
 ## 3. Ràng buộc toàn vẹn & Trigger kiểm soát Bậc nghề nghiệp
 
-- **Trigger `trg_validate_c1_career_level` (`public.fn_validate_c1_career_level()`):** Tự động đối chiếu giá trị `bac_nghe_nghiep_su_dung` trong bảng `public.c1_vtvl` với mảng `ds_bac_cho_phep` của vị trí khung tương ứng trong `public.dm_vtvl_khung_truong`. Nếu đơn vị nhập bậc nằm ngoài giới hạn Phụ lục I văn bản `1907/HD-ĐHCNKT`, cơ sở dữ liệu sẽ từ chối bản ghi và trả về thông báo lỗi cụ thể.
-- **View `public.v_tong_hop_vtvl_toan_truong`:** Kết nối `dm_don_vi` và `t_tien_do` để tổng hợp trạng thái nộp hồ sơ và tổng nhu cầu FTE của toàn bộ 51 đơn vị thuộc HCM-UTE.
-
+- **Trigger `trg_validate_c1_career_level` (`public.fn_validate_c1_career_level()`):** Tự động đối chiếu giá trị `bac_nghe_nghiep_su_dung` trong bảng `public.c1_vtvl` với mảng `ds_bac_cho_phep` của vị trí khung tương ứng trong `public.dm_vtvl_khung_truong`.
+- **View `public.v_tong_hop_vtvl_toan_truong`:** Kết nối `dm_don_vi`, `t_tien_do` và `sldv_quy_mo_don_vi` để tổng hợp trạng thái nộp hồ sơ, quy mô đơn vị và tổng nhu cầu FTE của toàn bộ 51 đơn vị thuộc HCM-UTE.

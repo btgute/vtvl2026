@@ -307,6 +307,65 @@ ALTER TABLE public.s_nhat_ky ADD COLUMN IF NOT EXISTS email_nguoi_thuc_hien text
 ALTER TABLE public.s_nhat_ky ADD COLUMN IF NOT EXISTS chuc_vu_nguoi_thuc_hien text;
 CREATE INDEX IF NOT EXISTS idx_s_nhat_ky_ma_don_vi ON public.s_nhat_ky(ma_don_vi);
 
+-- 19. BẢNG SLDV_QUY_MO_DON_VI: Chỉ số quy mô đơn vị để nội suy số sản phẩm điền sẵn (Kỳ 01/10/2025–30/9/2026)
+CREATE TABLE IF NOT EXISTS public.sldv_quy_mo_don_vi (
+  ma_don_vi text PRIMARY KEY REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  so_sinh_vien_quy_doi integer NOT NULL DEFAULT 0,
+  so_nganh_ctdt integer NOT NULL DEFAULT 0,
+  so_lop_hoc_phan_nam integer NOT NULL DEFAULT 0,
+  so_phong_tn_xuong integer NOT NULL DEFAULT 0,
+  so_de_tai_nckh_nam integer NOT NULL DEFAULT 0,
+  so_van_ban_ho_so_nam integer NOT NULL DEFAULT 0,
+  he_so_quy_mo numeric(8,2) NOT NULL DEFAULT 1.00,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- 20. BẢNG SLDV_PHAN_BO_NGACH: Bảng nhân sự theo mã ngạch đối chiếu bảng lương tháng 9/2026 (Hỗ trợ tách ngạch -> VTVL D1)
+CREATE TABLE IF NOT EXISTS public.sldv_phan_bo_ngach (
+  id text PRIMARY KEY,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ma_ngach text NOT NULL,
+  ten_ngach text NOT NULL,
+  so_nguoi integer NOT NULL DEFAULT 1 CHECK (so_nguoi >= 0),
+  ma_vtvl_xep_vao text NOT NULL,
+  la_dong_tach boolean NOT NULL DEFAULT false,
+  ghi_chu text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_sldv_phan_bo_ngach_ma_don_vi ON public.sldv_phan_bo_ngach(ma_don_vi);
+
+-- 21. BẢNG CAN_CU_GOI_Y: Ánh xạ với trang tính Can_cu_goi_y (Ô màu cam điền sẵn gợi ý & căn cứ tham khảo)
+CREATE TABLE IF NOT EXISTS public.can_cu_goi_y (
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  ma_cong_viec text NOT NULL,
+  ma_vtvl text NOT NULL,
+  ten_cong_viec text NOT NULL,
+  so_sp_goi_y numeric(12,2) NOT NULL DEFAULT 0,
+  phut_sp_goi_y numeric(10,2) NOT NULL DEFAULT 0,
+  muc_do_phuc_tap text NOT NULL DEFAULT 'Thông thường',
+  nguon_can_cu_goi_y text NOT NULL,
+  da_sua_thuc_te boolean NOT NULL DEFAULT false,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (ma_don_vi, ma_cong_viec)
+);
+CREATE INDEX IF NOT EXISTS idx_can_cu_goi_y_ma_don_vi ON public.can_cu_goi_y(ma_don_vi);
+
+-- 22. BẢNG RA_SOAT_CHUA_DU_CAN_CU: Ánh xạ với trang tính Chua_du_can_cu và Gop_y_bieu_mau khi xuất kết quả rà soát
+CREATE TABLE IF NOT EXISTS public.ra_soat_chua_du_can_cu (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
+  loai_bang text NOT NULL DEFAULT 'Chua_du_can_cu',
+  bieu_nguon text NOT NULL,
+  toa_do_o text NOT NULL,
+  ma_tham_chieu text NOT NULL,
+  noi_dung_phat_hien text NOT NULL,
+  nguyen_nhan text,
+  thoi_han_bo_sung text,
+  dau_moi_phu_trach text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_ra_soat_chua_du_can_cu_ma_don_vi ON public.ra_soat_chua_du_can_cu(ma_don_vi);
+
 -- =============================================================================
 -- PHẦN III. VIEW TỔNG HỢP & TRIGGER KIỂM SOÁT GIỚI HẠN BẬC NGHỀ NGHIỆP
 -- =============================================================================
@@ -371,7 +430,8 @@ DECLARE
     'c1_vtvl', 'a1_nhiem_vu', 'a2_cong_viec', 'b1_khoi_luong',
     'b2_ct_tac_dong', 'b2_thay_doi', 'c2_nang_luc', 'c3_nhu_cau',
     'd1_nhan_luc', 'du_bao_5_nam', 'd2_phuong_an', 'k_kiem_tra',
-    't_tien_do', 's_nhat_ky'
+    't_tien_do', 's_nhat_ky', 'sldv_quy_mo_don_vi', 'sldv_phan_bo_ngach',
+    'can_cu_goi_y', 'ra_soat_chua_du_can_cu'
   ];
 BEGIN
   GRANT USAGE ON SCHEMA public TO anon, authenticated;

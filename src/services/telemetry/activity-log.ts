@@ -1,6 +1,6 @@
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { buildDefaultProposedPositionsForUnit } from '@/configs/hcmute-nd232-catalog';
-import { HcmuteUnit, ProposedVtvlRow, UnitGroupKind } from '@/types/vtvl';
+import { HcmuteUnit, NgachAllocationRow, ProposedVtvlRow, UnitGroupKind, UnitScaleMetrics } from '@/types/vtvl';
 import { syncActivityToSupabase } from '@/services/supabase/vtvl-sync';
 
 export interface ActivityLogEntry {
@@ -23,6 +23,8 @@ export interface ActiveUnitSession {
   activeStep: number;
   wizardStage: 1 | 2 | 3 | 4 | 5;
   lastSavedAt: string;
+  scaleMetrics?: UnitScaleMetrics;
+  ngachAllocations?: NgachAllocationRow[];
   ngachOverrides: Record<string, number>;
   customPositionNames: Record<string, string>;
   customCareerLevels: Record<string, string>;
@@ -43,7 +45,26 @@ function formatCurrentHHMM(): string {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
+export function buildDefaultScaleMetrics(group: UnitGroupKind): UnitScaleMetrics {
+  if (group === 'khoa-vien') {
+    return { studentCount: 1850, programCount: 4, courseSectionCount: 240, labWorkshopCount: 8, researchTopicCount: 15, adminDocCount: 420, scaleMultiplier: 1.0 };
+  }
+  return { studentCount: 0, programCount: 0, courseSectionCount: 0, labWorkshopCount: 2, researchTopicCount: 4, adminDocCount: 1200, scaleMultiplier: 1.0 };
+}
+
+export function buildDefaultNgachAllocations(positions: ProposedVtvlRow[]): NgachAllocationRow[] {
+  return positions.map((p, idx) => ({
+    id: `ngach-row-${idx + 1}`,
+    ngachCode: p.ngachCode,
+    ngachName: `${p.frameworkTitle} (${p.careerLevel})`,
+    count: p.staffCount,
+    targetPositionId: p.id,
+    isSplitRow: false
+  }));
+}
+
 function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSession {
+  const proposedPositions = buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group);
   return {
     unitCode: unit.code,
     kind: unit.group,
@@ -53,10 +74,12 @@ function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSes
     activeStep: 1,
     wizardStage: 1,
     lastSavedAt: formatCurrentHHMM(),
+    scaleMetrics: buildDefaultScaleMetrics(unit.group),
+    ngachAllocations: buildDefaultNgachAllocations(proposedPositions),
     ngachOverrides: {},
     customPositionNames: {},
     customCareerLevels: {},
-    proposedPositions: buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group)
+    proposedPositions
   };
 }
 
@@ -83,6 +106,11 @@ export function getActiveUnitSession(): ActiveUnitSession {
       activeStep: parsed.activeStep || 1,
       wizardStage: stage,
       lastSavedAt: parsed.lastSavedAt || formatCurrentHHMM(),
+      scaleMetrics: parsed.scaleMetrics || buildDefaultScaleMetrics(unit.group),
+      ngachAllocations:
+        Array.isArray(parsed.ngachAllocations) && parsed.ngachAllocations.length > 0
+          ? parsed.ngachAllocations
+          : buildDefaultNgachAllocations(proposed),
       ngachOverrides: parsed.ngachOverrides || {},
       customPositionNames: parsed.customPositionNames || {},
       customCareerLevels: parsed.customCareerLevels || {},
@@ -105,6 +133,9 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
   const nextUnitCode = partial.unitCode ?? current.unitCode;
   const matchedUnit = HCMUTE_UNITS.find((u) => u.code === nextUnitCode) || HCMUTE_UNITS[0];
   const isSameUnit = matchedUnit.code === current.unitCode;
+  const nextPositions =
+    partial.proposedPositions ??
+    (isSameUnit ? current.proposedPositions : buildDefaultProposedPositionsForUnit(matchedUnit.nameVi, matchedUnit.group));
 
   const updated: ActiveUnitSession = {
     unitCode: matchedUnit.code,
@@ -115,24 +146,17 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
     activeStep: partial.activeStep ?? current.activeStep,
     wizardStage: partial.wizardStage ?? current.wizardStage,
     lastSavedAt: formatCurrentHHMM(),
+    scaleMetrics: partial.scaleMetrics ?? (isSameUnit ? current.scaleMetrics : buildDefaultScaleMetrics(matchedUnit.group)),
+    ngachAllocations: partial.ngachAllocations ?? (isSameUnit ? current.ngachAllocations : buildDefaultNgachAllocations(nextPositions)),
     ngachOverrides: partial.ngachOverrides ?? (isSameUnit ? current.ngachOverrides : {}),
     customPositionNames: partial.customPositionNames ?? (isSameUnit ? current.customPositionNames : {}),
     customCareerLevels: partial.customCareerLevels ?? (isSameUnit ? current.customCareerLevels : {}),
-    proposedPositions:
-      partial.proposedPositions ??
-      (isSameUnit
-        ? current.proposedPositions
-        : buildDefaultProposedPositionsForUnit(matchedUnit.nameVi, matchedUnit.group)),
-    previousPositionsSnapshot:
-      partial.previousPositionsSnapshot !== undefined
-        ? partial.previousPositionsSnapshot
-        : current.previousPositionsSnapshot
+    proposedPositions: nextPositions,
+    previousPositionsSnapshot: partial.previousPositionsSnapshot !== undefined ? partial.previousPositionsSnapshot : current.previousPositionsSnapshot
   };
 
   if (!isSameUnit && cachedUnitCode && cachedUnitCode !== matchedUnit.code) {
-    cachedRootWorkbookFile = null;
-    cachedMergedWorkbookFile = null;
-    cachedSurveyFormFiles = [];
+    cachedRootWorkbookFile = null; cachedMergedWorkbookFile = null; cachedSurveyFormFiles = [];
   }
   cachedUnitCode = matchedUnit.code;
 
@@ -140,52 +164,35 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
     try {
       window.localStorage.setItem(UNIT_SESSION_KEY, JSON.stringify(updated));
       window.dispatchEvent(new Event('vtvl-unit-session-updated'));
-    } catch {
-      // Bỏ qua lỗi bộ nhớ trình duyệt đầy, không ghi thông tin cá nhân ra console
-    }
+    } catch { /* ignore */ }
   }
   return updated;
 }
 
 export function setSessionRootWorkbook(unitCode: string, blob: Blob, fileName: string): File {
   cachedUnitCode = unitCode;
-  const file = new File([blob], fileName, {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
+  const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   cachedRootWorkbookFile = file;
   return file;
 }
 
 export function setSessionMergedWorkbook(unitCode: string, blob: Blob, fileName: string): File {
   cachedUnitCode = unitCode;
-  const file = new File([blob], fileName, {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
+  const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   cachedMergedWorkbookFile = file;
   return file;
 }
 
 export function addSessionSurveyFormFile(unitCode: string, blob: Blob, fileName: string): File {
   cachedUnitCode = unitCode;
-  const file = new File([blob], fileName, {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  cachedSurveyFormFiles = [
-    ...cachedSurveyFormFiles.filter((f) => f.name !== fileName),
-    file
-  ];
+  const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  cachedSurveyFormFiles = [...cachedSurveyFormFiles.filter((f) => f.name !== fileName), file];
   return file;
 }
 
 export function getSessionFilesForUnit(unitCode: string) {
-  if (cachedUnitCode !== unitCode) {
-    return { rootFile: null, mergedFile: null, formFiles: [] as File[] };
-  }
-  return {
-    rootFile: cachedRootWorkbookFile,
-    mergedFile: cachedMergedWorkbookFile,
-    formFiles: cachedSurveyFormFiles
-  };
+  if (cachedUnitCode !== unitCode) return { rootFile: null, mergedFile: null, formFiles: [] as File[] };
+  return { rootFile: cachedRootWorkbookFile, mergedFile: cachedMergedWorkbookFile, formFiles: cachedSurveyFormFiles };
 }
 
 export function recordActivity(
@@ -205,20 +212,12 @@ export function recordActivity(
     const entry: ActivityLogEntry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       timestamp: new Date().toLocaleString('vi-VN'),
-      unitCode,
-      unitName,
-      actorEmail,
-      actorTitle,
-      action,
-      details
+      unitCode, unitName, actorEmail, actorTitle, action, details
     };
-    const updated = [entry, ...list].slice(0, 80);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify([entry, ...list].slice(0, 80)));
     window.dispatchEvent(new Event('vtvl-activity-updated'));
     void syncActivityToSupabase(unitCode, unitName, action, details, actorEmail, actorTitle);
-  } catch {
-    // Không ghi dữ liệu cá nhân ra console
-  }
+  } catch { /* ignore */ }
 }
 
 export function getActivityLogs(): ActivityLogEntry[] {
@@ -226,7 +225,5 @@ export function getActivityLogs(): ActivityLogEntry[] {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
