@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, Download, FolderArchive, FileSpreadsheet, RefreshCw, FileText } from 'lucide-react';
+import { CheckCircle2, Download, FolderArchive, FileSpreadsheet, RefreshCw, Copy, Check } from 'lucide-react';
 import { SplitResultSummary } from '@/types/vtvl';
 import { previewGeneratedFileNames } from '@/services/excel-split/workbook-builder';
 import { RegenFormsResult, regenerateFormsFromEditedUnitWorkbook } from '@/services/excel-split/regen-forms';
@@ -11,54 +11,55 @@ interface Props {
   onDownload: (blob: Blob, filename: string) => void;
 }
 
-export function SplitFileNamesPreview({
-  unitCode,
-  exportDate,
-  includeZip
-}: {
-  unitCode: string;
-  exportDate: string;
-  includeZip: boolean;
-}) {
+export function SplitFileNamesPreview({ unitCode, exportDate, includeZip }: { unitCode: string; exportDate: string; includeZip: boolean }) {
+  const [copiedName, setCopiedName] = useState<string>('');
   const names = previewGeneratedFileNames(unitCode, exportDate);
   const items = [
-    { name: names.unitFileName, tag: 'tệp đơn vị gốc (22 sheet)', accent: true },
-    { name: names.draftUnitFileName, tag: 'tệp đơn vị dự thảo (ô cam gợi ý + Can_cu_goi_y)', accent: true },
-    { name: names.fullFormFileName, tag: 'phiếu thu số liệu đầy đủ (có D1 cho đầu mối)', accent: false },
-    ...(includeZip ? [{ name: names.zipFileName, tag: 'phiếu từng vị trí (.zip, không có D1)', accent: true }] : [])
+    { title: 'Tệp đơn vị gốc', fileName: names.unitFileName, meta: '22 sheet · Sổ chuẩn nộp thẩm định', isZip: false },
+    { title: 'Tệp đơn vị dự thảo', fileName: names.draftUnitFileName, meta: '22 sheet · Có ô gợi ý và sheet căn cứ (Can_cu_goi_y)', isZip: false },
+    { title: 'Phiếu thu số liệu đầy đủ', fileName: names.fullFormFileName, meta: '4 sheet · Có Biểu D1 dành cho đầu mối đơn vị', isZip: false },
+    ...(includeZip ? [{ title: 'Gói phiếu từng vị trí', fileName: names.zipFileName, meta: 'Gói .zip · Lược bỏ D1 để tránh tính trùng nhân sự kiêm nhiệm', isZip: true }] : [])
   ];
 
+  const handleCopy = (fileName: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      void navigator.clipboard.writeText(fileName);
+      setCopiedName(fileName);
+      setTimeout(() => setCopiedName(''), 1800);
+    }
+  };
+
   return (
-    <div aria-live="polite" className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-3.5 space-y-2">
-      <div className="text-xs font-extrabold uppercase tracking-wider text-[var(--primary)]">
-        Tệp sẽ tạo ({items.length} tệp riêng biệt)
+    <div aria-live="polite" className="pt-3 border-t border-[var(--border-subtle)] space-y-2.5">
+      <div className="flex items-center justify-between text-xs font-bold text-[var(--ink-muted)]">
+        <span>Tệp đầu ra</span>
+        <span className="text-[var(--primary)]">{items.length} tệp</span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {items.map((it) => (
-          <div key={it.name} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--border)] bg-[var(--sheet)] px-3 py-2 text-xs">
-            <span className="inline-flex items-center gap-1.5 font-mono font-bold text-[var(--foreground)] truncate">
-              <FileSpreadsheet className="w-4 h-4 text-[var(--primary)] shrink-0" />
-              <span className="truncate">{it.name}</span>
-            </span>
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 ${it.accent ? 'bg-[var(--primary)]/10 text-[var(--primary)]' : 'bg-[var(--muted)] text-[var(--ink-muted)]'}`}>
-              {it.tag}
-            </span>
-          </div>
-        ))}
-      </div>
+      <ul className="divide-y divide-[var(--border-subtle)] border-y border-[var(--border-subtle)]">
+        {items.map((it) => {
+          const isCopied = copiedName === it.fileName;
+          return (
+            <li key={it.fileName} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
+              <div className="flex items-start gap-2.5 min-w-0">
+                {it.isZip ? <FolderArchive className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" /> : <FileSpreadsheet className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" />}
+                <div className="min-w-0 space-y-0.5">
+                  <div className="font-bold text-[var(--foreground)]">{it.title}</div>
+                  <div className="font-mono text-xs text-[var(--primary)] break-all sm:break-normal">{it.fileName}</div>
+                  <div className="text-xs text-[var(--ink-muted)]">{it.meta}</div>
+                </div>
+              </div>
+              <button type="button" onClick={() => handleCopy(it.fileName)} aria-label={`Sao chép tên tệp ${it.fileName}`} className="self-start sm:self-center inline-flex items-center gap-1 min-h-[36px] px-2.5 rounded-lg border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-xs font-semibold text-[var(--ink-muted)] hover:text-[var(--primary)] shrink-0 cursor-pointer">
+                {isCopied ? <><Check className="w-3.5 h-3.5 text-[var(--ok)]" /><span className="text-[var(--ok)]">Đã sao chép</span></> : <><Copy className="w-3.5 h-3.5" /><span>Sao chép tên tệp</span></>}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
 
-export function RegenFormsFromUnitBox({
-  exportDate,
-  includeZip,
-  onDownload
-}: {
-  exportDate: string;
-  includeZip: boolean;
-  onDownload: (blob: Blob, filename: string) => void;
-}) {
+export function RegenFormsFromUnitBox({ exportDate, includeZip, onDownload }: { exportDate: string; includeZip: boolean; onDownload: (blob: Blob, filename: string) => void }) {
   const [regenLoading, setRegenLoading] = useState(false);
   const [regenErr, setRegenErr] = useState('');
   const [regenRes, setRegenRes] = useState<RegenFormsResult | null>(null);
@@ -66,69 +67,35 @@ export function RegenFormsFromUnitBox({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    setRegenErr('');
-    setRegenLoading(true);
+    setRegenErr(''); setRegenLoading(true);
     try {
       const res = await regenerateFormsFromEditedUnitWorkbook(f, includeZip, exportDate);
       setRegenRes(res);
     } catch (err) {
       setRegenErr(err instanceof Error ? err.message : 'Không thể đọc tệp đơn vị đã sửa.');
-    } finally {
-      setRegenLoading(false);
-    }
+    } finally { setRegenLoading(false); }
   };
 
   return (
-    <details className="rounded-xl border border-dashed border-[var(--primary)]/40 bg-[var(--background)] overflow-hidden">
+    <details className="rounded-xl border border-[var(--border)] bg-[var(--background)]/60 overflow-hidden">
       <summary className="cursor-pointer px-4 py-3 min-h-[44px] text-xs sm:text-sm font-bold text-[var(--foreground)] flex items-center justify-between">
-        <span className="inline-flex items-center gap-2">
-          <RefreshCw className="w-4 h-4 text-[var(--primary)] shrink-0" />
-          <span>Tạo lại phiếu từ tệp đơn vị đã sửa (khi đổi phương pháp ở Biểu C3 hoặc thêm việc ở B1)</span>
-        </span>
+        <span className="inline-flex items-center gap-2"><RefreshCw className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Tạo lại phiếu từ tệp đơn vị đã sửa (khi đổi phương pháp ở Biểu C3 hoặc thêm việc ở B1)</span></span>
         <span className="text-xs font-bold text-[var(--primary)]">Mở / Đóng</span>
       </summary>
       <div className="p-4 border-t border-[var(--border-subtle)] space-y-3 text-xs sm:text-sm">
-        <p className="text-[var(--ink-muted)]">
-          Gợi ý phút/SP chỉ có ở vị trí tính theo <strong>PP2</strong>. Khi đơn vị đổi phương pháp ở Biểu <code>8. C3_NhuCau</code> hoặc bổ sung công việc ở <code>3. B1_KhoiLuong</code>, hãy chọn tệp đơn vị đã sửa tại đây: hệ thống sẽ đọc lại Biểu C3, B1 và Danh mục sản phẩm để tạo lại Phiếu thu số liệu và gói <code>.zip</code> từng vị trí mà không làm hỏng tệp đơn vị.
-        </p>
+        <p className="text-[var(--ink-muted)]">Gợi ý phút/SP chỉ có ở vị trí tính theo <strong>PP2</strong>. Khi đơn vị đổi phương pháp ở Biểu <code>8. C3_NhuCau</code> hoặc bổ sung công việc ở <code>3. B1_KhoiLuong</code>, hãy chọn tệp đơn vị đã sửa tại đây để tạo lại Phiếu thu số liệu và gói <code>.zip</code> từng vị trí.</p>
         <div>
-          <label htmlFor="regen-unit-file" className="block font-bold text-[var(--foreground)] mb-1">
-            Chọn tệp đơn vị đã chỉnh sửa (.xlsx)
-          </label>
-          <input
-            id="regen-unit-file"
-            type="file"
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            onChange={(e) => void handleFileChange(e)}
-            className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-3 py-2 file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--primary)] file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white cursor-pointer"
-          />
+          <label htmlFor="regen-unit-file" className="block font-bold text-[var(--foreground)] mb-1">Chọn tệp đơn vị đã chỉnh sửa (.xlsx)</label>
+          <input id="regen-unit-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => void handleFileChange(e)} className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-3 py-2 file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--primary)] file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white cursor-pointer" />
         </div>
         {regenLoading && <p className="font-bold text-[var(--primary)]">Đang đọc Biểu C3, B1 và tạo lại bộ phiếu…</p>}
         {regenErr && <p className="font-bold text-[var(--fix)]">{regenErr}</p>}
         {regenRes && (
           <div className="rounded-xl border border-[var(--ok)]/40 bg-[var(--ok-soft)] p-3 space-y-2.5">
-            <div className="font-bold text-[var(--ok)]">
-              ✓ Đã tạo lại bộ phiếu cho [{regenRes.unitCode}] ({regenRes.vtvlCount} VTVL, trong đó {regenRes.pp2PositionCount} vị trí tính theo PP2 · {regenRes.taskCount} công việc)
-            </div>
+            <div className="font-bold text-[var(--ok)]">✓ Đã tạo lại bộ phiếu cho [{regenRes.unitCode}] ({regenRes.vtvlCount} VTVL, trong đó {regenRes.pp2PositionCount} vị trí tính theo PP2 · {regenRes.taskCount} công việc)</div>
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => onDownload(regenRes.fullFormBlob, regenRes.fullFormFileName)}
-                className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl bg-[var(--primary)] text-white text-xs font-bold cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Tải phiếu đầy đủ: {regenRes.fullFormFileName}</span>
-              </button>
-              {regenRes.zipBlob && regenRes.zipFileName && (
-                <button
-                  type="button"
-                  onClick={() => onDownload(regenRes.zipBlob!, regenRes.zipFileName!)}
-                  className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[var(--primary)] bg-[var(--sheet)] text-[var(--primary)] text-xs font-bold cursor-pointer"
-                >
-                  <FolderArchive className="w-3.5 h-3.5" />
-                  <span>Tải gói .zip từng vị trí: {regenRes.zipFileName}</span>
-                </button>
-              )}
+              <button type="button" onClick={() => onDownload(regenRes.fullFormBlob, regenRes.fullFormFileName)} className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl bg-[var(--primary)] text-white text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5" /><span className="break-all sm:break-normal">Tải phiếu đầy đủ: {regenRes.fullFormFileName}</span></button>
+              {regenRes.zipBlob && regenRes.zipFileName && <button type="button" onClick={() => onDownload(regenRes.zipBlob!, regenRes.zipFileName!)} className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border border-[var(--primary)] bg-[var(--sheet)] text-[var(--primary)] text-xs font-bold cursor-pointer"><FolderArchive className="w-3.5 h-3.5" /><span className="break-all sm:break-normal">Tải gói .zip từng vị trí: {regenRes.zipFileName}</span></button>}
             </div>
           </div>
         )}
@@ -138,73 +105,36 @@ export function RegenFormsFromUnitBox({
 }
 
 export function SplitResultBanner({ result, onDownload }: Props) {
+  const files = [
+    { title: '1. Tệp đơn vị gốc', fileName: result.unitFileName, meta: '22 sheet · Sổ chuẩn nộp thẩm định', blob: result.unitBlob, primary: true, isZip: false },
+    { title: '2. Tệp đơn vị dự thảo', fileName: result.draftUnitFileName, meta: '22 sheet · Có ô cam gợi ý và sheet Can_cu_goi_y', blob: result.draftUnitBlob, primary: false, isZip: false },
+    { title: '3. Phiếu thu số liệu đầy đủ', fileName: result.fullFormFileName, meta: '4 sheet · Có Biểu D1 dành cho đầu mối đơn vị', blob: result.fullFormBlob, primary: false, isZip: false },
+    ...(result.zipBlob && result.zipFileName ? [{ title: '4. Gói phiếu từng vị trí', fileName: result.zipFileName, meta: `${result.vtvlCount} phiếu .xlsx · Lược bỏ D1 để tránh tính trùng kiêm nhiệm`, blob: result.zipBlob, primary: false, isZip: true }] : [])
+  ];
+
   return (
-    <div className="rounded-2xl border border-[var(--ok)]/40 bg-[var(--ok-soft)]/50 p-4 space-y-4 mt-3">
-      <div className="flex items-center gap-2">
-        <CheckCircle2 className="w-5 h-5 text-[var(--ok)]" />
-        <h3 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">
-          Đã khởi tạo đồng thời 4 tệp chuẩn (22 trang tính, có Can_cu_goi_y) cho {result.unitNameVi} ({result.unitCode})
-        </h3>
+    <div className="rounded-xl border border-[var(--ok)]/40 bg-[var(--ok-soft)]/35 p-4 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--ok)]/20 pb-3">
+        <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-[var(--ok)] shrink-0" /><h3 className="text-sm sm:text-base font-bold text-[var(--foreground)]">Đã khởi tạo {files.length} tệp đầu ra cho {result.unitNameVi} ({result.unitCode})</h3></div>
+        <span className="text-xs text-[var(--ink-muted)]">{result.missionCount} nhiệm vụ · {result.vtvlCount} vị trí · {result.taskCount} công việc · {result.totalStandardFte} FTE</span>
       </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-xl bg-[var(--sheet)] border border-[var(--border)] p-3">
-          <div className="text-xs text-[var(--ink-muted)]">Số nhiệm vụ (Biểu A1)</div>
-          <div className="text-2xl font-extrabold text-[var(--foreground)] tabular-nums">{result.missionCount}</div>
-        </div>
-        <div className="rounded-xl bg-[var(--sheet)] border border-[var(--border)] p-3">
-          <div className="text-xs text-[var(--ink-muted)]">Số vị trí việc làm (Biểu C1)</div>
-          <div className="text-2xl font-extrabold text-[var(--primary)] tabular-nums">{result.vtvlCount}</div>
-        </div>
-        <div className="rounded-xl bg-[var(--sheet)] border border-[var(--border)] p-3">
-          <div className="text-xs text-[var(--ink-muted)]">Số công việc (Biểu A2, B1)</div>
-          <div className="text-2xl font-extrabold text-[var(--foreground)] tabular-nums">{result.taskCount}</div>
-        </div>
-        <div className="rounded-xl bg-[var(--sheet)] border border-[var(--border)] p-3">
-          <div className="text-xs text-[var(--ink-muted)]">Nhu cầu nhân lực (Biểu C3)</div>
-          <div className="text-2xl font-extrabold text-[#ED1C24] tabular-nums">{result.totalStandardFte}</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-        <button
-          type="button"
-          onClick={() => onDownload(result.unitBlob, result.unitFileName)}
-          className="justify-between inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer shadow-2xs"
-        >
-          <span className="inline-flex items-center gap-2 truncate"><Download className="w-4 h-4 shrink-0" /><span className="truncate">1. Tệp đơn vị gốc: {result.unitFileName}</span></span>
-          <span className="text-[11px] bg-white/20 px-2 py-0.5 rounded-full shrink-0">22 sheet</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onDownload(result.draftUnitBlob, result.draftUnitFileName)}
-          className="justify-between inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-xl bg-[var(--sheet)] border border-[var(--primary)] text-[var(--primary)] font-bold text-xs cursor-pointer"
-        >
-          <span className="inline-flex items-center gap-2 truncate"><FileText className="w-4 h-4 shrink-0" /><span className="truncate">2. Tệp đơn vị dự thảo (Ô cam gợi ý): {result.draftUnitFileName}</span></span>
-          <span className="text-[11px] bg-[var(--primary)]/10 px-2 py-0.5 rounded-full shrink-0">Có gợi ý</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onDownload(result.fullFormBlob, result.fullFormFileName)}
-          className="justify-between inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-xl bg-[var(--sheet)] border border-[var(--border)] hover:border-[var(--primary)] text-[var(--foreground)] font-bold text-xs cursor-pointer"
-        >
-          <span className="inline-flex items-center gap-2 truncate"><Download className="w-4 h-4 text-[var(--primary)] shrink-0" /><span className="truncate">3. Phiếu thu số liệu đầy đủ: {result.fullFormFileName}</span></span>
-          <span className="text-[11px] bg-[var(--muted)] px-2 py-0.5 rounded-full shrink-0">Đầu mối</span>
-        </button>
-
-        {result.zipBlob && result.zipFileName && (
-          <button
-            type="button"
-            onClick={() => onDownload(result.zipBlob!, result.zipFileName!)}
-            className="justify-between inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-xl bg-[var(--sheet)] border border-[var(--border)] hover:border-[var(--primary)] text-[var(--foreground)] font-bold text-xs cursor-pointer"
-          >
-            <span className="inline-flex items-center gap-2 truncate"><FolderArchive className="w-4 h-4 text-[#ED1C24] shrink-0" /><span className="truncate">4. Gói phiếu từng vị trí (.zip): {result.zipFileName}</span></span>
-            <span className="text-[11px] bg-red-50 text-[#ED1C24] px-2 py-0.5 rounded-full shrink-0">{result.vtvlCount} phiếu</span>
-          </button>
-        )}
-      </div>
+      <ul className="divide-y divide-[var(--border-subtle)]">
+        {files.map((f) => (
+          <li key={f.fileName} className="py-3 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5 min-w-0">
+              {f.isZip ? <FolderArchive className="w-4 h-4 text-[var(--primary)] shrink-0 mt-1" /> : <FileSpreadsheet className="w-4 h-4 text-[var(--primary)] shrink-0 mt-1" />}
+              <div className="min-w-0 space-y-0.5">
+                <div className="text-sm font-bold text-[var(--foreground)]">{f.title}</div>
+                <div className="font-mono text-xs text-[var(--primary)] break-all sm:break-normal">{f.fileName}</div>
+                <div className="text-xs text-[var(--ink-muted)]">{f.meta}</div>
+              </div>
+            </div>
+            <button type="button" onClick={() => onDownload(f.blob, f.fileName)} className={`w-full sm:w-auto justify-center inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-bold shrink-0 cursor-pointer ${f.primary ? 'bg-[var(--primary)] text-white shadow-2xs' : 'border border-[var(--primary)]/40 bg-[var(--sheet)] text-[var(--primary)] hover:border-[var(--primary)]'}`}>
+              <Download className="w-4 h-4 shrink-0" /><span>Tải xuống</span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

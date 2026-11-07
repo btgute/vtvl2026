@@ -107,41 +107,41 @@ export function Step1ReviewConfirm({
   return (
     <div id="task-1-staff" className="space-y-4">
       <div>
-        <h3 className="text-base font-extrabold text-[var(--foreground)]">
+        <h3 className="text-base font-bold text-[var(--foreground)]">
           Kiểm tra tổng hợp trước khi xuất bộ biểu đơn vị
         </h3>
         <p className="text-xs sm:text-sm text-[var(--ink-muted)]">
-          Rà soát số liệu tổng hợp của <strong>[{unit.code}] {unit.nameVi}</strong> và các mục còn thiếu trước khi chuyển sang Bước 2.
+          Rà soát số liệu tổng hợp của <strong>[{unit.code}] {unit.nameVi}</strong> và các mục còn thiếu trước khi chuyển sang Giai đoạn 2.
         </p>
       </div>
 
-      {/* 4 chỉ số tổng hợp: Tổng VTVL, Nhân sự hiện có, Nhân sự đề xuất, Chênh lệch */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-3.5">
-          <span className="text-xs font-bold text-[var(--ink-muted)] block">Tổng số VTVL (Biểu C1)</span>
-          <strong className="text-2xl font-extrabold text-[var(--foreground)] tabular-nums">{positions.length} vị trí</strong>
+      {/* 4 chỉ số tổng hợp: dùng đường phân cách mảnh thay vì 4 hộp viền riêng */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-3 border-y border-[var(--border-subtle)]">
+        <div className="space-y-0.5">
+          <span className="text-xs font-semibold text-[var(--ink-muted)] block">Tổng số VTVL (Biểu C1)</span>
+          <strong className="text-2xl font-bold text-[var(--foreground)] tabular-nums">{positions.length} vị trí</strong>
         </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-3.5">
-          <span className="text-xs font-bold text-[var(--ink-muted)] block">Nhân sự hiện có (Biểu D1)</span>
-          <strong className="text-2xl font-extrabold text-[var(--foreground)] tabular-nums">{totalStaffD1} người</strong>
+        <div className="space-y-0.5 sm:border-l sm:border-[var(--border-subtle)] sm:pl-4">
+          <span className="text-xs font-semibold text-[var(--ink-muted)] block">Nhân sự hiện có (Biểu D1)</span>
+          <strong className="text-2xl font-bold text-[var(--foreground)] tabular-nums">{totalStaffD1} người</strong>
         </div>
-        <div className="rounded-2xl border border-[var(--primary)]/35 bg-[var(--primary)]/[0.06] p-3.5">
-          <span className="text-xs font-bold text-[var(--ink-muted)] block">Nhân sự đề xuất (Biểu C3)</span>
-          <strong className="text-2xl font-extrabold text-[var(--primary)] tabular-nums">{totalFteC3} FTE</strong>
+        <div className="space-y-0.5 sm:border-l sm:border-[var(--border-subtle)] sm:pl-4">
+          <span className="text-xs font-semibold text-[var(--ink-muted)] block">Nhân sự đề xuất (Biểu C3)</span>
+          <strong className="text-2xl font-bold text-[var(--primary)] tabular-nums">{totalFteC3} FTE</strong>
         </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-3.5">
-          <span className="text-xs font-bold text-[var(--ink-muted)] block">Chênh lệch (Đề xuất − Hiện có)</span>
-          <strong className={`text-2xl font-extrabold tabular-nums ${diffFte > 0 ? 'text-[var(--primary)]' : diffFte < 0 ? 'text-[var(--warn)]' : 'text-[var(--ok)]'}`}>
+        <div className="space-y-0.5 sm:border-l sm:border-[var(--border-subtle)] sm:pl-4">
+          <span className="text-xs font-semibold text-[var(--ink-muted)] block">Chênh lệch (Đề xuất − Hiện có)</span>
+          <strong className={`text-2xl font-bold tabular-nums ${diffFte > 0 ? 'text-[var(--primary)]' : diffFte < 0 ? 'text-[var(--warn)]' : 'text-[var(--ok)]'}`}>
             {diffFte > 0 ? `+${diffFte}` : diffFte} FTE
           </strong>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4 text-sm space-y-1.5">
+      <div className="py-2 text-sm space-y-1 border-b border-[var(--border-subtle)]">
         <div><strong>Đơn vị lập hồ sơ:</strong> [{unit.code}] {unit.nameVi} ({unit.nameEn})</div>
         <div>
           <strong>Người thực hiện:</strong>{' '}
-          {actorTitle && actorEmail ? `${actorTitle} — ${actorEmail}` : <span className="text-[var(--fix)] font-bold">Chưa nhập đầy đủ thông tin người thực hiện</span>}
+          {actorTitle && actorEmail ? `${actorTitle} — ${actorEmail}` : <span className="text-[var(--fix)] font-semibold">Chưa nhập đầy đủ thông tin người thực hiện</span>}
         </div>
         <div><strong>Ngày lập hồ sơ:</strong> {customDate}</div>
       </div>
@@ -187,7 +187,7 @@ export function Step1ReviewConfirm({
             className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[48px] px-5 rounded-xl bg-[var(--primary)] text-white text-sm font-extrabold shadow-sm cursor-pointer disabled:opacity-50 shrink-0"
           >
             <FileSpreadsheet className="w-4 h-4 shrink-0" />
-            <span>{loading ? 'Đang khởi tạo bộ biểu…' : 'Xác nhận & Xuất bộ biểu (Sang Bước 2)'}</span>
+            <span>{loading ? 'Đang khởi tạo bộ biểu…' : 'Xác nhận & Xuất bộ biểu (Sang Giai đoạn 2)'}</span>
           </button>
         </div>
       )}

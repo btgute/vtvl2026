@@ -148,15 +148,15 @@ export default function BamGioPage() {
               <div className="flex items-center">
                 <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">3</span>
                 <h1 className="text-base sm:text-lg font-extrabold text-[var(--foreground)]">
-                  Bước 3: Đo định mức thời gian tại [{unit.code}] {unit.nameVi}
+                  Giai đoạn 3/5 — Đo định mức thời gian tại [{unit.code}] {unit.nameVi}
                 </h1>
                 <InfoTip title="Hướng dẫn đo định mức (Biểu 3. B1_KhoiLuong)">
-                  <p>Hệ thống tự động giữ nguyên đơn vị <strong>[{unit.code}] {unit.nameVi}</strong> cùng các Tên VTVL cụ thể và Bậc nghề nghiệp đã đặt ở Bước 1.</p>
-                  <p>Khi bấm <strong>Xuất phiếu định mức (.xlsx)</strong>, phiếu được tải về máy đồng thời tự động chuyển sang <strong>Bước 4 (Gộp phiếu)</strong>.</p>
+                  <p>Hệ thống tự động giữ nguyên đơn vị <strong>[{unit.code}] {unit.nameVi}</strong> cùng các Tên VTVL cụ thể và Bậc nghề nghiệp đã đặt ở Giai đoạn 1.</p>
+                  <p>Khi bấm <strong>Xuất phiếu định mức (.xlsx)</strong>, phiếu được tải về máy đồng thời tự động chuyển sang <strong>Giai đoạn 4 (Gộp phiếu)</strong>.</p>
                 </InfoTip>
               </div>
-              <Link href="/tao-tep?step=4" className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[var(--primary)] text-white text-xs font-bold hover:opacity-95">
-                <span>Sang Bước 4: Gộp phiếu ({unit.code})</span>
+              <Link href="/tao-tep?step=4" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold hover:opacity-95">
+                <span>Sang Giai đoạn 4: Gộp phiếu ({unit.code})</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

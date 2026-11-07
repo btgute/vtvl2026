@@ -198,97 +198,83 @@ export function Step1PositionList({ unitCode, positions, onUpdateRow, onDuplicat
         })}
       </div>
 
-      {/* GIAO DIỆN DESKTOP (>= md): Bảng có Header cố định khi cuộn & Cố định cột Tên VTVL */}
-      <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--sheet)] overflow-hidden shadow-2xs">
-        <div className="max-h-[520px] overflow-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead className="sticky top-0 z-20 bg-[var(--background)] border-b border-[var(--border)] shadow-2xs">
-              <tr>
-                <th className="sticky left-0 z-20 bg-[var(--background)] py-3 px-3 text-left min-w-[240px] border-r border-[var(--border-subtle)]">Tên &amp; Mã vị trí việc làm cụ thể (Biểu C1)</th>
-                <th className="py-3 px-3 text-left min-w-[220px]">Khung Trường &amp; Mã ngạch <span className="text-xs font-normal text-[var(--review)]">(gợi ý, được đổi)</span></th>
-                <th className="py-3 px-3 text-left min-w-[150px]">Bậc nghề nghiệp</th>
-                <th className="py-3 px-3 text-left min-w-[175px]">Phương pháp &amp; Quỹ giờ</th>
-                <th className="py-3 px-3 text-right min-w-[115px]">Hiện có (D1)</th>
-                <th className="py-3 px-3 text-right min-w-[115px]">Đề xuất (C3)</th>
-                <th className="py-3 px-3 text-center min-w-[105px]">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border-subtle)]">
-              {positions.map((pos) => {
-                const check = isPositionRowValid(pos);
-                return (
-                  <tr key={pos.id} id={`vtvl-row-${pos.id}`} className={`hover:bg-[var(--background)]/50 ${!check.valid ? 'bg-[var(--fix-soft)]/30' : ''}`}>
-                    <td className="sticky left-0 z-10 bg-[var(--sheet)] py-3 px-3 align-top border-r border-[var(--border-subtle)] space-y-1.5">
-                      <input aria-label={`Tên vị trí việc làm cụ thể cho mã ${pos.vtvlSuffix}`} type="text" value={pos.specificName} onChange={(e) => onUpdateRow(pos.id, { specificName: e.target.value })} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm font-bold text-[var(--foreground)]" />
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-mono font-bold text-[var(--ink-muted)]">{unitCode}-</span>
-                        <input aria-label={`Mã hậu tố vị trí ${pos.specificName}`} type="text" value={pos.vtvlSuffix} onChange={(e) => onUpdateRow(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="w-28 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs font-mono font-bold text-[var(--primary)]" />
-                        {!check.valid && <span className="text-xs font-bold text-[var(--fix)]">{check.reason}</span>}
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 align-top space-y-1.5">
-                      <div className="font-bold text-[var(--foreground)] text-xs sm:text-sm leading-snug">
-                        {pos.frameworkTitle} <span className="text-xs font-normal text-[var(--ink-muted)]">({pos.vtvlGroup4.replace('. Nhóm VTVL ', '. ')})</span>
-                      </div>
-                      <select
-                        aria-label={`Chọn mã ngạch cho vị trí ${pos.specificName}`}
-                        value={SUGGESTED_NGACH_OPTIONS.some((o) => o.code === pos.ngachCode) ? pos.ngachCode : ''}
-                        onChange={(e) => { if (e.target.value) onUpdateRow(pos.id, { ngachCode: e.target.value }); }}
-                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs font-semibold text-[var(--foreground)]"
-                      >
-                        <option value="">— Chọn mã ngạch —</option>
-                        {SUGGESTED_NGACH_OPTIONS.map((opt) => <option key={opt.code} value={opt.code}>{opt.label}</option>)}
-                      </select>
-                      <div className="flex items-center gap-1">
-                        <input
-                          aria-label={`Mã ngạch thực tế của vị trí ${pos.specificName}`}
-                          type="text"
-                          list="step1-ngach-datalist"
-                          value={pos.ngachCode}
-                          onChange={(e) => onUpdateRow(pos.id, { ngachCode: e.target.value })}
-                          placeholder="Gõ hoặc chọn mã ngạch"
-                          className="w-full rounded-lg border border-[var(--review)]/50 bg-[var(--review-soft)]/30 px-2 py-1 text-xs font-mono font-bold text-[var(--primary)]"
-                        />
-                      </div>
-                      <span className="block text-[11px] text-[var(--ink-muted)]">Mã có sẵn là gợi ý, chọn hoặc sửa theo thực tế</span>
-                    </td>
-                    <td className="py-3 px-3 align-top">
-                      <select data-task="task-1-level" aria-label={`Bậc nghề nghiệp của ${pos.specificName}`} value={pos.careerLevel} disabled={pos.allowedLevels.length <= 1} onChange={(e) => onUpdateRow(pos.id, { careerLevel: e.target.value })} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-2 text-sm font-bold text-[var(--primary)] disabled:opacity-65">
-                        {pos.allowedLevels.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}
-                      </select>
-                    </td>
-                    <td className="py-3 px-3 align-top space-y-1.5">
-                      <select data-task="task-1-params" aria-label={`Phương pháp định biên của ${pos.specificName}`} value={pos.method} onChange={(e) => onUpdateRow(pos.id, { method: e.target.value as WorkforceMethod })} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs font-bold text-[var(--foreground)]">
-                        {METHODS.map((m) => <option key={m.value} value={m.value}>{m.value}</option>)}
-                      </select>
-                      <select aria-label={`Quỹ giờ chuẩn năm của ${pos.specificName}`} value={pos.standardHoursYear} onChange={(e) => { const h = Number(e.target.value); onUpdateRow(pos.id, { standardHoursYear: h, workingRegime: h === 1760 ? 'Đặc thù' : 'Phổ biến (40 giờ/tuần)' }); }} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs font-semibold text-[var(--ink-muted)]">
-                        <option value={1904}>1.904 giờ/năm</option><option value={1760}>1.760 giờ/năm (GV)</option>
-                      </select>
-                    </td>
-                    <td className="py-3 px-3 align-top text-right">
-                      <div className="inline-flex items-center justify-end gap-1">
-                        <input data-task="task-1-staff" aria-label={`Nhân sự hiện có của ${pos.specificName}`} type="number" min={0} max={200} value={pos.staffCount} onChange={(e) => onUpdateRow(pos.id, { staffCount: Math.max(0, parseInt(e.target.value || '0', 10)) })} className="w-16 text-right rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-2 font-bold tabular-nums" />
-                        <span className="text-xs text-[var(--ink-muted)]">người</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 align-top text-right">
-                      <div className="inline-flex items-center justify-end gap-1">
-                        <input aria-label={`Biên chế FTE đề xuất của ${pos.specificName}`} type="number" min={0.5} max={200} step="0.5" value={pos.proposedFte} onChange={(e) => onUpdateRow(pos.id, { proposedFte: Math.max(0, parseFloat(e.target.value || '0')) })} className="w-16 text-right rounded-xl border border-[var(--primary)] bg-[var(--background)] px-2.5 py-2 font-extrabold text-[var(--primary)] tabular-nums" />
-                        <span className="text-xs font-bold text-[var(--primary)]">FTE</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 align-top text-center">
-                      <div className="inline-flex items-center gap-1">
-                        <button type="button" title="Sao chép vị trí tương tự" aria-label={`Sao chép vị trí ${pos.specificName}`} onClick={() => onDuplicateRow(pos)} className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl hover:bg-[var(--primary)]/10 text-[var(--primary)] cursor-pointer"><Copy className="w-4 h-4" /></button>
-                        <button type="button" title="Xóa vị trí này" aria-label={`Xóa vị trí ${pos.specificName}`} disabled={positions.length <= 1} onClick={() => onRequestRemoveRow(pos)} className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl hover:bg-[var(--fix-soft)] text-[var(--fix)] disabled:opacity-30 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      {/* GIAO DIỆN DESKTOP (>= md): Bố cục Thẻ ngang 2 tầng (2-Tier Row Card) — Không cuộn ngang, không che khuất chữ */}
+      <div className="hidden md:block space-y-3">
+        {positions.map((pos, idx) => {
+          const check = isPositionRowValid(pos);
+          return (
+            <div key={pos.id} id={`vtvl-row-${pos.id}`} className={`rounded-2xl border p-4 space-y-3 transition-all shadow-2xs ${!check.valid ? 'border-[var(--fix)] bg-[var(--fix-soft)]/25' : 'border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)]/50'}`}>
+              {/* Tầng 1: STT + Tên VTVL cụ thể (rộng rãi) + Mã vị trí + Khung Trường + Nút Sao chép / Xóa */}
+              <div className="grid grid-cols-12 gap-3 items-end">
+                <div className="col-span-6">
+                  <label htmlFor={`desk-name-${pos.id}`} className="flex items-center justify-between text-xs font-bold text-[var(--ink-muted)] mb-1">
+                    <span>{idx + 1}. Tên vị trí việc làm cụ thể tại đơn vị (Biểu C1) <span className="text-[var(--fix)]">*</span></span>
+                    <span className="text-[var(--primary)]">Khung Trường: {pos.frameworkTitle} ({pos.vtvlGroup4.replace('. Nhóm VTVL ', '. ')})</span>
+                  </label>
+                  <input id={`desk-name-${pos.id}`} aria-label={`Tên vị trí việc làm cụ thể cho mã ${pos.vtvlSuffix}`} type="text" value={pos.specificName} onChange={(e) => onUpdateRow(pos.id, { specificName: e.target.value })} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-2 text-sm font-bold text-[var(--foreground)]" />
+                </div>
+
+                <div className="col-span-3">
+                  <label htmlFor={`desk-code-${pos.id}`} className="block text-xs font-bold text-[var(--ink-muted)] mb-1">Mã vị trí đơn vị ({unitCode}-...) <span className="text-[var(--fix)]">*</span></label>
+                  <div className="flex items-center rounded-xl border border-[var(--border)] bg-[var(--background)] px-3">
+                    <span className="text-xs font-mono font-bold text-[var(--ink-muted)] shrink-0">{unitCode}-</span>
+                    <input id={`desk-code-${pos.id}`} aria-label={`Mã hậu tố vị trí ${pos.specificName}`} type="text" value={pos.vtvlSuffix} onChange={(e) => onUpdateRow(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="w-full bg-transparent py-2 pl-1 text-sm font-mono font-bold text-[var(--primary)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="col-span-3 flex items-center justify-end gap-2">
+                  <button type="button" title="Tạo thêm 1 dòng vị trí tương tự" aria-label={`Sao chép vị trí ${pos.specificName}`} onClick={() => onDuplicateRow(pos)} className="inline-flex items-center gap-1.5 min-h-[42px] px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-xs font-bold text-[var(--primary)] cursor-pointer"><Copy className="w-3.5 h-3.5" /><span>Sao chép</span></button>
+                  <button type="button" title="Xóa vị trí này" aria-label={`Xóa vị trí ${pos.specificName}`} disabled={positions.length <= 1} onClick={() => onRequestRemoveRow(pos)} className="inline-flex items-center gap-1 min-h-[42px] px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--fix)] text-xs font-bold text-[var(--fix)] disabled:opacity-35 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /><span>Xóa</span></button>
+                </div>
+              </div>
+
+              {!check.valid && <div role="alert" className="text-xs font-bold text-[var(--fix)] flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 shrink-0" /><span>{check.reason}</span></div>}
+
+              {/* Tầng 2: Mã ngạch (gợi ý, chọn hoặc sửa) + Bậc nghề nghiệp + Phương pháp + Quỹ giờ + Hiện có (D1) + Đề xuất (C3) */}
+              <div className="grid grid-cols-12 gap-3 pt-2.5 border-t border-[var(--border-subtle)] items-end">
+                <div className="col-span-4">
+                  <label htmlFor={`desk-ngach-${pos.id}`} className="block text-xs font-bold text-[var(--ink-muted)] mb-1">Mã ngạch <span className="text-[var(--review)]">(mã có sẵn là gợi ý — chọn hoặc tự gõ)</span></label>
+                  <div className="grid grid-cols-12 gap-1.5">
+                    <select aria-label={`Chọn mã ngạch cho vị trí ${pos.specificName}`} value={SUGGESTED_NGACH_OPTIONS.some((o) => o.code === pos.ngachCode) ? pos.ngachCode : ''} onChange={(e) => { if (e.target.value) onUpdateRow(pos.id, { ngachCode: e.target.value }); }} className="col-span-7 rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-2 text-xs font-semibold text-[var(--foreground)]">
+                      <option value="">— Chọn từ danh mục —</option>
+                      {SUGGESTED_NGACH_OPTIONS.map((opt) => <option key={opt.code} value={opt.code}>{opt.label}</option>)}
+                    </select>
+                    <input id={`desk-ngach-${pos.id}`} aria-label={`Mã ngạch thực tế của vị trí ${pos.specificName}`} type="text" list="step1-ngach-datalist" value={pos.ngachCode} onChange={(e) => onUpdateRow(pos.id, { ngachCode: e.target.value })} placeholder="Gõ mã ngạch" className="col-span-5 rounded-xl border border-[var(--review)]/50 bg-[var(--review-soft)]/30 px-2.5 py-2 text-xs font-mono font-bold text-[var(--primary)]" />
+                  </div>
+                </div>
+
+                <div className="col-span-3">
+                  <label htmlFor={`desk-lvl-${pos.id}`} className="block text-xs font-bold text-[var(--ink-muted)] mb-1">Bậc nghề nghiệp (Phụ lục I)</label>
+                  <select id={`desk-lvl-${pos.id}`} data-task="task-1-level" aria-label={`Bậc nghề nghiệp của ${pos.specificName}`} value={pos.careerLevel} disabled={pos.allowedLevels.length <= 1} onChange={(e) => onUpdateRow(pos.id, { careerLevel: e.target.value })} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-2 text-xs font-bold text-[var(--primary)] disabled:opacity-75">
+                    {pos.allowedLevels.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}
+                  </select>
+                </div>
+
+                <div className="col-span-3">
+                  <label className="block text-xs font-bold text-[var(--ink-muted)] mb-1">Phương pháp (C3) &amp; Quỹ giờ năm</label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <select data-task="task-1-params" aria-label={`Phương pháp định biên của ${pos.specificName}`} value={pos.method} onChange={(e) => onUpdateRow(pos.id, { method: e.target.value as WorkforceMethod })} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2 py-2 text-xs font-bold text-[var(--foreground)]">
+                      {METHODS.map((m) => <option key={m.value} value={m.value}>{m.value}</option>)}
+                    </select>
+                    <select aria-label={`Quỹ giờ chuẩn năm của ${pos.specificName}`} value={pos.standardHoursYear} onChange={(e) => { const h = Number(e.target.value); onUpdateRow(pos.id, { standardHoursYear: h, workingRegime: h === 1760 ? 'Đặc thù' : 'Phổ biến (40 giờ/tuần)' }); }} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2 py-2 text-xs font-semibold text-[var(--foreground)]">
+                      <option value={1904}>1.904 giờ/năm</option><option value={1760}>1.760 giờ/năm (GV)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="col-span-1">
+                  <label htmlFor={`desk-staff-${pos.id}`} className="block text-xs font-bold text-[var(--ink-muted)] mb-1 text-right">Hiện có (D1)</label>
+                  <input id={`desk-staff-${pos.id}`} data-task="task-1-staff" aria-label={`Nhân sự hiện có của ${pos.specificName}`} type="number" min={0} max={200} value={pos.staffCount} onChange={(e) => onUpdateRow(pos.id, { staffCount: Math.max(0, parseInt(e.target.value || '0', 10)) })} className="w-full text-right rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-2 text-sm font-bold tabular-nums" />
+                </div>
+
+                <div className="col-span-1">
+                  <label htmlFor={`desk-fte-${pos.id}`} className="block text-xs font-bold text-[var(--primary)] mb-1 text-right">Đề xuất (C3)</label>
+                  <input id={`desk-fte-${pos.id}`} aria-label={`Biên chế FTE đề xuất của ${pos.specificName}`} type="number" min={0.5} max={200} step="0.5" value={pos.proposedFte} onChange={(e) => onUpdateRow(pos.id, { proposedFte: Math.max(0, parseFloat(e.target.value || '0')) })} className="w-full text-right rounded-xl border border-[var(--primary)] bg-[var(--background)] px-2.5 py-2 text-sm font-extrabold text-[var(--primary)] tabular-nums" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

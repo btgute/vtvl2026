@@ -142,7 +142,7 @@ export default function RaSoatPage() {
               <div className="flex items-center">
                 <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-sm flex items-center justify-center mr-2 shrink-0">5</span>
                 <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">
-                  Bước 5: Rà soát 9 biểu &amp; Thẩm định chéo [{activeUnit.code}]
+                  Giai đoạn 5/5 — Thẩm định hồ sơ [{activeUnit.code}]
                 </h1>
                 <InfoTip title="Tự tính lại từ các cột nhập liệu & 5 thẻ kết quả">
                   <p>Công cụ tự đọc các cột nhập liệu từ một hoặc nhiều tệp .xlsx để tự tính lại Giờ B1, đối chiếu Người quy đổi PP2 — Người C3 — Nhân sự D1, và xuất tệp Excel kết quả gồm cả trang <strong>Chua_du_can_cu</strong> và <strong>Gop_y_bieu_mau</strong>.</p>

@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 :root {
+  --font-weight-black: 650;
+  --font-weight-extrabold: 600;
+  --font-weight-bold: 525;
+  --font-weight-semibold: 450;
+  --font-weight-medium: 400;
   --background: #f4f6f9;
   --sheet: #ffffff;
   --foreground: rgb(0, 71, 118);
@@ -64,6 +69,26 @@ h1, h2, h3, h4, h5, h6, p, li, span, td, th, strong, b, label {
   color: inherit;
 }
 
+/* Giảm độ đậm (bold) của toàn bộ chữ xuống 75% so với mức trước đó */
+.font-black {
+  font-weight: 650 !important;
+}
+.font-extrabold {
+  font-weight: 600 !important;
+}
+.font-bold,
+strong,
+b,
+th {
+  font-weight: 525 !important;
+}
+.font-semibold {
+  font-weight: 450 !important;
+}
+.font-medium {
+  font-weight: 400 !important;
+}
+
 input:not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
@@ -94,4 +119,15 @@ a.btn-touch {
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

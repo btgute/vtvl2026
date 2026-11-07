@@ -18,9 +18,9 @@ import { InfoTip } from './MilestonesBar';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Tổng quan', icon: Home },
-  { href: '/tao-tep', label: 'Bước 1·2·4: Hồ sơ đơn vị', icon: FileSpreadsheet },
-  { href: '/bam-gio', label: 'Bước 3: Đo định mức', icon: Timer },
-  { href: '/ra-soat', label: 'Bước 5: Thẩm định', icon: CheckCircle2 },
+  { href: '/tao-tep', label: 'Giai đoạn 1·2·4: Hồ sơ đơn vị', icon: FileSpreadsheet },
+  { href: '/bam-gio', label: 'Giai đoạn 3: Đo định mức', icon: Timer },
+  { href: '/ra-soat', label: 'Giai đoạn 5: Thẩm định', icon: CheckCircle2 },
   { href: '/huong-dan', label: 'Trợ giúp', icon: BookOpenCheck }
 ];
 
@@ -52,21 +52,16 @@ export function Header() {
             <img
               src="/ute_logo.png"
               alt="HCM-UTE Logo"
-              className="block h-9 w-auto md:hidden object-contain shrink-0"
+              className="block h-8 w-auto md:hidden object-contain shrink-0"
             />
+            <span className="md:hidden text-sm font-bold text-[var(--foreground)] truncate">
+              Vị trí việc làm
+            </span>
             <img
               src={dark ? '/horizontal-ute-logo-white.png' : '/horizontal-ute-logo.png'}
               alt="HCM-UTE Logo"
               className="hidden h-10 w-auto md:block object-contain shrink-0"
             />
-            <div className="border-l border-[var(--border)] pl-2.5 flex flex-col min-w-0">
-              <span className="text-sm sm:text-base font-extrabold tracking-tight text-[var(--foreground)] leading-tight whitespace-nowrap">
-                Vị trí việc làm
-              </span>
-              <span className="text-xs text-[var(--ink-muted)] font-medium hidden sm:inline whitespace-nowrap">
-                Đề án VTVL 2026–2030 · HCM-UTE
-              </span>
-            </div>
           </Link>
           <InfoTip title="Căn cứ pháp lý & Cơ quan thường trực">
             <p><strong>Đơn vị chủ trì:</strong> Phòng Tổ chức - Nhân sự (TCNS) — Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE).</p>

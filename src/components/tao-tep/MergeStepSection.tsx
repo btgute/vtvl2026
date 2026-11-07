@@ -98,7 +98,7 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
         <div className="flex items-center">
           <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">4</span>
           <h2 id="h4s" className="text-base sm:text-lg font-extrabold text-[var(--foreground)]">
-            Bước 4: Nạp và gộp phiếu khảo sát vào tệp đơn vị [{activeUnit.code}] {activeUnit.nameVi}
+            Giai đoạn 4/5 — Gộp phiếu khảo sát vào tệp đơn vị [{activeUnit.code}] {activeUnit.nameVi}
           </h2>
           <InfoTip title="Quy tắc gộp phiếu & kiểm soát xung đột">
             <p>Phiếu đầy đủ và phiếu từng vị trí được gộp theo mã công việc; hai phiếu ghi khác nhau cho cùng một việc sẽ được liệt kê chi tiết để đầu mối đối chiếu và sửa, không tự chọn ngẫu nhiên.</p>
