@@ -196,6 +196,7 @@ export default function BamGioPage() {
 
             {activeTask && (
               <div className="space-y-2">
+                <div className="section-eyebrow"><Timer className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Công việc đang đo định mức</span></div>
                 <div className="rounded-xl border border-[var(--primary)] bg-[var(--surface-tint)]/75 px-4 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="min-w-0 space-y-0.5">
                     <div className="font-mono font-bold text-sm text-[var(--primary)]">{activeTask.fullTaskCode}</div>
@@ -245,7 +246,7 @@ export default function BamGioPage() {
             </form>
 
             <div className="space-y-3 pt-1">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--foreground)]"><ClipboardList className="w-4 h-4 text-[var(--primary)]" /><span>Nhật ký định mức — {sessions.length} bản ghi</span></div>
+              <div className="section-eyebrow"><ClipboardList className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Nhật ký định mức — {sessions.length} bản ghi</span></div>
               {sessions.length === 0 ? (
                 <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-6 flex items-center justify-center gap-3.5">
                   <div className="w-11 h-11 rounded-xl bg-[var(--surface-tint)] text-[var(--primary)] flex items-center justify-center shrink-0"><ClipboardList className="w-5 h-5" /></div>

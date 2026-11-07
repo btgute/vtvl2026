@@ -23,22 +23,22 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/tao-tep" className="hover:text-white hover:underline">
-                  Bước 1–2: Khởi tạo tệp đơn vị và phiếu khảo sát
+                  Giai đoạn 1–2: Đề xuất VTVL và xuất bộ biểu gốc
                 </Link>
               </li>
               <li>
                 <Link href="/bam-gio" className="hover:text-white hover:underline">
-                  Bước 3: Đo định mức thời gian thực hiện
+                  Giai đoạn 3: Đo định mức thời gian thực hiện
                 </Link>
               </li>
               <li>
-                <Link href="/tao-tep#buoc-4" className="hover:text-white hover:underline">
-                  Bước 4: Tổng hợp phiếu và xuất dự thảo Tờ trình
+                <Link href="/tao-tep?step=4" className="hover:text-white hover:underline">
+                  Giai đoạn 4: Gộp phiếu khảo sát và xuất Tờ trình
                 </Link>
               </li>
               <li>
                 <Link href="/ra-soat" className="hover:text-white hover:underline">
-                  Bước 5: Thẩm định và kiểm tra chéo bộ biểu
+                  Giai đoạn 5: Thẩm định và kiểm tra chéo bộ biểu
                 </Link>
               </li>
             </ul>
@@ -146,7 +146,7 @@ export function Footer() {
         </div>
       </section>
 
-      <div className="relative z-10 w-full py-4 bg-[#06366E] border-t border-white/10">
+      <div className="relative z-10 w-full pt-4 pb-[calc(var(--sticky-action-height,76px)+1rem)] bg-[#06366E] border-t border-white/10">
         <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3">
             <img

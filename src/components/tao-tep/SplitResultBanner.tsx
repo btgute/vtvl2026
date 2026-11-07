@@ -44,9 +44,9 @@ export function SplitFileNamesPreview({
 
   return (
     <div aria-live="polite" className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] overflow-hidden">
-      <div className="px-4 py-2.5 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-[var(--ink-muted)] border-b border-[var(--border-subtle)]">
-        <span>Tệp đầu ra</span>
-        <span className="text-[var(--primary)] normal-case">{items.length} tệp</span>
+      <div className="px-4 py-2.5 flex items-center justify-between border-b border-[var(--border-subtle)]">
+        <span className="section-eyebrow"><FileSpreadsheet className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Tệp đầu ra</span></span>
+        <span className="text-xs font-bold text-[var(--primary)]">{items.length} tệp</span>
       </div>
       <ul className="divide-y divide-[var(--border-subtle)] bg-[var(--sheet)] px-4">
         {items.map((it) => {

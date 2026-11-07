@@ -2,12 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import {
-  Users,
-  CheckSquare,
-  AlertTriangle,
-  ArrowRight
-} from 'lucide-react';
+import { Users, CheckSquare, AlertTriangle, ArrowRight } from 'lucide-react';
 import { WorkflowSidebar, InfoTip } from '@/components/layout/MilestonesBar';
 import { HD07_12_STEP_ORDER } from '@/configs/hcmute-hd07-catalog';
 
@@ -25,9 +20,9 @@ const ROLE_CARDS = [
   {
     role: '2. Tổ thư ký đơn vị (Thư ký khoa, Chuyên viên hành chính – tổng hợp)',
     sheets: '2. A2_CongViec · 9. D1_NhanLuc · 13. K_KiemTra · 15. S_NhatKy',
-    summary: 'Khởi tạo tệp gốc v1 (Bước 1–2), kê khai nhân sự D1, tổng hợp phiếu khảo sát v2 (Bước 4) và thẩm định (Bước 5).',
+    summary: 'Khởi tạo tệp gốc v1 (Giai đoạn 1–2), kê khai nhân sự D1, gộp phiếu khảo sát v2 (Giai đoạn 4) và thẩm định (Giai đoạn 5).',
     details: [
-      'Khởi tạo bộ biểu gốc 21 trang tính (v1) và gói tệp nén (.zip) chứa phiếu khảo sát theo từng vị trí việc làm.',
+      'Khởi tạo bộ biểu gốc 22 trang tính (v1) và gói tệp nén (.zip) chứa phiếu khảo sát theo từng vị trí việc làm.',
       'Kê khai danh sách nhân sự hiện có của đơn vị chốt tại ngày 30/9/2026 trên biểu 9. D1_NhanLuc.',
       'Tổng hợp tự động các phiếu khảo sát (v1 → v2) và chạy kiểm tra chéo đạt 6/6 chỉ tiêu tại biểu 13. K_KiemTra.'
     ]
@@ -35,9 +30,9 @@ const ROLE_CARDS = [
   {
     role: '3. Trưởng bộ môn, Giảng viên, Nhân sự PTN và Chuyên viên chuyên trách',
     sheets: '3. B1_KhoiLuong · 4. B2_CT_TacDong · 7. C2_NangLuc',
-    summary: 'Đo định mức thời gian (Bước 3), kê khai sản lượng năm học (Biểu B1) và công đoạn chuyển đổi số (Biểu B2_CT).',
+    summary: 'Đo định mức thời gian (Giai đoạn 3), kê khai sản lượng năm học (Biểu B1) và công đoạn chuyển đổi số (Biểu B2_CT).',
     details: [
-      'Thực hiện đo định mức thời gian xử lý công việc thực tế (Trung bình phút/sản phẩm) tại Bước 3 (/bam-gio).',
+      'Thực hiện đo định mức thời gian xử lý công việc thực tế (Trung bình phút/sản phẩm) tại Giai đoạn 3 (/bam-gio).',
       'Kê khai sản lượng thực tế phát sinh trong kỳ 01/10/2025–30/9/2026 (Cột C biểu B1), ghi rõ nguồn xác thực (Cột H, I) và giải trình nếu lệch chuẩn quá 30% (Cột S).',
       'Kê khai chi tiết các công đoạn đã ứng dụng chuyển đổi số (UTEx LMS, E-Office...) tại biểu 4. B2_CT_TacDong.'
     ]
@@ -63,39 +58,37 @@ export default function HuongDanDonViPage() {
           <WorkflowSidebar activeStep={1} />
         </div>
 
-        <div className="lg:col-span-9 space-y-5">
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 space-y-4 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
+        <div className="lg:col-span-9 space-y-5 min-w-0">
+          <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3.5">
               <div className="flex items-center">
-                <Users className="w-5 h-5 text-[var(--primary)] mr-2" />
-                <h1 className="text-base sm:text-lg font-extrabold text-[var(--foreground)]">
+                <Users className="w-5 h-5 text-[var(--primary)] mr-2.5 shrink-0" />
+                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">
                   Phân công 3 nhóm vai trò &amp; hướng dẫn thực hiện tại đơn vị
                 </h1>
                 <InfoTip title="Thành phần hồ sơ trình Phòng TCNS">
-                  <p>1. Tệp dữ liệu đơn vị 21 trang tính (<code className="font-mono">[MÃ_ĐV]_K2526_v2_YYYYMMDD.xlsx</code>) đạt 6/6 chỉ tiêu kiểm tra chéo.</p>
+                  <p>1. Tệp dữ liệu đơn vị 22 trang tính (<code className="font-mono">[MÃ_ĐV]_K2526_v2_YYYYMMDD.xlsx</code>) đạt 6/6 chỉ tiêu kiểm tra chéo.</p>
                   <p>2. Tờ trình đề nghị thẩm định đề án vị trí việc làm trình ký qua E-Office.</p>
                 </InfoTip>
               </div>
-              <Link href="/tao-tep?step=1" className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-xl bg-[var(--primary)] text-white text-xs font-bold">
-                <span>Bắt đầu Bước 1</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+              <Link href="/tao-tep?step=1" className="btn-touch inline-flex items-center gap-1.5 min-h-[40px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold shadow-2xs">
+                <span>Bắt đầu Giai đoạn 1</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {ROLE_CARDS.map((card) => (
-                <div key={card.role} className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-3.5 space-y-2">
+                <div key={card.role} className="surface-secondary rounded-xl p-4 space-y-2.5 border border-[var(--border-subtle)]">
                   <div className="flex items-start justify-between gap-1">
                     <h2 className="text-xs sm:text-sm font-extrabold text-[var(--foreground)] leading-snug">{card.role}</h2>
                     <InfoTip title="Nhiệm vụ chi tiết" align="right">
                       <ul className="list-disc pl-3.5 space-y-1">
-                        {card.details.map((d, i) => (
-                          <li key={i}>{d}</li>
-                        ))}
+                        {card.details.map((d, i) => <li key={i}>{d}</li>)}
                       </ul>
                     </InfoTip>
                   </div>
-                  <div className="text-[11px] font-mono font-bold text-[var(--primary)] bg-[var(--sheet)] px-2 py-1 rounded border border-[var(--border-subtle)]">
+                  <div className="text-[11px] font-mono font-bold text-[var(--primary)] bg-[var(--sheet)] px-2.5 py-1 rounded-lg border border-[var(--border-subtle)]">
                     {card.sheets}
                   </div>
                   <p className="text-xs text-[var(--ink-muted)] leading-relaxed">{card.summary}</p>
@@ -104,33 +97,31 @@ export default function HuongDanDonViPage() {
             </div>
           </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-            <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2">
-                <div className="flex items-center gap-1.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+            <section className="surface-canvas rounded-2xl p-5 space-y-3.5">
+              <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2.5">
+                <div className="flex items-center gap-2">
                   <CheckSquare className="w-4 h-4 text-[var(--primary)]" />
-                  <h2 className="text-xs sm:text-sm font-extrabold text-[var(--foreground)]">
-                    Checklist 12 bước nhập bảng Excel
-                  </h2>
+                  <h2 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">Checklist 12 bước nhập bảng Excel</h2>
                 </div>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[var(--primary)]/10 text-[var(--primary)] tabular-nums">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[var(--surface-tint)] text-[var(--primary)] tabular-nums">
                   {completedCount}/12 bước
                 </span>
               </div>
-              <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
+              <div className="divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] max-h-80 overflow-y-auto">
                 {HD07_12_STEP_ORDER.map((s) => {
                   const done = !!checkedSteps[s.step];
                   return (
                     <label
                       key={s.step}
                       onClick={() => toggleStep(s.step)}
-                      className={`cursor-pointer rounded-xl border p-2.5 flex items-center justify-between gap-2 text-xs transition-colors ${
-                        done ? 'border-[var(--ok)]/40 bg-[var(--ok-soft)]/30' : 'border-[var(--border-subtle)] bg-[var(--background)]'
+                      className={`cursor-pointer px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs transition-colors ${
+                        done ? 'bg-[var(--ok-soft)]/35' : 'bg-[var(--sheet)] hover:bg-[var(--surface-secondary)]'
                       }`}
                     >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <input type="checkbox" checked={done} onChange={() => {}} className="accent-[var(--primary)]" />
-                        <span className="font-bold text-[var(--foreground)] shrink-0">B{s.step}:</span>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <input type="checkbox" checked={done} onChange={() => {}} className="w-4 h-4 accent-[var(--primary)]" />
+                        <span className="font-bold text-[var(--foreground)] shrink-0">Bước {s.step}:</span>
                         <code className="font-mono font-bold text-[var(--primary)] truncate">{s.sheet}</code>
                       </div>
                       <InfoTip title={`Bước ${s.step}: ${s.sheet}`} align="right">
@@ -142,19 +133,17 @@ export default function HuongDanDonViPage() {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
-              <div className="flex items-center gap-1.5 border-b border-[var(--border-subtle)] pb-2">
-                <AlertTriangle className="w-4 h-4 text-[#ED1C24]" />
-                <h2 className="text-xs sm:text-sm font-extrabold text-[var(--foreground)]">
-                  4 lưu ý quan trọng khi kiểm tra chéo
-                </h2>
+            <section className="surface-canvas rounded-2xl p-5 space-y-3.5">
+              <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-2.5">
+                <AlertTriangle className="w-4 h-4 text-[var(--fix)]" />
+                <h2 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">4 lưu ý quan trọng khi kiểm tra chéo</h2>
               </div>
-              <div className="space-y-2">
+              <div className="divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)] overflow-hidden">
                 {COMMON_PITFALLS.map((err) => (
-                  <div key={err.code} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--background)] p-3 flex items-start justify-between gap-2">
-                    <div>
-                      <span className="text-[11px] font-mono font-bold text-[#ED1C24] block">{err.code}</span>
-                      <strong className="text-xs text-[var(--foreground)]">{err.title}</strong>
+                  <div key={err.code} className="p-3.5 flex items-start justify-between gap-2 hover:bg-[var(--surface-secondary)] transition-colors">
+                    <div className="space-y-0.5">
+                      <span className="text-[11px] font-mono font-bold text-[var(--fix)] block">{err.code}</span>
+                      <strong className="text-xs sm:text-sm text-[var(--foreground)] block">{err.title}</strong>
                     </div>
                     <InfoTip title="Cách khắc phục" align="right">
                       <p>{err.fix}</p>

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Copy, Trash2, ChevronRight, ChevronUp, CheckCircle2, AlertTriangle, Edit3, MoreHorizontal, ArrowRight, Info, Layers, Users } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Copy, Trash2, ChevronRight, ChevronUp, CheckCircle2, AlertTriangle, Edit3, MoreHorizontal, ArrowRight, Info, Layers, Users, Search, ChevronsDownUp, ChevronsUpDown } from 'lucide-react';
 import { ProposedVtvlRow, WorkforceMethod } from '@/types/vtvl';
 import { ND232_2026_VTVL_CATALOG } from '@/configs/hcmute-nd232-catalog';
 import { InfoTip } from '@/components/layout/MilestonesBar';
@@ -57,6 +57,8 @@ export function isPositionRowValid(pos: ProposedVtvlRow): { valid: boolean; reas
 
 export function Step1PositionList({ unitCode, positions, forceShowErrors = false, onUpdateRow, onDuplicateRow, onRequestRemoveRow }: Step1PositionListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandAll, setExpandAll] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [pendingSwitchId, setPendingSwitchId] = useState<string | null>(null);
   const [dirtyRowIds, setDirtyRowIds] = useState<Record<string, boolean>>({});
@@ -72,6 +74,13 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
       if (firstInvalid) { snapshotRef.current[firstInvalid.id] = { ...firstInvalid }; setExpandedId(firstInvalid.id); }
     }
   }, [forceShowErrors, positions]);
+
+  const filteredPositions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const mapped = positions.map((pos, idx) => ({ pos, idx }));
+    if (!q) return mapped;
+    return mapped.filter(({ pos }) => `${pos.specificName} ${unitCode}-${pos.vtvlSuffix} ${pos.frameworkTitle} ${pos.ngachCode}`.toLowerCase().includes(q));
+  }, [positions, searchQuery, unitCode]);
 
   const triggerRowChange = (id: string, patch: Partial<ProposedVtvlRow>) => {
     setDirtyRowIds((prev) => ({ ...prev, [id]: true }));
@@ -91,7 +100,7 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
 
   const openItemForEdit = (pos: ProposedVtvlRow) => {
     setOpenMenuId(null);
-    if (expandedId && expandedId !== pos.id && dirtyRowIds[expandedId]) { setPendingSwitchId(pos.id); return; }
+    if (!expandAll && expandedId && expandedId !== pos.id && dirtyRowIds[expandedId]) { setPendingSwitchId(pos.id); return; }
     snapshotRef.current[pos.id] = { ...pos };
     setDirtyRowIds((prev) => ({ ...prev, [pos.id]: false }));
     setPendingSwitchId(null); setExpandedId(pos.id);
@@ -103,6 +112,7 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
     setRowStatus((prev) => ({ ...prev, [id]: 'saved' }));
     timersRef.current[`${id}-fade`] = setTimeout(() => setRowStatus((prev) => ({ ...prev, [id]: 'idle' })), 1600);
     setPendingSwitchId(null);
+    if (expandAll && nextExpandId === null) setExpandAll(false);
     if (nextExpandId) { const target = positions.find((p) => p.id === nextExpandId); if (target) snapshotRef.current[target.id] = { ...target }; }
     setExpandedId(nextExpandId);
   };
@@ -113,13 +123,19 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
     setDirtyRowIds((prev) => ({ ...prev, [id]: false }));
     setRowStatus((prev) => ({ ...prev, [id]: 'idle' }));
     setPendingSwitchId(null);
+    if (expandAll && nextExpandId === null) setExpandAll(false);
     if (nextExpandId) { const target = positions.find((p) => p.id === nextExpandId); if (target) snapshotRef.current[target.id] = { ...target }; }
     setExpandedId(nextExpandId);
   };
 
+  const handleToggleExpandAll = () => {
+    if (expandAll) { setExpandAll(false); setExpandedId(null); }
+    else { positions.forEach((p) => { snapshotRef.current[p.id] = { ...p }; }); setExpandAll(true); }
+  };
+
   return (
     <div id="task-1-name" className="space-y-3.5" onClick={() => { if (openMenuId) setOpenMenuId(null); }}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex items-center">
           <h3 className="text-base sm:text-lg font-bold text-[var(--foreground)]">Danh sách vị trí việc làm của đơn vị ({positions.length} vị trí)</h3>
           <InfoTip title="Giải thích các ký hiệu chuyên môn">
@@ -128,16 +144,22 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
             <p><strong>Biểu C3 (Nhu cầu nhân sự):</strong> Số biên chế định mức (FTE) đơn vị đề xuất bố trí.</p>
           </InfoTip>
         </div>
-        <span className="text-xs text-[var(--ink-muted)]">Bấm vào từng vị trí hoặc nút Chỉnh sửa để mở chi tiết (chỉ mở 1 vị trí cùng lúc)</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-[var(--ink-subtle)] absolute left-3 top-1/2 -translate-y-1/2" />
+            <input type="search" aria-label="Tìm nhanh vị trí việc làm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Tìm tên hoặc mã vị trí…" className="rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)] pl-8 pr-3 py-1.5 text-xs sm:text-sm w-48 sm:w-56" />
+          </div>
+          <button type="button" onClick={handleToggleExpandAll} className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-xs font-bold text-[var(--foreground)] cursor-pointer transition-colors">
+            {expandAll ? <><ChevronsDownUp className="w-3.5 h-3.5 text-[var(--primary)]" /><span>Thu gọn tất cả</span></> : <><ChevronsUpDown className="w-3.5 h-3.5 text-[var(--primary)]" /><span>Mở tất cả</span></>}
+          </button>
+        </div>
       </div>
 
-      <datalist id="step1-ngach-datalist">
-        {SUGGESTED_NGACH_OPTIONS.map((opt) => <option key={opt.code} value={opt.code}>{opt.label}</option>)}
-      </datalist>
+      <datalist id="step1-ngach-datalist">{SUGGESTED_NGACH_OPTIONS.map((opt) => <option key={opt.code} value={opt.code}>{opt.label}</option>)}</datalist>
 
       <div className="space-y-3.5">
-        {positions.map((pos, idx) => {
-          const isExpanded = expandedId === pos.id;
+        {filteredPositions.map(({ pos, idx }) => {
+          const isExpanded = expandAll || expandedId === pos.id;
           const check = isPositionRowValid(pos);
           const showErr = (touchedRows[pos.id] || forceShowErrors) && !check.valid;
           const st = rowStatus[pos.id] || 'idle';
@@ -223,40 +245,16 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
               <div className="p-4 sm:p-5 space-y-4">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
                   <div className="lg:col-span-2 flex items-center gap-2 rounded-xl bg-[var(--surface-secondary)] px-3.5 py-3 lg:min-h-[64px] text-xs font-bold uppercase tracking-wide text-[var(--foreground)]"><Info className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Thông tin vị trí</span></div>
-                  <div className="lg:col-span-5">
-                    <label htmlFor={`desk-name-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Tên vị trí việc làm cụ thể tại đơn vị (Biểu C1) <span className="text-[var(--fix)]">*</span></label>
-                    <TextInput id={`desk-name-${pos.id}`} state={showErr && !pos.specificName.trim() ? 'error' : 'default'} value={pos.specificName} onChange={(e) => triggerRowChange(pos.id, { specificName: e.target.value })} className="font-semibold" />
-                  </div>
-                  <div className="lg:col-span-3">
-                    <label htmlFor={`desk-fw-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Khung Trường</label>
-                    <Select id={`desk-fw-${pos.id}`} value={pos.frameworkId} onChange={(e) => { const fw = ND232_2026_VTVL_CATALOG.find((x) => x.maDanhMucNd232 === e.target.value); if (fw) triggerRowChange(pos.id, { frameworkId: fw.maDanhMucNd232, frameworkTitle: fw.positionName, vtvlGroup4: fw.vtvlGroup4, careerLevel: fw.careerLevel, allowedLevels: fw.allowedLevels }); }}>{ND232_2026_VTVL_CATALOG.map((fw) => <option key={fw.maDanhMucNd232} value={fw.maDanhMucNd232}>{fw.positionName}</option>)}</Select>
-                  </div>
-                  <div className="lg:col-span-2">
-                    <label htmlFor={`desk-code-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Mã vị trí đơn vị ({unitCode}-...) <span className="text-[var(--fix)]">*</span></label>
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-2.5 min-h-[44px] inline-flex items-center rounded-xl bg-[var(--surface-secondary)] text-xs font-mono font-bold text-[var(--ink-muted)] shrink-0">{unitCode}-</span>
-                      <TextInput id={`desk-code-${pos.id}`} state={showErr && !pos.vtvlSuffix.trim() ? 'error' : 'default'} value={pos.vtvlSuffix} onChange={(e) => triggerRowChange(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="font-mono font-bold text-[var(--primary)]" />
-                    </div>
-                  </div>
+                  <div className="lg:col-span-5"><label htmlFor={`desk-name-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Tên vị trí việc làm cụ thể tại đơn vị (Biểu C1) <span className="text-[var(--fix)]">*</span></label><TextInput id={`desk-name-${pos.id}`} state={showErr && !pos.specificName.trim() ? 'error' : 'default'} value={pos.specificName} onChange={(e) => triggerRowChange(pos.id, { specificName: e.target.value })} className="font-semibold" /></div>
+                  <div className="lg:col-span-3"><label htmlFor={`desk-fw-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Khung Trường</label><Select id={`desk-fw-${pos.id}`} value={pos.frameworkId} onChange={(e) => { const fw = ND232_2026_VTVL_CATALOG.find((x) => x.maDanhMucNd232 === e.target.value); if (fw) triggerRowChange(pos.id, { frameworkId: fw.maDanhMucNd232, frameworkTitle: fw.positionName, vtvlGroup4: fw.vtvlGroup4, careerLevel: fw.careerLevel, allowedLevels: fw.allowedLevels }); }}>{ND232_2026_VTVL_CATALOG.map((fw) => <option key={fw.maDanhMucNd232} value={fw.maDanhMucNd232}>{fw.positionName}</option>)}</Select></div>
+                  <div className="lg:col-span-2"><label htmlFor={`desk-code-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Mã vị trí đơn vị ({unitCode}-...) <span className="text-[var(--fix)]">*</span></label><div className="flex items-center gap-1.5"><span className="px-2.5 min-h-[44px] inline-flex items-center rounded-xl bg-[var(--surface-secondary)] text-xs font-mono font-bold text-[var(--ink-muted)] shrink-0">{unitCode}-</span><TextInput id={`desk-code-${pos.id}`} state={showErr && !pos.vtvlSuffix.trim() ? 'error' : 'default'} value={pos.vtvlSuffix} onChange={(e) => triggerRowChange(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="font-mono font-bold text-[var(--primary)]" /></div></div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start pt-2 border-t border-[var(--border-subtle)]">
                   <div className="lg:col-span-2 flex items-center gap-2 rounded-xl bg-[var(--surface-secondary)] px-3.5 py-3 lg:min-h-[64px] text-xs font-bold uppercase tracking-wide text-[var(--foreground)]"><Layers className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Phân loại và định mức</span></div>
-                  <div className="lg:col-span-4">
-                    <label htmlFor={`desk-ngach-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Mã ngạch <span className="font-normal text-[var(--ink-muted)]">(mã có sẵn là gợi ý — chọn hoặc tự gõ)</span></label>
-                    <SearchableSelect id={`desk-ngach-${pos.id}`} value={pos.ngachCode} options={SUGGESTED_NGACH_OPTIONS} datalistId="step1-ngach-datalist" ariaLabelSelect={`Chọn mã ngạch cho vị trí ${pos.specificName}`} ariaLabelInput={`Mã ngạch thực tế của vị trí ${pos.specificName}`} onChange={(val) => triggerRowChange(pos.id, { ngachCode: val })} />
-                  </div>
-                  <div className="lg:col-span-3">
-                    <label htmlFor={`desk-lvl-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Bậc nghề nghiệp (Phụ lục I)</label>
-                    <Select id={`desk-lvl-${pos.id}`} data-task="task-1-level" value={pos.careerLevel} disabled={pos.allowedLevels.length <= 1} onChange={(e) => triggerRowChange(pos.id, { careerLevel: e.target.value })}>{pos.allowedLevels.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}</Select>
-                  </div>
-                  <div className="lg:col-span-3">
-                    <label className="block text-xs font-bold text-[var(--foreground)] mb-1">Phương pháp (C3) &amp; Quỹ giờ năm</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Select id={`desk-method-${pos.id}`} data-task="task-1-params" value={pos.method} onChange={(e) => triggerRowChange(pos.id, { method: e.target.value as WorkforceMethod })} className="font-bold">{METHODS.map((m) => <option key={m.value} value={m.value}>{m.value}</option>)}</Select>
-                      <Select id={`desk-hours-${pos.id}`} value={pos.standardHoursYear} onChange={(e) => { const h = Number(e.target.value); triggerRowChange(pos.id, { standardHoursYear: h, workingRegime: h === 1760 ? 'Đặc thù' : 'Phổ biến (40 giờ/tuần)' }); }}><option value={1904}>1.904 giờ/năm</option><option value={1760}>1.760 giờ/năm</option></Select>
-                    </div>
-                  </div>
+                  <div className="lg:col-span-4"><label htmlFor={`desk-ngach-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Mã ngạch <span className="font-normal text-[var(--ink-muted)]">(mã có sẵn là gợi ý — chọn hoặc tự gõ)</span></label><SearchableSelect id={`desk-ngach-${pos.id}`} value={pos.ngachCode} options={SUGGESTED_NGACH_OPTIONS} datalistId="step1-ngach-datalist" ariaLabelSelect={`Chọn mã ngạch cho vị trí ${pos.specificName}`} ariaLabelInput={`Mã ngạch thực tế của vị trí ${pos.specificName}`} onChange={(val) => triggerRowChange(pos.id, { ngachCode: val })} /></div>
+                  <div className="lg:col-span-3"><label htmlFor={`desk-lvl-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Bậc nghề nghiệp (Phụ lục I)</label><Select id={`desk-lvl-${pos.id}`} data-task="task-1-level" value={pos.careerLevel} disabled={pos.allowedLevels.length <= 1} onChange={(e) => triggerRowChange(pos.id, { careerLevel: e.target.value })}>{pos.allowedLevels.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}</Select></div>
+                  <div className="lg:col-span-3"><label className="block text-xs font-bold text-[var(--foreground)] mb-1">Phương pháp (C3) &amp; Quỹ giờ năm</label><div className="grid grid-cols-2 gap-2"><Select id={`desk-method-${pos.id}`} data-task="task-1-params" value={pos.method} onChange={(e) => triggerRowChange(pos.id, { method: e.target.value as WorkforceMethod })} className="font-bold">{METHODS.map((m) => <option key={m.value} value={m.value}>{m.value}</option>)}</Select><Select id={`desk-hours-${pos.id}`} value={pos.standardHoursYear} onChange={(e) => { const h = Number(e.target.value); triggerRowChange(pos.id, { standardHoursYear: h, workingRegime: h === 1760 ? 'Đặc thù' : 'Phổ biến (40 giờ/tuần)' }); }}><option value={1904}>1.904 giờ/năm</option><option value={1760}>1.760 giờ/năm</option></Select></div></div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-center pt-2 border-t border-[var(--border-subtle)]">

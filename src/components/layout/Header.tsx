@@ -8,8 +8,6 @@ import {
   CheckCircle2,
   Timer,
   Home,
-  Sun,
-  Moon,
   Menu,
   X,
   BookOpenCheck
@@ -26,22 +24,14 @@ const NAV_ITEMS = [
 
 export function Header() {
   const pathname = usePathname();
-  const [dark, setDark] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setDark(isDark);
+    document.documentElement.classList.remove('dark');
   }, []);
 
-  const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle('dark', next);
-  };
-
   return (
-    <header className="sticky top-0 z-50 bg-[var(--sheet)] border-b border-[var(--border)] shadow-2xs">
+    <header className="sticky top-0 z-50 bg-[var(--sheet)] border-b border-[var(--border-subtle)] shadow-2xs">
       <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 flex h-16 items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 min-w-0 shrink-0">
           <Link
@@ -58,7 +48,7 @@ export function Header() {
               Vị trí việc làm
             </span>
             <img
-              src={dark ? '/horizontal-ute-logo-white.png' : '/horizontal-ute-logo.png'}
+              src="/horizontal-ute-logo.png"
               alt="HCM-UTE Logo"
               className="hidden h-10 w-auto md:block object-contain shrink-0"
             />
@@ -81,8 +71,8 @@ export function Header() {
                   aria-current={active ? 'page' : undefined}
                   className={`inline-flex items-center gap-1.5 px-3.5 min-h-[44px] rounded-xl text-sm font-semibold transition-colors border ${
                     active
-                      ? 'bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/35 font-bold'
-                      : 'text-[var(--foreground)] border-transparent hover:bg-[var(--muted)]'
+                      ? 'bg-[var(--surface-tint)] text-[var(--primary)] border-[var(--primary)]/30 font-bold'
+                      : 'text-[var(--foreground)] border-transparent hover:bg-[var(--surface-secondary)]'
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
@@ -91,16 +81,6 @@ export function Header() {
               );
             })}
           </nav>
-
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={dark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
-            title={dark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
-            className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:bg-[var(--muted)] flex items-center justify-center cursor-pointer transition-colors"
-          >
-            {dark ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-[var(--foreground)]" />}
-          </button>
 
           <button
             type="button"
@@ -115,7 +95,7 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden border-t border-[var(--border)] bg-[var(--sheet)] px-4 py-3 space-y-1.5 shadow-lg">
+        <div className="lg:hidden border-t border-[var(--border-subtle)] bg-[var(--sheet)] px-4 py-3 space-y-1.5 shadow-lg">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
@@ -125,7 +105,7 @@ export function Header() {
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-base font-semibold ${
-                  active ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)] hover:bg-[var(--muted)]'
+                  active ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)] hover:bg-[var(--surface-secondary)]'
                 }`}
               >
                 <Icon className="w-5 h-5 shrink-0" />

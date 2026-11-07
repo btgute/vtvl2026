@@ -133,8 +133,8 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
       {/* Top 2-Column Section: Tệp đơn vị gốc + Ngày tổng hợp */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         <div className="md:col-span-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 space-y-2.5">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">
-            <Layers className="w-4 h-4 text-[var(--primary)]" />
+          <div className="section-eyebrow">
+            <Layers className="w-4 h-4 text-[var(--primary)] shrink-0" />
             <span>Tệp đơn vị gốc</span>
           </div>
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)] p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -158,8 +158,8 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
         </div>
 
         <div className="md:col-span-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 space-y-2.5 flex flex-col justify-between">
-          <label htmlFor="merge-date" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">
-            <Calendar className="w-4 h-4 text-[var(--primary)]" />
+          <label htmlFor="merge-date" className="section-eyebrow">
+            <Calendar className="w-4 h-4 text-[var(--primary)] shrink-0" />
             <span>Ngày tổng hợp</span>
           </label>
           <input id="merge-date" type="date" value={mergeDate} onChange={(e) => setMergeDate(e.target.value)} className="w-full min-h-[46px] rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)] px-3 text-sm font-semibold text-[var(--foreground)]" />
@@ -169,8 +169,8 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
       {/* Survey Forms List Container */}
       <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] overflow-hidden">
         <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)]">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">
-            <FileSpreadsheet className="w-4 h-4 text-[var(--primary)]" />
+          <div className="section-eyebrow">
+            <FileSpreadsheet className="w-4 h-4 text-[var(--primary)] shrink-0" />
             <span>Các phiếu khảo sát — {formFiles.length} tệp</span>
           </div>
           <div className="flex items-center gap-2">

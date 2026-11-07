@@ -184,7 +184,7 @@ export default function TaoTepPage() {
   };
 
   return (
-    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 pt-5 pb-28">
+    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 pt-5 page-with-sticky-bar">
       <ToastRegion toasts={toasts} onDismiss={(id) => setToasts((p) => p.filter((t) => t.id !== id))} />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         <div className="lg:col-span-3">
@@ -196,8 +196,8 @@ export default function TaoTepPage() {
             <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6 sm:space-y-7">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
                 <div className="flex items-center gap-2.5">
-                  <span className="px-2.5 py-0.5 rounded-md bg-[var(--surface-tint)] text-[var(--primary)] font-bold text-xs shrink-0">Giai đoạn 1</span>
-                  <div><h1 className="text-base sm:text-xl font-bold text-[var(--foreground)]">Đề xuất vị trí việc làm</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code})</p></div>
+                  <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">1</span>
+                  <div><h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Giai đoạn 1/5 — Đề xuất vị trí việc làm</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code})</p></div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {undoSnapshot && <button type="button" onClick={handleUndoSnapshot} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--primary)]/40 bg-[var(--surface-tint)] text-xs sm:text-sm font-bold text-[var(--primary)] cursor-pointer"><Undo2 className="w-4 h-4" /><span>Phục hồi phiên bản trước</span></button>}
@@ -252,7 +252,10 @@ export default function TaoTepPage() {
           {activeStep === 2 && (
             <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
-                <h1 className="text-base sm:text-xl font-bold text-[var(--foreground)]">Giai đoạn 2/5 — Xuất bộ biểu gốc</h1>
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">2</span>
+                  <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Giai đoạn 2/5 — Xuất bộ biểu gốc</h1>
+                </div>
                 <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Giai đoạn 1</span></button>
               </div>
               <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} hasGenerated={Boolean(result && !stale)} onCopied={(fn) => pushToast('success', `Đã sao chép tên tệp: ${fn}`)} />

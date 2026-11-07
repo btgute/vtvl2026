@@ -30,6 +30,13 @@
   --focus-halo: rgba(0, 95, 163, 0.16);
   --error-halo: rgba(180, 35, 24, 0.15);
   --transition-ui: 170ms cubic-bezier(0.2, 0, 0, 1);
+  --sticky-action-height: 76px;
+}
+
+@media (max-width: 639px) {
+  :root {
+    --sticky-action-height: 116px;
+  }
 }
 
 .dark {
@@ -187,6 +194,22 @@ a.btn-touch {
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid rgba(15, 46, 82, 0.08);
   box-shadow: 0 -8px 24px rgba(15, 46, 82, 0.06);
+}
+
+.page-with-sticky-bar {
+  padding-bottom: calc(var(--sticky-action-height, 76px) + 32px + env(safe-area-inset-bottom, 0px));
+}
+
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 525;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--foreground);
 }
 
 .dark .sticky-action-bar {

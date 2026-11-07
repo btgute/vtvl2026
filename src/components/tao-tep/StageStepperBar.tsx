@@ -210,9 +210,24 @@ export function StickyActionBar({
   saveLifecycle?: SaveLifecycleState; isCheckingContinue?: boolean; continueCheckedOk?: boolean;
   onPrevStage: () => void; onSaveNow: () => void; onInspectErrors: () => void; onContinue: () => void;
 }) {
+  const barRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el || typeof window === 'undefined') return;
+    const syncHeight = () => {
+      const h = el.getBoundingClientRect().height;
+      if (h > 0) document.documentElement.style.setProperty('--sticky-action-height', `${Math.ceil(h)}px`);
+    };
+    syncHeight();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(syncHeight) : null;
+    ro?.observe(el);
+    window.addEventListener('resize', syncHeight);
+    return () => { ro?.disconnect(); window.removeEventListener('resize', syncHeight); };
+  }, []);
+
   const isFinalExportBlocked = (activeStep !== 1 || wizardStage === 5) && errorCount > 0;
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 sticky-action-bar pb-[env(safe-area-inset-bottom)]">
+    <div ref={barRef} className="fixed bottom-0 left-0 right-0 z-40 sticky-action-bar pb-[env(safe-area-inset-bottom)]">
       <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex items-center justify-between sm:justify-start gap-3 text-xs text-[var(--ink-muted)]">
           <SaveStatus lifecycle={saveLifecycle} lastSavedAt={lastSavedAt} errorCount={errorCount} onRetrySave={onSaveNow} />

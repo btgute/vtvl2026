@@ -1,12 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { BookOpenCheck, FileText, Layers, Download, Award, Briefcase, Database } from 'lucide-react';
-import {
-  HD07_12_STEP_ORDER,
-  HD07_CONSTANTS,
-  HD07_SIX_PRODUCT_GROUPS
-} from '@/configs/hcmute-hd07-catalog';
+import React, { useState, useMemo } from 'react';
+import { BookOpenCheck, FileText, Layers, Download, Award, Briefcase, Database, Eye, Copy, Check, X } from 'lucide-react';
+import { HD07_12_STEP_ORDER, HD07_CONSTANTS, HD07_SIX_PRODUCT_GROUPS } from '@/configs/hcmute-hd07-catalog';
 import { ND232_2026_VTVL_CATALOG, Nd232PositionCatalogItem } from '@/configs/hcmute-nd232-catalog';
 import { DM_CHUC_DANH_TT31_TABLE, ERD_ENTITIES_CATALOG } from '@/configs/hcmute-erd-tables';
 import { HcmuteUnit, SplitResultSummary } from '@/types/vtvl';
@@ -21,18 +17,20 @@ type GroupFilter = 'ALL' | Nd232PositionCatalogItem['appendix'];
 export function Hd07OrderGuideCard({ unit, splitResult }: Props) {
   const [tab, setTab] = useState<'nd232' | 'erd' | 'tt31' | '12buoc' | '6nhom'>('nd232');
   const [appendixFilter, setAppendixFilter] = useState<GroupFilter>('ALL');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [copiedToTrinh, setCopiedToTrinh] = useState(false);
 
   const filteredNd232 =
     appendixFilter === 'ALL'
       ? ND232_2026_VTVL_CATALOG
       : ND232_2026_VTVL_CATALOG.filter((item) => item.appendix === appendixFilter);
 
-  const handleDownloadToTrinh = () => {
+  const toTrinhText = useMemo(() => {
     const fteTotal = splitResult ? splitResult.totalStandardFte : unit.defaultStaffCount;
     const vtvlCount = splitResult ? splitResult.vtvlCount : 8;
     const taskCount = splitResult ? splitResult.taskCount : 8;
 
-    const content = `TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT TP.HCM
+    return `TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT TP.HCM
 ĐƠN VỊ: ${unit.nameVi.toUpperCase()} (${unit.code})
 --------------------------------------------------
 Số: ....../TTr-${unit.code}
@@ -66,10 +64,11 @@ ${unit.nameVi} kính trình Ban Giám hiệu và Phòng Tổ chức - Nhân sự
 
 Nơi nhận:                                      ${unit.headTitleVi.toUpperCase()}
 - Như trên;                                    (Ký và ghi rõ họ tên)
-- Lưu: VT, ${unit.code}.
-`;
+- Lưu: VT, ${unit.code}.`;
+  }, [unit, splitResult]);
 
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const handleDownloadToTrinh = () => {
+    const blob = new Blob([toTrinhText], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -78,13 +77,21 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
     URL.revokeObjectURL(url);
   };
 
+  const handleCopyToTrinh = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      void navigator.clipboard.writeText(toTrinhText);
+    }
+    setCopiedToTrinh(true);
+    setTimeout(() => setCopiedToTrinh(false), 2000);
+  };
+
   const tabBtnClass = (active: boolean) =>
-    `px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1 ${
-      active ? 'bg-[var(--primary)] text-white' : 'bg-[var(--background)] text-[var(--ink-muted)] border border-[var(--border)]'
+    `px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer inline-flex items-center gap-1.5 transition-colors ${
+      active ? 'bg-[var(--primary)] text-white shadow-2xs' : 'bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border-subtle)] hover:border-[var(--primary)]'
     }`;
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-5 space-y-4 shadow-2xs">
+    <div className="surface-canvas rounded-xl p-4 sm:p-5 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
         <div className="flex items-center gap-2">
           <BookOpenCheck className="w-4 h-4 text-[var(--primary)]" />
@@ -94,23 +101,16 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <button type="button" onClick={() => setTab('nd232')} className={tabBtnClass(tab === 'nd232')}>
-            <Briefcase className="w-3.5 h-3.5" />
-            <span>Khung 38 VTVL Trường (04 nhóm)</span>
+            <Briefcase className="w-3.5 h-3.5" /><span>Khung 38 VTVL Trường (04 nhóm)</span>
           </button>
           <button type="button" onClick={() => setTab('erd')} className={tabBtnClass(tab === 'erd')}>
-            <Database className="w-3.5 h-3.5" />
-            <span>Bảng chuẩn ERD (18 bảng)</span>
+            <Database className="w-3.5 h-3.5" /><span>Bảng chuẩn ERD (18 bảng)</span>
           </button>
           <button type="button" onClick={() => setTab('tt31')} className={tabBtnClass(tab === 'tt31')}>
-            <Award className="w-3.5 h-3.5" />
-            <span>DM_CHUC_DANH_TT31 (28 mã)</span>
+            <Award className="w-3.5 h-3.5" /><span>DM_CHUC_DANH_TT31 (28 mã)</span>
           </button>
-          <button type="button" onClick={() => setTab('12buoc')} className={tabBtnClass(tab === '12buoc')}>
-            12 bước nhập bảng
-          </button>
-          <button type="button" onClick={() => setTab('6nhom')} className={tabBtnClass(tab === '6nhom')}>
-            06 nhóm SP (I–VI)
-          </button>
+          <button type="button" onClick={() => setTab('12buoc')} className={tabBtnClass(tab === '12buoc')}>12 bước nhập bảng</button>
+          <button type="button" onClick={() => setTab('6nhom')} className={tabBtnClass(tab === '6nhom')}>06 nhóm SP (I–VI)</button>
         </div>
       </div>
 
@@ -119,28 +119,17 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
               {(['ALL', 'I. Quản lý', 'II. Chuyên môn, nghiệp vụ', 'III. Hỗ trợ', 'IV. Phục vụ'] as const).map((ap) => (
-                <button
-                  key={ap}
-                  type="button"
-                  onClick={() => setAppendixFilter(ap)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer ${
-                    appendixFilter === ap
-                      ? 'bg-[#004776] text-white'
-                      : 'bg-[var(--background)] text-[var(--ink-muted)] border border-[var(--border)]'
-                  }`}
-                >
+                <button key={ap} type="button" onClick={() => setAppendixFilter(ap)} className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer ${appendixFilter === ap ? 'bg-[var(--primary)] text-white' : 'bg-[var(--surface-secondary)] text-[var(--ink-muted)] border border-[var(--border-subtle)]'}`}>
                   {ap === 'ALL' ? `Tất cả 04 nhóm (${ND232_2026_VTVL_CATALOG.length} vị trí khung)` : ap}
                 </button>
               ))}
             </div>
-            <span className="text-[11px] font-semibold text-[var(--ink-muted)]">
-              Phụ lục I — Hướng dẫn số 02 (1907/HD-ĐHCNKT ngày 17/6/2026)
-            </span>
+            <span className="text-[11px] font-semibold text-[var(--ink-muted)]">Phụ lục I — Hướng dẫn số 02 (1907/HD-ĐHCNKT ngày 17/6/2026)</span>
           </div>
-          <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--background)] max-h-80">
+          <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)] max-h-80">
             <table className="w-full text-xs border-collapse">
               <thead>
-                <tr className="bg-[var(--sheet)] border-b border-[var(--border)] sticky top-0">
+                <tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)] sticky top-0">
                   <th className="py-2 px-2.5 text-left">TT</th>
                   <th className="py-2 px-2.5 text-left">Nhóm VTVL (04 nhóm)</th>
                   <th className="py-2 px-2.5 text-left">Tên khung VTVL của Trường</th>
@@ -149,15 +138,13 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
                   <th className="py-2 px-2.5 text-left">Loại hình đơn vị</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-[var(--border-subtle)]">
                 {filteredNd232.map((item) => (
-                  <tr key={item.maDanhMucNd232} className="border-b border-[var(--border-subtle)]">
-                    <td className="py-2 px-2.5 font-mono font-bold text-[var(--primary)] whitespace-nowrap">
-                      {item.ttToanTruong} <span className="text-[10px] text-[var(--ink-muted)]">({item.ttTrongNhom})</span>
-                    </td>
+                  <tr key={item.maDanhMucNd232}>
+                    <td className="py-2 px-2.5 font-mono font-bold text-[var(--primary)] whitespace-nowrap">{item.ttToanTruong} <span className="text-[10px] text-[var(--ink-muted)]">({item.ttTrongNhom})</span></td>
                     <td className="py-2 px-2.5 font-semibold whitespace-nowrap">{item.appendix}</td>
                     <td className="py-2 px-2.5 font-bold text-[var(--foreground)]">{item.positionName}</td>
-                    <td className="py-2 px-2.5 font-semibold text-[#ED1C24] whitespace-nowrap">{item.careerLevel}</td>
+                    <td className="py-2 px-2.5 font-semibold text-[var(--fix)] whitespace-nowrap">{item.careerLevel}</td>
                     <td className="py-2 px-2.5 text-[11px] font-medium text-[var(--foreground)]">{item.namingFormulaRule}</td>
                     <td className="py-2 px-2.5 text-[11px] text-[var(--ink-muted)]">{item.hcmuteUnitsHint}</td>
                   </tr>
@@ -169,10 +156,10 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
       )}
 
       {tab === 'erd' && (
-        <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--background)] max-h-80">
+        <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)] max-h-80">
           <table className="w-full text-xs border-collapse">
             <thead>
-              <tr className="bg-[var(--sheet)] border-b border-[var(--border)] sticky top-0">
+              <tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)] sticky top-0">
                 <th className="py-2 px-3 text-left">Bảng thực thể (ERD)</th>
                 <th className="py-2 px-3 text-left">Sheet Excel (.xlsx)</th>
                 <th className="py-2 px-3 text-left">Khóa chính (PK) &amp; Khóa ngoại (FK)</th>
@@ -180,23 +167,14 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
                 <th className="py-2 px-3 text-left">Các trường dữ liệu chuẩn &amp; Căn cứ</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[var(--border-subtle)]">
               {ERD_ENTITIES_CATALOG.map((ent) => (
-                <tr key={ent.tableCode} className="border-b border-[var(--border-subtle)]">
-                  <td className="py-2 px-3 whitespace-nowrap">
-                    <code className="font-mono font-bold text-[var(--primary)]">{ent.tableCode}</code>
-                    <span className="block text-[11px] text-[var(--ink-muted)]">{ent.tableNameVi}</span>
-                  </td>
+                <tr key={ent.tableCode}>
+                  <td className="py-2 px-3 whitespace-nowrap"><code className="font-mono font-bold text-[var(--primary)]">{ent.tableCode}</code><span className="block text-[11px] text-[var(--ink-muted)]">{ent.tableNameVi}</span></td>
                   <td className="py-2 px-3 font-mono font-semibold whitespace-nowrap">{ent.excelSheet}</td>
-                  <td className="py-2 px-3 font-mono text-[11px]">
-                    <span className="font-bold text-[#ED1C24]">PK: {ent.primaryKey}</span>
-                    {ent.foreignKeys !== '—' && <span className="block text-[var(--ink-muted)]">FK: {ent.foreignKeys}</span>}
-                  </td>
+                  <td className="py-2 px-3 font-mono text-[11px]"><span className="font-bold text-[var(--fix)]">PK: {ent.primaryKey}</span>{ent.foreignKeys !== '—' && <span className="block text-[var(--ink-muted)]">FK: {ent.foreignKeys}</span>}</td>
                   <td className="py-2 px-3 text-right font-mono font-bold tabular-nums">{ent.columnCount}</td>
-                  <td className="py-2 px-3 text-[11px] text-[var(--ink-muted)]">
-                    <span className="font-mono text-[var(--foreground)]">{ent.keyColumnsSummary}</span>
-                    <span className="block italic mt-0.5">{ent.legalBasis}</span>
-                  </td>
+                  <td className="py-2 px-3 text-[11px] text-[var(--ink-muted)]"><span className="font-mono text-[var(--foreground)]">{ent.keyColumnsSummary}</span><span className="block italic mt-0.5">{ent.legalBasis}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -205,10 +183,10 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
       )}
 
       {tab === 'tt31' && (
-        <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--background)] max-h-80">
+        <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)] max-h-80">
           <table className="w-full text-xs border-collapse">
             <thead>
-              <tr className="bg-[var(--sheet)] border-b border-[var(--border)] sticky top-0">
+              <tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)] sticky top-0">
                 <th className="py-2 px-3 text-left">PK (ma_so_chuc_danh)</th>
                 <th className="py-2 px-3 text-left">ten_chuc_danh (TT 31/2026/TT-BGDĐT)</th>
                 <th className="py-2 px-3 text-left">Điều khoản</th>
@@ -217,14 +195,14 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
                 <th className="py-2 px-3 text-left">Chuyển tiếp &amp; Ghi chú bổ nhiệm</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[var(--border-subtle)]">
               {DM_CHUC_DANH_TT31_TABLE.map((row) => (
-                <tr key={row.maSoChucDanh} className="border-b border-[var(--border-subtle)]">
+                <tr key={row.maSoChucDanh}>
                   <td className="py-2 px-3 font-mono font-bold text-[var(--primary)] whitespace-nowrap">{row.maSoChucDanh}</td>
                   <td className="py-2 px-3 font-bold text-[var(--foreground)]">{row.tenChucDanh}</td>
                   <td className="py-2 px-3 font-mono text-[11px] whitespace-nowrap">{row.khoanDieuTt31}</td>
                   <td className="py-2 px-3 font-mono whitespace-nowrap">{row.loaiVienChuc}</td>
-                  <td className="py-2 px-3 font-mono font-semibold text-[#ED1C24] whitespace-nowrap">{row.khungHeSoLuong}</td>
+                  <td className="py-2 px-3 font-mono font-semibold text-[var(--fix)] whitespace-nowrap">{row.khungHeSoLuong}</td>
                   <td className="py-2 px-3 text-[11px] text-[var(--ink-muted)]">{row.ghiChuBoNhiem}</td>
                 </tr>
               ))}
@@ -236,12 +214,9 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
       {tab === '12buoc' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           {HD07_12_STEP_ORDER.map((item) => (
-            <div key={item.step} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--background)] p-2.5 flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-md bg-[#004776] text-white font-bold text-[11px] flex items-center justify-center shrink-0 tabular-nums mt-0.5">{item.step}</span>
-              <div>
-                <code className="font-mono font-bold text-[var(--primary)] text-[11px]">{item.sheet}</code>
-                <p className="text-[var(--foreground)] leading-snug mt-0.5">{item.title}</p>
-              </div>
+            <div key={item.step} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-2.5 flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-md bg-[var(--primary)] text-white font-bold text-[11px] flex items-center justify-center shrink-0 tabular-nums mt-0.5">{item.step}</span>
+              <div><code className="font-mono font-bold text-[var(--primary)] text-[11px]">{item.sheet}</code><p className="text-[var(--foreground)] leading-snug mt-0.5">{item.title}</p></div>
             </div>
           ))}
         </div>
@@ -250,27 +225,43 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
       {tab === '6nhom' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           {HD07_SIX_PRODUCT_GROUPS.map((g) => (
-            <div key={g.roman} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--background)] p-2.5 space-y-1">
-              <div className="flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-[var(--primary)]" />
-                <strong className="text-[var(--foreground)]">{g.name}</strong>
-              </div>
+            <div key={g.roman} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-2.5 space-y-1">
+              <div className="flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-[var(--primary)]" /><strong className="text-[var(--foreground)]">{g.name}</strong></div>
               <p className="text-[11px] text-[var(--ink-muted)]">Ví dụ: {g.examples}</p>
             </div>
           ))}
         </div>
       )}
 
-      <div className="pt-2 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div className="pt-3 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-1.5 text-[var(--ink-muted)]">
-          <FileText className="w-3.5 h-3.5 text-[var(--primary)]" />
-          <span>Xuất dự thảo <strong>Tờ trình thẩm định Đề án VTVL</strong> (căn cứ HD 1907/HD-ĐHCNKT, NĐ 232/2026 &amp; TT 31/2026):</span>
+          <FileText className="w-4 h-4 text-[var(--primary)] shrink-0" />
+          <span>Dự thảo <strong>Tờ trình thẩm định Đề án VTVL [{unit.code}]</strong> (theo HD 1907/HD-ĐHCNKT, NĐ 232/2026 &amp; TT 31/2026):</span>
         </div>
-        <button type="button" onClick={handleDownloadToTrinh} className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[var(--background)] hover:border-[var(--primary)] border border-[var(--border)] text-[var(--foreground)] font-bold text-xs cursor-pointer">
-          <Download className="w-3.5 h-3.5 text-[var(--primary)]" />
-          <span>Tải dự thảo Tờ trình ({unit.code})</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setShowPreviewModal((p) => !p)} className="inline-flex items-center gap-1.5 min-h-[38px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-[var(--foreground)] font-bold text-xs cursor-pointer">
+            <Eye className="w-3.5 h-3.5 text-[var(--primary)]" />
+            <span>{showPreviewModal ? 'Đóng xem trước' : 'Xem trước Tờ trình'}</span>
+          </button>
+          <button type="button" onClick={handleCopyToTrinh} className="inline-flex items-center gap-1.5 min-h-[38px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-[var(--foreground)] font-bold text-xs cursor-pointer">
+            {copiedToTrinh ? <><Check className="w-3.5 h-3.5 text-[var(--ok)]" /><span className="text-[var(--ok)]">Đã sao chép văn bản</span></> : <><Copy className="w-3.5 h-3.5 text-[var(--primary)]" /><span>Sao chép nội dung</span></>}
+          </button>
+          <button type="button" onClick={handleDownloadToTrinh} className="inline-flex items-center gap-1.5 min-h-[38px] px-3.5 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer shadow-2xs">
+            <Download className="w-3.5 h-3.5" />
+            <span>Tải tệp Tờ trình (.txt)</span>
+          </button>
+        </div>
       </div>
+
+      {showPreviewModal && (
+        <div role="region" aria-label="Xem trước nội dung dự thảo Tờ trình" className="rounded-xl border border-[var(--primary)]/30 bg-[var(--surface-secondary)] p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-2">
+            <strong className="text-xs sm:text-sm font-bold text-[var(--foreground)]">Xem trước nội dung dự thảo Tờ trình — {unit.nameVi} ({unit.code})</strong>
+            <button type="button" onClick={() => setShowPreviewModal(false)} aria-label="Đóng khung xem trước" className="min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--sheet)] cursor-pointer"><X className="w-4 h-4" /></button>
+          </div>
+          <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed bg-[var(--sheet)] border border-[var(--border-subtle)] rounded-xl p-4 max-h-80 overflow-y-auto text-[var(--foreground)]">{toTrinhText}</pre>
+        </div>
+      )}
     </div>
   );
 }
