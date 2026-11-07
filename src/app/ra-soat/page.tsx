@@ -11,10 +11,13 @@ import { AuditResultTabs } from '@/components/ra-soat/AuditResultTabs';
 import {
   getActiveUnitDefinition,
   getActiveUnitSession,
+  getRealtimeDateYYYYMMDD,
   getSessionFilesForUnit,
   recordActivity,
+  saveActiveUnitSession,
   setSessionRootWorkbook
 } from '@/services/telemetry/activity-log';
+import { syncAuditResultToSupabase } from '@/services/supabase/vtvl-sync';
 
 export default function RaSoatPage() {
   const [activeUnit, setActiveUnit] = useState<HcmuteUnit>(() => getActiveUnitDefinition());
@@ -36,8 +39,10 @@ export default function RaSoatPage() {
           unitNameVi: asSampleDemo ? 'Đơn vị giả định minh họa (X99)' : unitToAudit.nameVi,
           unitNameEn: unitToAudit.nameEn,
           period: HD07_CONSTANTS.STATISTICAL_PERIOD,
-          exportDate: session.customDate || '2026-11-07',
+          exportDate: session.customDate || getRealtimeDateYYYYMMDD(),
           includeZipPerPosition: false,
+          actorEmail: session.actorEmail,
+          actorTitle: session.actorTitle,
           scaleMetrics: session.scaleMetrics,
           ngachAllocations: session.ngachAllocations,
           ngachOverrides: session.ngachOverrides,
@@ -86,6 +91,10 @@ export default function RaSoatPage() {
         if (res.unitSummaries[0]) res.unitSummaries[0].fixCount += 2;
       }
       setReport(res);
+      if (!asSampleDemo) {
+        saveActiveUnitSession({ unitCode: unitToAudit.code, lastAuditFixCount: res.countsBySeverity.fix });
+        void syncAuditResultToSupabase(res, unitToAudit.code);
+      }
       recordActivity(
         unitToAudit.code,
         unitToAudit.nameVi,
@@ -98,9 +107,19 @@ export default function RaSoatPage() {
   }, []);
 
   useEffect(() => {
-    const u = getActiveUnitDefinition();
-    setActiveUnit(u);
-    void handleAuditActiveUnit(u, false);
+    const syncAndAudit = () => {
+      const u = getActiveUnitDefinition();
+      setActiveUnit(u);
+      void handleAuditActiveUnit(u, false);
+    };
+    syncAndAudit();
+    window.addEventListener('storage', syncAndAudit);
+    const bc = 'BroadcastChannel' in window ? new BroadcastChannel('hcmute_vtvl_realtime') : null;
+    if (bc) bc.onmessage = () => syncAndAudit();
+    return () => {
+      window.removeEventListener('storage', syncAndAudit);
+      bc?.close();
+    };
   }, [handleAuditActiveUnit]);
 
   const handleFilesSelected = async (fileList: FileList | File[] | null) => {
@@ -110,8 +129,11 @@ export default function RaSoatPage() {
     try {
       const res = await auditUnitWorkbooks(files, false);
       setReport(res);
+      const targetCode = res.unitSummaries[0]?.unitCode || activeUnit.code;
+      saveActiveUnitSession({ unitCode: targetCode, lastAuditFixCount: res.countsBySeverity.fix });
+      void syncAuditResultToSupabase(res, targetCode);
       recordActivity(
-        res.unitSummaries[0]?.unitCode || activeUnit.code,
+        targetCode,
         res.unitSummaries[0]?.unitName || activeUnit.nameVi,
         'RA_SOAT',
         `Thẩm định gộp ${res.filesCount} tệp Excel (${res.countsBySeverity.fix} mục phải sửa)`
@@ -137,12 +159,12 @@ export default function RaSoatPage() {
         </div>
 
         <div className="lg:col-span-9 space-y-5 min-w-0">
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-4 shadow-2xs">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-4 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
               <div className="flex items-center">
                 <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-sm flex items-center justify-center mr-2 shrink-0">5</span>
                 <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">
-                  Giai đoạn 5/5 — Thẩm định hồ sơ [{activeUnit.code}]
+                  Giai đoạn 5/5 — Thẩm định hồ sơ [{activeUnit.code}] {activeUnit.nameVi}
                 </h1>
                 <InfoTip title="Tự tính lại từ các cột nhập liệu & 5 thẻ kết quả">
                   <p>Công cụ tự đọc các cột nhập liệu từ một hoặc nhiều tệp .xlsx để tự tính lại Giờ B1, đối chiếu Người quy đổi PP2 — Người C3 — Nhân sự D1, và xuất tệp Excel kết quả gồm cả trang <strong>Chua_du_can_cu</strong> và <strong>Gop_y_bieu_mau</strong>.</p>
@@ -171,12 +193,11 @@ export default function RaSoatPage() {
               </div>
             </div>
 
-            {/* KHAY KÉO THẢ NHIỀU TỆP CÙNG LÚC */}
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
-              className={`rounded-2xl border-2 border-dashed p-4 sm:p-5 transition-colors flex flex-col sm:flex-row items-center justify-between gap-4 ${
+              className={`rounded-xl border-2 border-dashed p-4 sm:p-5 transition-colors flex flex-col sm:flex-row items-center justify-between gap-4 ${
                 dragOver ? 'border-[var(--primary)] bg-[var(--primary)]/10' : 'border-[var(--primary)]/40 bg-[var(--background)]'
               }`}
             >
@@ -202,7 +223,7 @@ export default function RaSoatPage() {
           {report && (
             <div className="space-y-4">
               {report.isSampleDemo && (
-                <div role="status" className="rounded-2xl border-2 border-[var(--primary)] bg-[var(--primary)]/10 p-3.5 text-xs sm:text-sm text-[var(--foreground)] flex flex-wrap items-center justify-between gap-2">
+                <div role="status" className="rounded-xl border-2 border-[var(--primary)] bg-[var(--primary)]/10 p-3.5 text-xs sm:text-sm text-[var(--foreground)] flex flex-wrap items-center justify-between gap-2">
                   <span>
                     Đang xem <strong>ví dụ minh họa</strong>: tệp của một đơn vị giả định (<strong>X99</strong>) có cài sẵn các lỗi điển hình để tham khảo. Kéo tệp thật của đơn vị vào khay phía trên hoặc bấm <strong>Kiểm tra hồ sơ [{activeUnit.code}]</strong> để kiểm tra thật.
                   </span>
@@ -212,7 +233,7 @@ export default function RaSoatPage() {
                 </div>
               )}
 
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-[var(--primary)]" />

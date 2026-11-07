@@ -69,14 +69,31 @@ erDiagram
 18. **`public.s_nhat_ky`** (PK: `id`): Nhật ký phiên bản và thao tác trực tuyến (Biểu `15. S_NhatKy`).
 
 ### Nhóm III — 04 bảng mở rộng cho Nội suy Quy mô, Phân bổ Mã ngạch, Gợi ý Ô cam & Rà soát Chuyên sâu
-19. **`public.sldv_quy_mo_don_vi`** (PK: `ma_don_vi`, FK: `dm_don_vi`): Lưu các chỉ số quy mô đơn vị trong kỳ thống kê (`01/10/2025–30/9/2026`) gồm: `so_sinh_vien_quy_doi`, `so_nganh_ctdt`, `so_lop_hoc_phan_nam`, `so_phong_tn_xuong`, `so_de_tai_nckh_nam`, `so_van_ban_ho_so_nam` và `he_so_quy_mo` dùng để nội suy số sản phẩm điền sẵn.
-20. **`public.sldv_phan_bo_ngach`** (PK: `id`, FK: `ma_don_vi`, `ma_vtvl`): Bảng đối chiếu nhân sự theo mã ngạch từ bảng lương tháng 9/2026 (`ma_ngach`, `ten_ngach`, `so_nguoi`, `ma_vtvl_xep_vao`, `la_dong_tach`). Hỗ trợ nghiệp vụ **“Tách dòng mã ngạch”** (khi 1 mã ngạch như `V.07.01.01` hoặc `01.003` có người giữ chức vụ lãnh đạo/quản lý hoặc kiêm nhiệm vị trí khác) và tự động cộng dồn vào cột Nhân sự hiện có (`D1`).
-21. **`public.can_cu_goi_y`** (PK: `(ma_don_vi, ma_cong_viec)`): Ánh xạ với trang tính **`Can_cu_goi_y`** — lưu giá trị điền sẵn ở **ô màu cam** (`so_sp_goi_y`, `phut_sp_goi_y`, `muc_do_phuc_tap`, `nguon_can_cu_goi_y`, `da_sua_thuc_te`). Những dòng giữ nguyên gợi ý mà chưa đo thực tế được gắn cờ `da_sua_thuc_te = false` để đưa vào danh sách *“Chưa đủ căn cứ”*.
-22. **`public.ra_soat_chua_du_can_cu`** (PK: `id`, FK: `ma_don_vi`): Ánh xạ với 2 trang tính xuất ra từ bộ máy Rà soát (**`Chua_du_can_cu`** và **`Gop_y_bieu_mau`**), lưu trữ `ma_cong_viec`, `noi_dung_thieu_can_cu`, `nguyen_nhan`, `thoi_han_bo_sung`, `dau_moi_phu_trach` và `loai_canh_bao` (`evidence` hoặc `template`).
+19. **`public.sldv_quy_mo_don_vi`** (PK: `ma_don_vi`, FK: `dm_don_vi(ma_don_vi)`): Lưu các chỉ số quy mô đơn vị trong kỳ thống kê (`01/10/2025–30/9/2026`) gồm: `so_sinh_vien_quy_doi`, `so_nganh_ctdt`, `so_lop_hoc_phan_nam`, `so_phong_tn_xuong`, `so_de_tai_nckh_nam`, `so_van_ban_ho_so_nam` và `he_so_quy_mo` dùng để nội suy số sản phẩm điền sẵn.
+20. **`public.sldv_phan_bo_ngach`** (PK: `id`, FK: `dm_don_vi(ma_don_vi)`, `c1_vtvl(ma_vtvl)` qua cột `ma_vtvl_xep_vao`): Bảng đối chiếu nhân sự theo mã ngạch từ bảng lương tháng 9/2026 (`ma_ngach`, `ten_ngach`, `so_nguoi`, `ma_vtvl_xep_vao`, `la_dong_tach`). Hỗ trợ nghiệp vụ **“Tách dòng mã ngạch”** và tự động cộng dồn vào cột Nhân sự hiện có (`D1`).
+21. **`public.can_cu_goi_y`** (PK: `(ma_don_vi, ma_cong_viec)`, FK: `dm_don_vi(ma_don_vi)`, `a2_cong_viec(ma_cong_viec)`, `c1_vtvl(ma_vtvl)`): Ánh xạ với trang tính **`Can_cu_goi_y`** — lưu giá trị điền sẵn ở **ô màu cam** (`so_sp_goi_y`, `phut_sp_goi_y`, `muc_do_phuc_tap`, `nguon_can_cu_goi_y`, `da_sua_thuc_te`). Những dòng giữ nguyên gợi ý mà chưa đo thực tế được gắn cờ `da_sua_thuc_te = false` để đưa vào danh sách *“Chưa đủ căn cứ”*.
+22. **`public.ra_soat_chua_du_can_cu`** (PK: `id`, FK: `dm_don_vi(ma_don_vi)`): Ánh xạ với 2 trang tính xuất ra từ bộ máy Rà soát (**`Chua_du_can_cu`** và **`Gop_y_bieu_mau`**), lưu trữ `bieu_nguon`, `toa_do_o`, `ma_tham_chieu`, `noi_dung_phat_hien`, `nguyen_nhan`, `thoi_han_bo_sung`, `dau_moi_phu_trach` và `loai_bang`.
 
 ---
 
-## 3. Ràng buộc toàn vẹn & Trigger kiểm soát Bậc nghề nghiệp
+## 3. Ràng buộc toàn vẹn & Trigger kiểm soát chéo
 
+- **Khóa ngoại (`ON DELETE CASCADE` / `SET NULL`) xuyên suốt 22 bảng:**
+  - Mọi bảng dữ liệu đơn vị (`c1_vtvl` → `ra_soat_chua_du_can_cu`, bao gồm `s_nhat_ky`, `sldv_quy_mo_don_vi`, `sldv_phan_bo_ngach`, `can_cu_goi_y`) đều tham chiếu trực tiếp `public.dm_don_vi(ma_don_vi) ON DELETE CASCADE`.
+  - Các bảng cấp đầu việc (`b1_khoi_luong`, `b2_ct_tac_dong`, `b2_thay_doi`, `can_cu_goi_y`) tham chiếu kép tới cả `public.a2_cong_viec(ma_cong_viec)` và `public.c1_vtvl(ma_vtvl) ON DELETE CASCADE`.
+  - Bảng phân bổ mã ngạch `public.sldv_phan_bo_ngach(ma_vtvl_xep_vao)` tham chiếu trực tiếp `public.c1_vtvl(ma_vtvl) ON DELETE CASCADE`.
 - **Trigger `trg_validate_c1_career_level` (`public.fn_validate_c1_career_level()`):** Tự động đối chiếu giá trị `bac_nghe_nghiep_su_dung` trong bảng `public.c1_vtvl` với mảng `ds_bac_cho_phep` của vị trí khung tương ứng trong `public.dm_vtvl_khung_truong`.
-- **View `public.v_tong_hop_vtvl_toan_truong`:** Kết nối `dm_don_vi`, `t_tien_do` và `sldv_quy_mo_don_vi` để tổng hợp trạng thái nộp hồ sơ, quy mô đơn vị và tổng nhu cầu FTE của toàn bộ 51 đơn vị thuộc HCM-UTE.
+- **Trigger `trg_enforce_unit_consistency` (`public.fn_enforce_unit_consistency()`):** Gắn trên 11 bảng phụ thuộc (`a2_cong_viec`, `b1_khoi_luong`, `b2_ct_tac_dong`, `b2_thay_doi`, `c2_nang_luc`, `c3_nhu_cau`, `d1_nhan_luc`, `du_bao_5_nam`, `d2_phuong_an`, `sldv_phan_bo_ngach`, `can_cu_goi_y`), bắt buộc `ma_don_vi` của dòng con phải khớp tuyệt đối với `ma_don_vi` của `c1_vtvl` cha.
+- **View `public.v_tong_hop_vtvl_toan_truong`:** Kết nối `dm_don_vi` và `t_tien_do` để tổng hợp trạng thái nộp hồ sơ, quy mô đơn vị và tổng nhu cầu FTE của toàn bộ 51 đơn vị thuộc HCM-UTE.
+
+---
+
+## 4. Liên thông dữ liệu xuyên suốt 5 giai đoạn (Cross-Stage Data Continuity)
+
+| Giai đoạn | Tác vụ chính | Dữ liệu đầu vào liên thông | Dữ liệu đầu ra (Session + Excel + Supabase) |
+| :--- | :--- | :--- | :--- |
+| **Giai đoạn 1**<br>Đề xuất VTVL (Chặng 1–5) | Chọn đơn vị, khai báo người thực hiện, chọn VTVL từ khung 38 vị trí, chỉnh mã VTVL/bậc/mã ngạch/PP/FTE, đối chiếu bảng lương. | Danh mục 51 đơn vị (`dm_don_vi`), Khung 38 vị trí (`dm_vtvl_khung_truong`), 28 mã chức danh (`dm_chuc_danh_tt31`). | Lưu `ActiveUnitSession` (`localStorage` + `BroadcastChannel('hcmute_vtvl_realtime')`): `unitCode`, `actorEmail`, `actorTitle`, `positions`, `scaleMetrics`, `gradeAllocations`, `wizardStage`. |
+| **Giai đoạn 2**<br>Xuất bộ biểu gốc | Sinh bộ biểu đơn vị 21 trang tính (`.xlsx`) và gói phiếu khảo sát cá nhân (`.zip`). | Đọc trực tiếp `positions`, `scaleMetrics`, `gradeAllocations`, `actorEmail`, `actorTitle` từ Giai đoạn 1. | Ghi `cachedRootWorkbookFile` + `lastExportedFileName`; đồng bộ 16 bảng Supabase (`c1_vtvl`, `a1_nhiem_vu`, `a2_cong_viec`, `b1_khoi_luong`, `b2_ct_tac_dong`, `b2_thay_doi`, `c2_nang_luc`, `c3_nhu_cau`, `d1_nhan_luc`, `du_bao_5_nam`, `d2_phuong_an`, `k_kiem_tra`, `t_tien_do`, `s_nhat_ky`, `sldv_quy_mo_don_vi`, `sldv_phan_bo_ngach`, `can_cu_goi_y`). |
+| **Giai đoạn 3**<br>Đo định mức thời gian | Bấm giờ trực tiếp hoặc nhập thời lượng thực tế cho từng đầu việc A2/B1 của các VTVL đã chọn. | Đọc danh sách `positions` của đơn vị từ Giai đoạn 1 (khớp `selectedVtvlSuffix` thực tế) + `timeSessions` đã lưu. | Lưu bền vững `timeSessions` vào `ActiveUnitSession`, tự động đóng gói tệp `PhieuBamGio_...xlsx` (`buildPersonalTimerWorkbookFile`) chuyển thẳng sang Giai đoạn 4. |
+| **Giai đoạn 4**<br>Gộp phiếu khảo sát | Nạp bộ biểu gốc + các phiếu khảo sát cá nhân/bấm giờ để cập nhật cột `Phút/SP đo thực tế` (`B1`) và nâng phiên bản `v1 -> v2`. | Tự động nhận `rootFile` (hoặc tái tạo từ cấu hình Giai đoạn 1) và `formFiles` (tự động khôi phục từ `session.timeSessions` của Giai đoạn 3 kể cả khi F5). | Lưu `cachedMergedWorkbookFile`, `lastMergedFileName`, `lastMergedVersion`; đồng bộ phiên bản mới lên `t_tien_do` và `s_nhat_ky`. |
+| **Giai đoạn 5**<br>Thẩm định hồ sơ | Kiểm tra chéo 6 chỉ tiêu (`K_KiemTra`), phân loại 3 mức cảnh báo, trích xuất `Chua_du_can_cu` & `Gop_y_bieu_mau`. | Tự động nạp tệp đã gộp từ Giai đoạn 4 (`mergedFile`) hoặc bộ biểu gốc từ Giai đoạn 1–2. | Cập nhật `lastAuditFixCount` vào `ActiveUnitSession`; đồng bộ kết quả thẩm định lên `k_kiem_tra`, `ra_soat_chua_du_can_cu`, `t_tien_do` và `s_nhat_ky`. |

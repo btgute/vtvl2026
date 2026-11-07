@@ -294,7 +294,7 @@ ALTER TABLE public.t_tien_do ADD COLUMN IF NOT EXISTS chuc_vu_nguoi_thuc_hien te
 -- 18. BẢNG S_NHAT_KY: Nhật ký phiên bản và lịch sử cập nhật trực tuyến (Biểu 15. S_NhatKy)
 CREATE TABLE IF NOT EXISTS public.s_nhat_ky (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  ma_don_vi text NOT NULL,
+  ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
   ten_don_vi text NOT NULL,
   hanh_dong text NOT NULL,
   chi_tiet text NOT NULL,
@@ -327,18 +327,19 @@ CREATE TABLE IF NOT EXISTS public.sldv_phan_bo_ngach (
   ma_ngach text NOT NULL,
   ten_ngach text NOT NULL,
   so_nguoi integer NOT NULL DEFAULT 1 CHECK (so_nguoi >= 0),
-  ma_vtvl_xep_vao text NOT NULL,
+  ma_vtvl_xep_vao text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
   la_dong_tach boolean NOT NULL DEFAULT false,
   ghi_chu text,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_sldv_phan_bo_ngach_ma_don_vi ON public.sldv_phan_bo_ngach(ma_don_vi);
+CREATE INDEX IF NOT EXISTS idx_sldv_phan_bo_ngach_ma_vtvl ON public.sldv_phan_bo_ngach(ma_vtvl_xep_vao);
 
 -- 21. BẢNG CAN_CU_GOI_Y: Ánh xạ với trang tính Can_cu_goi_y (Ô màu cam điền sẵn gợi ý & căn cứ tham khảo)
 CREATE TABLE IF NOT EXISTS public.can_cu_goi_y (
   ma_don_vi text NOT NULL REFERENCES public.dm_don_vi(ma_don_vi) ON DELETE CASCADE,
-  ma_cong_viec text NOT NULL,
-  ma_vtvl text NOT NULL,
+  ma_cong_viec text NOT NULL REFERENCES public.a2_cong_viec(ma_cong_viec) ON DELETE CASCADE,
+  ma_vtvl text NOT NULL REFERENCES public.c1_vtvl(ma_vtvl) ON DELETE CASCADE,
   ten_cong_viec text NOT NULL,
   so_sp_goi_y numeric(12,2) NOT NULL DEFAULT 0,
   phut_sp_goi_y numeric(10,2) NOT NULL DEFAULT 0,
@@ -349,6 +350,7 @@ CREATE TABLE IF NOT EXISTS public.can_cu_goi_y (
   PRIMARY KEY (ma_don_vi, ma_cong_viec)
 );
 CREATE INDEX IF NOT EXISTS idx_can_cu_goi_y_ma_don_vi ON public.can_cu_goi_y(ma_don_vi);
+CREATE INDEX IF NOT EXISTS idx_can_cu_goi_y_ma_vtvl ON public.can_cu_goi_y(ma_vtvl);
 
 -- 22. BẢNG RA_SOAT_CHUA_DU_CAN_CU: Ánh xạ với trang tính Chua_du_can_cu và Gop_y_bieu_mau khi xuất kết quả rà soát
 CREATE TABLE IF NOT EXISTS public.ra_soat_chua_du_can_cu (
@@ -418,6 +420,47 @@ DROP TRIGGER IF EXISTS trg_validate_c1_career_level ON public.c1_vtvl;
 CREATE TRIGGER trg_validate_c1_career_level
 BEFORE INSERT OR UPDATE ON public.c1_vtvl
 FOR EACH ROW EXECUTE FUNCTION public.fn_validate_c1_career_level();
+
+-- Trigger kiểm soát tính nhất quán mã đơn vị (ma_don_vi) giữa C1_VTVL và các bảng phụ thuộc
+CREATE OR REPLACE FUNCTION public.fn_enforce_unit_consistency()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_target_vtvl text;
+  v_parent_unit text;
+BEGIN
+  v_target_vtvl := COALESCE(to_jsonb(NEW)->>'ma_vtvl', to_jsonb(NEW)->>'ma_vtvl_xep_vao');
+  IF v_target_vtvl IS NOT NULL THEN
+    SELECT ma_don_vi INTO v_parent_unit
+    FROM public.c1_vtvl
+    WHERE ma_vtvl = v_target_vtvl;
+
+    IF v_parent_unit IS NOT NULL AND v_parent_unit <> NEW.ma_don_vi THEN
+      RAISE EXCEPTION 'Lỗi toàn vẹn liên bảng (%): ma_don_vi "%" không khớp với đơn vị "%" của vị trí việc làm "%"',
+        TG_TABLE_NAME, NEW.ma_don_vi, v_parent_unit, v_target_vtvl;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DO $$
+DECLARE
+  tbl text;
+  dependent_tables text[] := ARRAY[
+    'a2_cong_viec', 'b1_khoi_luong', 'b2_ct_tac_dong', 'b2_thay_doi',
+    'c2_nang_luc', 'c3_nhu_cau', 'd1_nhan_luc', 'du_bao_5_nam',
+    'd2_phuong_an', 'sldv_phan_bo_ngach', 'can_cu_goi_y'
+  ];
+BEGIN
+  FOREACH tbl IN ARRAY dependent_tables LOOP
+    EXECUTE format('DROP TRIGGER IF EXISTS trg_enforce_unit_consistency ON public.%I;', tbl);
+    EXECUTE format('CREATE TRIGGER trg_enforce_unit_consistency BEFORE INSERT OR UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.fn_enforce_unit_consistency();', tbl);
+  END LOOP;
+END $$;
 
 -- =============================================================================
 -- PHẦN IV. BẢO MẬT ROW LEVEL SECURITY (RLS) CHO TOÀN BỘ 18 BẢNG

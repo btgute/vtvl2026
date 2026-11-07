@@ -1,4 +1,4 @@
-import { SplitResultSummary } from '@/types/vtvl';
+import { AuditReportResult, NgachAllocationRow, ProposedVtvlRow, SplitResultSummary, UnitScaleMetrics } from '@/types/vtvl';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { ND232_2026_VTVL_CATALOG } from '@/configs/hcmute-nd232-catalog';
 import { DM_CHUC_DANH_TT31_TABLE } from '@/configs/hcmute-erd-tables';
@@ -22,29 +22,19 @@ function buildHeaders(apiKey: string, upsertConflictCol?: string): Record<string
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     apikey: apiKey,
-    Prefer: upsertConflictCol
-      ? 'resolution=merge-duplicates,return=minimal'
-      : 'return=minimal'
+    Prefer: upsertConflictCol ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
   };
-  if (apiKey.startsWith('eyJ')) {
-    headers.Authorization = `Bearer ${apiKey}`;
-  }
+  if (apiKey.startsWith('eyJ')) headers.Authorization = `Bearer ${apiKey}`;
   return headers;
 }
 
 async function postRest(table: string, payload: unknown, upsertConflictCol?: string): Promise<boolean> {
   const apiKey = getSupabaseAnonKey();
   if (!SUPABASE_PROJECT_URL || !apiKey) return false;
-
   const query = upsertConflictCol ? `?on_conflict=${encodeURIComponent(upsertConflictCol)}` : '';
   const url = `${SUPABASE_PROJECT_URL}/rest/v1/${table}${query}`;
-
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: buildHeaders(apiKey, upsertConflictCol),
-      body: JSON.stringify(payload)
-    });
+    const res = await fetch(url, { method: 'POST', headers: buildHeaders(apiKey, upsertConflictCol), body: JSON.stringify(payload) });
     return res.ok;
   } catch {
     return false;
@@ -59,10 +49,7 @@ export async function syncActivityToSupabase(
   actorEmail?: string,
   actorTitle?: string
 ): Promise<boolean> {
-  const actorTag =
-    actorEmail || actorTitle
-      ? ` [Người thực hiện: ${actorTitle || 'Chưa rõ chức vụ'} — ${actorEmail || 'Chưa rõ email'}]`
-      : '';
+  const actorTag = actorEmail || actorTitle ? ` [Người thực hiện: ${actorTitle || 'Chưa rõ chức vụ'} — ${actorEmail || 'Chưa rõ email'}]` : '';
   const fullDetail = `${detail}${actorTag}`;
   const okWithCols = await postRest('s_nhat_ky', {
     ma_don_vi: unitCode,
@@ -74,13 +61,7 @@ export async function syncActivityToSupabase(
     phien_ban: 'v1'
   });
   if (okWithCols) return true;
-  return postRest('s_nhat_ky', {
-    ma_don_vi: unitCode,
-    ten_don_vi: unitName,
-    hanh_dong: action,
-    chi_tiet: fullDetail,
-    phien_ban: 'v1'
-  });
+  return postRest('s_nhat_ky', { ma_don_vi: unitCode, ten_don_vi: unitName, hanh_dong: action, chi_tiet: fullDetail, phien_ban: 'v1' });
 }
 
 export async function seedMasterCatalogsToSupabase(): Promise<boolean> {
@@ -139,13 +120,14 @@ export async function seedMasterCatalogsToSupabase(): Promise<boolean> {
   return okUnits;
 }
 
-export async function syncUnitSplitToSupabase(summary: SplitResultSummary): Promise<boolean> {
+export async function syncUnitSplitToSupabase(
+  summary: SplitResultSummary,
+  extra?: { scaleMetrics?: UnitScaleMetrics; ngachAllocations?: NgachAllocationRow[]; proposedPositions?: ProposedVtvlRow[] }
+): Promise<boolean> {
   await seedMasterCatalogsToSupabase();
 
   const c1Rows = summary.positionBreakdown.map((p) => {
-    const fwMatch = ND232_2026_VTVL_CATALOG.find(
-      (f) => f.positionName === (p.frameworkTitle || p.vtvlName)
-    );
+    const fwMatch = ND232_2026_VTVL_CATALOG.find((f) => f.positionName === (p.frameworkTitle || p.vtvlName));
     return {
       ma_vtvl: p.vtvlCode,
       ma_don_vi: summary.unitCode,
@@ -193,6 +175,43 @@ export async function syncUnitSplitToSupabase(summary: SplitResultSummary): Prom
   await postRest('a1_nhiem_vu', a1Rows, 'ma_nhiem_vu');
   await postRest('c3_nhu_cau', c3Rows, 'ma_vtvl');
 
+  if (extra?.scaleMetrics) {
+    const sm = extra.scaleMetrics;
+    await postRest(
+      'sldv_quy_mo_don_vi',
+      {
+        ma_don_vi: summary.unitCode,
+        so_sinh_vien_quy_doi: sm.studentCount,
+        so_nganh_ctdt: sm.programCount,
+        so_lop_hoc_phan_nam: sm.courseSectionCount,
+        so_phong_tn_xuong: sm.labWorkshopCount,
+        so_de_tai_nckh_nam: sm.researchTopicCount,
+        so_van_ban_ho_so_nam: sm.adminDocCount,
+        he_so_quy_mo: sm.scaleMultiplier
+      },
+      'ma_don_vi'
+    );
+  }
+
+  if (extra?.ngachAllocations && extra.ngachAllocations.length > 0) {
+    const posMap = new Map((extra.proposedPositions || []).map((pos) => [pos.id, `${summary.unitCode}-${pos.vtvlSuffix}`]));
+    const ngachRows = extra.ngachAllocations
+      .map((ng) => ({
+        id: `${summary.unitCode}-${ng.id}`,
+        ma_don_vi: summary.unitCode,
+        ma_ngach: ng.ngachCode,
+        ten_ngach: ng.ngachName,
+        so_nguoi: ng.count,
+        ma_vtvl_xep_vao: posMap.get(ng.targetPositionId) || c1Rows[0]?.ma_vtvl || `${summary.unitCode}-GV-01`,
+        la_dong_tach: Boolean(ng.isSplitRow),
+        ghi_chu: ng.note || null
+      }))
+      .filter((r) => c1Rows.some((c) => c.ma_vtvl === r.ma_vtvl_xep_vao));
+    if (ngachRows.length > 0) {
+      await postRest('sldv_phan_bo_ngach', ngachRows, 'id');
+    }
+  }
+
   return postRest(
     't_tien_do',
     {
@@ -203,6 +222,8 @@ export async function syncUnitSplitToSupabase(summary: SplitResultSummary): Prom
       so_cong_viec_a2: summary.taskCount,
       so_vtvl_c1: summary.vtvlCount,
       tong_fte_c3: summary.totalStandardFte,
+      email_nguoi_thuc_hien: summary.actorEmail || null,
+      chuc_vu_nguoi_thuc_hien: summary.actorTitle || null,
       trang_thai_ra_soat: 'Đã khởi tạo và đồng bộ trực tuyến Supabase',
       du_lieu_ho_so_json: {
         unitFileName: summary.unitFileName,
@@ -213,4 +234,44 @@ export async function syncUnitSplitToSupabase(summary: SplitResultSummary): Prom
     },
     'ma_don_vi'
   );
+}
+
+export async function syncAuditResultToSupabase(report: AuditReportResult, unitCode: string): Promise<boolean> {
+  if (!unitCode || unitCode === 'X99') return false;
+  const checkDefs = [
+    { stt: 1, pair: 'A1 ↔ A2', label: 'Mọi nhiệm vụ A1 đều có đầu việc A2', sheet: 'A1' },
+    { stt: 2, pair: 'A2 ↔ B1', label: 'Mọi đầu việc A2 đều có thống kê sản lượng & thời gian B1', sheet: 'B1' },
+    { stt: 3, pair: 'B1 ↔ DM', label: 'Độ lệch phút/SP thực tế so với chuẩn có giải trình hợp lệ', sheet: 'DM' },
+    { stt: 4, pair: 'B2_CT ↔ B2', label: 'Tổng giờ giảm số hóa khớp giữa B2_CT và B2', sheet: 'B2' },
+    { stt: 5, pair: 'C1 ↔ C2 ↔ C3', label: 'Danh mục VTVL, khung năng lực bậc 1–5 và FTE đồng bộ', sheet: 'C3' },
+    { stt: 6, pair: 'C3 ↔ D1 ↔ D2', label: 'Phương án biên chế D2 khớp chênh lệch giữa C3 và D1', sheet: 'D2' }
+  ];
+  const kRows = checkDefs.map((def) => {
+    const errCount = report.issues.filter((iss) => iss.sheet === def.sheet && iss.severity === 'fix').length;
+    return {
+      ma_don_vi: unitCode,
+      stt_chi_tieu: def.stt,
+      nhom_bieu_doi_soat: def.pair,
+      noi_dung_kiem_tra: def.label,
+      so_dong_loi: errCount,
+      ket_luan: errCount === 0 ? 'ĐẠT' : 'CẦN RÀ SOÁT'
+    };
+  });
+  await postRest('k_kiem_tra', kRows, 'ma_don_vi,stt_chi_tieu');
+
+  const evidenceRows = report.evidenceItems.slice(0, 50).map((ev) => ({
+    ma_don_vi: unitCode,
+    loai_bang: 'Chua_du_can_cu',
+    bieu_nguon: ev.sheet,
+    toa_do_o: ev.cellRef,
+    ma_tham_chieu: ev.refCode,
+    noi_dung_phat_hien: ev.taskOrPositionName,
+    nguyen_nhan: ev.reasonHint,
+    thoi_han_bo_sung: 'Trước khi trình Hội đồng Trường',
+    dau_moi_phu_trach: unitCode
+  }));
+  if (evidenceRows.length > 0) {
+    await postRest('ra_soat_chua_du_can_cu', evidenceRows);
+  }
+  return true;
 }

@@ -77,7 +77,10 @@ interface WorkflowSidebarProps { activeStep?: number; onSelectStep?: (step: numb
 export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep }: WorkflowSidebarProps) {
   const pathname = usePathname();
   const [activeUnit, setActiveUnit] = useState(() => getActiveUnitDefinition(unitCode));
-  const [actorInfo, setActorInfo] = useState(() => ({ email: '', title: '', lastSavedAt: '', wizardStage: 1 }));
+  const [actorInfo, setActorInfo] = useState(() => ({
+    email: '', title: '', lastSavedAt: '', wizardStage: 1, posCount: 0,
+    exportedFile: '', timerCount: 0, mergedVer: '', auditFixCount: null as number | null
+  }));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const triggerBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -87,7 +90,17 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
     const sync = () => {
       setActiveUnit(getActiveUnitDefinition(unitCode));
       const s = getActiveUnitSession();
-      setActorInfo({ email: s.actorEmail, title: s.actorTitle, lastSavedAt: s.lastSavedAt, wizardStage: s.wizardStage || 1 });
+      setActorInfo({
+        email: s.actorEmail,
+        title: s.actorTitle,
+        lastSavedAt: s.lastSavedAt,
+        wizardStage: s.wizardStage || 1,
+        posCount: s.proposedPositions?.length || 0,
+        exportedFile: s.lastExportedFileName || '',
+        timerCount: s.timeSessions?.length || 0,
+        mergedVer: s.lastMergedVersion ? `v${s.lastMergedVersion}` : '',
+        auditFixCount: typeof s.lastAuditFixCount === 'number' ? s.lastAuditFixCount : null
+      });
     };
     sync();
     window.addEventListener('vtvl-unit-session-updated', sync);
@@ -109,7 +122,15 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
 
   const currentStep = activeStep ?? (pathname === '/bam-gio' ? 3 : pathname === '/ra-soat' ? 5 : 1);
   const activeStepObj = SIDEBAR_FIVE_STEPS.find((s) => s.num === currentStep) || SIDEBAR_FIVE_STEPS[0];
-  const progressPercent = Math.min(100, Math.round(((currentStep - 1) * 20) + (actorInfo.wizardStage * 4)));
+  const stageDoneFlags = [
+    Boolean(actorInfo.email && actorInfo.title && actorInfo.posCount > 0 && (actorInfo.wizardStage >= 5 || currentStep > 1)),
+    Boolean(actorInfo.exportedFile || currentStep > 2),
+    Boolean(actorInfo.timerCount > 0 || currentStep > 3),
+    Boolean(actorInfo.mergedVer || currentStep > 4),
+    actorInfo.auditFixCount === 0
+  ];
+  const completedStagesCount = stageDoneFlags.filter(Boolean).length;
+  const progressPercent = Math.min(100, Math.max(Math.round((completedStagesCount / 5) * 100), Math.round(((currentStep - 1) * 20) + (actorInfo.wizardStage * 4))));
 
   const stepIcon = (num: number) => {
     if (num === 1) return <Layers className="w-4 h-4 shrink-0" />;
@@ -123,10 +144,16 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
     <ol className="space-y-1">
       {SIDEBAR_FIVE_STEPS.map((s) => {
         const isCurrent = currentStep === s.num;
-        const isDone = currentStep > s.num;
-        const hasError = errorStep === s.num;
+        const isDone = !isCurrent && stageDoneFlags[s.num - 1];
+        const hasError = errorStep === s.num || (s.num === 5 && (actorInfo.auditFixCount ?? 0) > 0);
         const handleInternal = onSelectStep && (s.num === 1 || s.num === 2 || s.num === 4);
-        const statusText = hasError ? 'Có lỗi' : isCurrent ? (s.num === 1 ? `Đang thực hiện · Chặng ${actorInfo.wizardStage}/5` : 'Đang thực hiện') : isDone ? 'Hoàn thành' : 'Chưa thực hiện';
+        const statusText = hasError
+          ? (s.num === 5 && actorInfo.auditFixCount ? `Có lỗi · ${actorInfo.auditFixCount} mục phải sửa` : 'Có lỗi')
+          : isCurrent
+            ? (s.num === 1 ? `Đang thực hiện · Chặng ${actorInfo.wizardStage}/5` : 'Đang thực hiện')
+            : isDone
+              ? (s.num === 3 && actorInfo.timerCount > 0 ? `Hoàn thành · ${actorInfo.timerCount} phiên đo` : s.num === 4 && actorInfo.mergedVer ? `Hoàn thành · ${actorInfo.mergedVer}` : 'Hoàn thành')
+              : 'Chưa thực hiện';
 
         const rowContent = compactMode ? (
           <div title={`${s.title} (${statusText})`} className={`flex items-center justify-center w-11 h-11 rounded-xl border transition-colors ${hasError ? 'bg-[var(--fix-soft)] border-[var(--fix)] text-[var(--fix)]' : isCurrent ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : isDone ? 'bg-[var(--ok-soft)] border-[var(--ok)]/40 text-[var(--ok)]' : 'bg-[var(--background)] border-[var(--border)] text-[var(--ink-muted)] hover:border-[var(--primary)]'}`}>

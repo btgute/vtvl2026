@@ -176,7 +176,7 @@ export default function TaoTepPage() {
       const res = await generateUnitFiles({ kind, unitCode: currentUnit.code, unitNameVi: currentUnit.nameVi, unitNameEn: currentUnit.nameEn, period: HD07_CONSTANTS.STATISTICAL_PERIOD, exportDate: customDate, includeZipPerPosition: includeZip, actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), scaleMetrics, ngachAllocations, ngachOverrides: {}, proposedPositions: positions });
       setResult(res); setActiveStep(2); setSessionRootWorkbook(res.unitCode, res.unitBlob, res.unitFileName);
       recordActivity(res.unitCode, res.unitNameVi, 'TAO_TEP', `Khởi tạo 4 tệp chuẩn (${positions.length} VTVL · hệ số ×${scaleMetrics.scaleMultiplier}): ${res.unitFileName}`, { actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim() });
-      pushToast('success', `Đã khởi tạo thành công 4 tệp đầu ra cho [${res.unitCode}].`); void syncUnitSplitToSupabase(res);
+      pushToast('success', `Đã khởi tạo thành công 4 tệp đầu ra cho [${res.unitCode}].`); void syncUnitSplitToSupabase(res, { scaleMetrics, ngachAllocations, proposedPositions: positions });
     } catch { pushToast('error', 'Không thể khởi tạo bộ biểu. Vui lòng thử lại.', () => void handleCreateFiles()); } finally { setLoading(false); }
   };
   const triggerDownload = (blob: Blob, filename: string) => {

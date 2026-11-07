@@ -134,7 +134,20 @@ runTest('5. Kiểm tra Lược đồ CSDL quan hệ 22 bảng (PostgreSQL / Supa
   assert.ok(sql.includes('email_nguoi_thuc_hien'), 'Bảng nhật ký/tiến độ phải có cột email_nguoi_thuc_hien');
   assert.ok(sql.includes('chuc_vu_nguoi_thuc_hien'), 'Bảng nhật ký/tiến độ phải có cột chuc_vu_nguoi_thuc_hien');
   assert.ok(sql.includes('trg_validate_c1_career_level'), 'Thiếu Trigger kiểm tra giới hạn bậc nghề nghiệp');
+  assert.ok(sql.includes('trg_enforce_unit_consistency'), 'Thiếu Trigger kiểm soát tính nhất quán ma_don_vi liên bảng');
   assert.ok(sql.includes('v_tong_hop_vtvl_toan_truong'), 'Thiếu View tổng hợp toàn trường');
+
+  // Kiểm tra liên thông dữ liệu 5 giai đoạn (Session + Timer Workbook + Merge + Audit + Supabase Sync)
+  const activityLog = fs.readFileSync(path.join(root, 'src/services/telemetry/activity-log.ts'), 'utf8');
+  const bamGio = fs.readFileSync(path.join(root, 'src/app/bam-gio/page.tsx'), 'utf8');
+  const mergeSec = fs.readFileSync(path.join(root, 'src/components/tao-tep/MergeStepSection.tsx'), 'utf8');
+  const raSoat = fs.readFileSync(path.join(root, 'src/app/ra-soat/page.tsx'), 'utf8');
+  const supaSync = fs.readFileSync(path.join(root, 'src/services/supabase/vtvl-sync.ts'), 'utf8');
+
+  assert.ok(activityLog.includes('timeSessions') && activityLog.includes('lastMergedVersion') && activityLog.includes('lastAuditFixCount'), 'ActiveUnitSession phải lưu trữ xuyên suốt timeSessions, lastMergedVersion và lastAuditFixCount');
+  assert.ok(bamGio.includes('buildPersonalTimerWorkbookFile') && bamGio.includes('saveActiveUnitSession'), 'Giai đoạn 3 (Bấm giờ) phải tự động đóng gói tệp khảo sát chuyển sang Giai đoạn 4');
+  assert.ok(mergeSec.includes('buildPersonalTimerWorkbookFile') && mergeSec.includes('session.timeSessions'), 'Giai đoạn 4 (Gộp phiếu) phải tự động khôi phục phiếu bấm giờ từ session.timeSessions kể cả khi tải lại trang');
+  assert.ok(raSoat.includes('syncAuditResultToSupabase') && supaSync.includes('sldv_quy_mo_don_vi') && supaSync.includes('ra_soat_chua_du_can_cu'), 'Giai đoạn 2, 4, 5 phải đồng bộ đầy đủ dữ liệu lên các bảng quan hệ Supabase');
 });
 
 // 6. Kiểm tra bắt buộc nhập Email & Chức vụ, Bảng mã ngạch (Tách & D1), 4 tệp xuất & Can_cu_goi_y

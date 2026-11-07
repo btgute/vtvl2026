@@ -1,6 +1,6 @@
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { buildDefaultProposedPositionsForUnit } from '@/configs/hcmute-nd232-catalog';
-import { HcmuteUnit, NgachAllocationRow, ProposedVtvlRow, UnitGroupKind, UnitScaleMetrics } from '@/types/vtvl';
+import { HcmuteUnit, NgachAllocationRow, ProposedVtvlRow, TimeSessionRow, UnitGroupKind, UnitScaleMetrics } from '@/types/vtvl';
 import { syncActivityToSupabase } from '@/services/supabase/vtvl-sync';
 
 export interface ActivityLogEntry {
@@ -30,6 +30,11 @@ export interface ActiveUnitSession {
   customCareerLevels: Record<string, string>;
   proposedPositions: ProposedVtvlRow[];
   previousPositionsSnapshot?: ProposedVtvlRow[];
+  timeSessions?: TimeSessionRow[];
+  lastExportedFileName?: string;
+  lastMergedFileName?: string;
+  lastMergedVersion?: number;
+  lastAuditFixCount?: number;
 }
 
 const STORAGE_KEY = 'hcmute_vtvl_activity_logs_v1';
@@ -47,10 +52,7 @@ export function formatCurrentHHMM(): string {
 
 export function getRealtimeDateYYYYMMDD(): string {
   const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
 function notifyRealtimeSessionChange(): void {
@@ -99,7 +101,8 @@ function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSes
     ngachOverrides: {},
     customPositionNames: {},
     customCareerLevels: {},
-    proposedPositions
+    proposedPositions,
+    timeSessions: []
   };
 }
 
@@ -135,7 +138,12 @@ export function getActiveUnitSession(): ActiveUnitSession {
       customPositionNames: parsed.customPositionNames || {},
       customCareerLevels: parsed.customCareerLevels || {},
       proposedPositions: proposed,
-      previousPositionsSnapshot: parsed.previousPositionsSnapshot
+      previousPositionsSnapshot: parsed.previousPositionsSnapshot,
+      timeSessions: Array.isArray(parsed.timeSessions) ? parsed.timeSessions : [],
+      lastExportedFileName: parsed.lastExportedFileName,
+      lastMergedFileName: parsed.lastMergedFileName,
+      lastMergedVersion: parsed.lastMergedVersion,
+      lastAuditFixCount: parsed.lastAuditFixCount
     };
   } catch {
     return createDefaultSession();
@@ -172,7 +180,12 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
     customPositionNames: partial.customPositionNames ?? (isSameUnit ? current.customPositionNames : {}),
     customCareerLevels: partial.customCareerLevels ?? (isSameUnit ? current.customCareerLevels : {}),
     proposedPositions: nextPositions,
-    previousPositionsSnapshot: partial.previousPositionsSnapshot !== undefined ? partial.previousPositionsSnapshot : current.previousPositionsSnapshot
+    previousPositionsSnapshot: partial.previousPositionsSnapshot !== undefined ? partial.previousPositionsSnapshot : current.previousPositionsSnapshot,
+    timeSessions: partial.timeSessions ?? (isSameUnit ? current.timeSessions : []),
+    lastExportedFileName: partial.lastExportedFileName ?? (isSameUnit ? current.lastExportedFileName : undefined),
+    lastMergedFileName: partial.lastMergedFileName ?? (isSameUnit ? current.lastMergedFileName : undefined),
+    lastMergedVersion: partial.lastMergedVersion ?? (isSameUnit ? current.lastMergedVersion : undefined),
+    lastAuditFixCount: partial.lastAuditFixCount ?? (isSameUnit ? current.lastAuditFixCount : undefined)
   };
 
   if (!isSameUnit && cachedUnitCode && cachedUnitCode !== matchedUnit.code) {
@@ -195,9 +208,7 @@ export function resetActiveUnitToDefault(unitCode: string, fullSessionReset = fa
   const freshPositions = buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group);
   const freshScale = buildDefaultScaleMetrics(unit.group);
   const freshNgach = buildDefaultNgachAllocations(freshPositions);
-  cachedRootWorkbookFile = null;
-  cachedMergedWorkbookFile = null;
-  cachedSurveyFormFiles = [];
+  cachedRootWorkbookFile = null; cachedMergedWorkbookFile = null; cachedSurveyFormFiles = [];
 
   const resetSession: ActiveUnitSession = {
     unitCode: unit.code,
@@ -214,7 +225,12 @@ export function resetActiveUnitToDefault(unitCode: string, fullSessionReset = fa
     customPositionNames: {},
     customCareerLevels: {},
     proposedPositions: freshPositions,
-    previousPositionsSnapshot: current.proposedPositions
+    previousPositionsSnapshot: current.proposedPositions,
+    timeSessions: [],
+    lastExportedFileName: undefined,
+    lastMergedFileName: undefined,
+    lastMergedVersion: undefined,
+    lastAuditFixCount: undefined
   };
 
   if (typeof window !== 'undefined') {
@@ -230,13 +246,15 @@ export function setSessionRootWorkbook(unitCode: string, blob: Blob, fileName: s
   cachedUnitCode = unitCode;
   const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   cachedRootWorkbookFile = file;
+  saveActiveUnitSession({ unitCode, lastExportedFileName: fileName });
   return file;
 }
 
-export function setSessionMergedWorkbook(unitCode: string, blob: Blob, fileName: string): File {
+export function setSessionMergedWorkbook(unitCode: string, blob: Blob, fileName: string, version = 2): File {
   cachedUnitCode = unitCode;
   const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   cachedMergedWorkbookFile = file;
+  saveActiveUnitSession({ unitCode, lastMergedFileName: fileName, lastMergedVersion: version });
   return file;
 }
 
@@ -252,13 +270,7 @@ export function getSessionFilesForUnit(unitCode: string) {
   return { rootFile: cachedRootWorkbookFile, mergedFile: cachedMergedWorkbookFile, formFiles: cachedSurveyFormFiles };
 }
 
-export function recordActivity(
-  unitCode: string,
-  unitName: string,
-  action: ActivityLogEntry['action'],
-  details: string,
-  actorOverride?: { actorEmail?: string; actorTitle?: string }
-): void {
+export function recordActivity(unitCode: string, unitName: string, action: ActivityLogEntry['action'], details: string, actorOverride?: { actorEmail?: string; actorTitle?: string }): void {
   if (typeof window === 'undefined') return;
   try {
     const session = getActiveUnitSession();
@@ -266,11 +278,7 @@ export function recordActivity(
     const actorTitle = (actorOverride?.actorTitle ?? session.actorTitle ?? '').trim();
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const list: ActivityLogEntry[] = raw ? JSON.parse(raw) : [];
-    const entry: ActivityLogEntry = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      timestamp: new Date().toLocaleString('vi-VN'),
-      unitCode, unitName, actorEmail, actorTitle, action, details
-    };
+    const entry: ActivityLogEntry = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, timestamp: new Date().toLocaleString('vi-VN'), unitCode, unitName, actorEmail, actorTitle, action, details };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify([entry, ...list].slice(0, 80)));
     window.dispatchEvent(new Event('vtvl-activity-updated'));
     void syncActivityToSupabase(unitCode, unitName, action, details, actorEmail, actorTitle);
@@ -279,8 +287,5 @@ export function recordActivity(
 
 export function getActivityLogs(): ActivityLogEntry[] {
   if (typeof window === 'undefined') return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+  try { const raw = window.localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
 }
