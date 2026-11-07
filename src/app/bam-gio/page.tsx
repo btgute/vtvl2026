@@ -2,16 +2,19 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Timer, Play, Pause, Plus, Download, CheckCircle2, Trash2, ArrowRight } from 'lucide-react';
+import { Timer, Play, Pause, Plus, Download, CheckCircle2, Trash2, ArrowRight, Building2 } from 'lucide-react';
 import { WorkflowSidebar, InfoTip } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
-import { TASK_TEMPLATES_BY_GROUP } from '@/configs/hcmute-quotas';
+import { NGACH_LIST_BY_GROUP, TASK_TEMPLATES_BY_GROUP } from '@/configs/hcmute-quotas';
+import { buildDefaultSpecificVtvlName } from '@/configs/hcmute-nd232-catalog';
 import { TimeSessionRow } from '@/types/vtvl';
 import { exportPersonalTimerWorkbook } from '@/services/excel-split/personal-timer-export';
-import { recordActivity } from '@/services/telemetry/activity-log';
+import { getActiveUnitSession, recordActivity } from '@/services/telemetry/activity-log';
 
 export default function BamGioPage() {
-  const [selectedUnitCode, setSelectedUnitCode] = useState<string>('FME');
+  const [unitCode, setUnitCode] = useState<string>('FME');
+  const [customPositionNames, setCustomPositionNames] = useState<Record<string, string>>({});
+  const [customCareerLevels, setCustomCareerLevels] = useState<Record<string, string>>({});
   const [performerTitle, setPerformerTitle] = useState<string>('Giảng viên chính');
   const [selectedVtvlSuffix, setSelectedVtvlSuffix] = useState<string>('DT-GV-02');
   const [sessions, setSessions] = useState<TimeSessionRow[]>([]);
@@ -26,25 +29,51 @@ export default function BamGioPage() {
   const [manualEnd, setManualEnd] = useState<string>('10:30');
   const [manualProducts, setManualProducts] = useState<number>(1);
 
-  const unit = useMemo(() => HCMUTE_UNITS.find((u) => u.code === selectedUnitCode) || HCMUTE_UNITS[0], [selectedUnitCode]);
+  const unit = useMemo(() => HCMUTE_UNITS.find((u) => u.code === unitCode) || HCMUTE_UNITS[0], [unitCode]);
+
+  useEffect(() => {
+    const saved = getActiveUnitSession();
+    const matched = HCMUTE_UNITS.find((u) => u.code === saved.unitCode) || HCMUTE_UNITS[0];
+    setUnitCode(matched.code);
+    setCustomPositionNames(saved.customPositionNames || {});
+    setCustomCareerLevels(saved.customCareerLevels || {});
+    setManualDate(saved.customDate || '2026-11-07');
+
+    const groupTasks = TASK_TEMPLATES_BY_GROUP[matched.group];
+    if (groupTasks.length > 0) {
+      setSelectedVtvlSuffix(groupTasks[0].vtvlSuffix);
+      setActiveTaskCode(`${matched.code}-${groupTasks[0].taskSuffix}`);
+    }
+  }, []);
+
   const tasksOfUnit = useMemo(() => {
     const list = TASK_TEMPLATES_BY_GROUP[unit.group];
     return list.map((t) => ({ ...t, fullVtvlCode: `${unit.code}-${t.vtvlSuffix}`, fullTaskCode: `${unit.code}-${t.taskSuffix}` }));
   }, [unit]);
 
   const vtvlOptions = useMemo(() => {
-    const map = new Map<string, { suffix: string; code: string; name: string }>();
+    const ngachList = NGACH_LIST_BY_GROUP[unit.group];
+    const map = new Map<string, { suffix: string; code: string; name: string; level: string }>();
     tasksOfUnit.forEach((t) => {
-      if (!map.has(t.vtvlSuffix)) map.set(t.vtvlSuffix, { suffix: t.vtvlSuffix, code: t.fullVtvlCode, name: t.vtvlName });
+      if (!map.has(t.vtvlSuffix)) {
+        const ngach = ngachList.find((n) => n.code === t.ngachCode);
+        const fwTitle = ngach?.frameworkTitle || ngach?.name || t.vtvlName;
+        const defaultName = ngach ? buildDefaultSpecificVtvlName(fwTitle, unit.nameVi, ngach.specificNameSuffix, unit.group) : t.vtvlName;
+        const specificName = ngach ? customPositionNames[ngach.code] ?? defaultName : t.vtvlName;
+        const careerLevel = ngach ? customCareerLevels[ngach.code] ?? ngach.defaultCareerLevel ?? 'Bậc 3' : 'Bậc 3';
+        map.set(t.vtvlSuffix, { suffix: t.vtvlSuffix, code: t.fullVtvlCode, name: specificName, level: careerLevel });
+      }
     });
     return Array.from(map.values());
-  }, [tasksOfUnit]);
+  }, [tasksOfUnit, unit, customPositionNames, customCareerLevels]);
 
   const tasksForPosition = useMemo(() => tasksOfUnit.filter((t) => t.vtvlSuffix === selectedVtvlSuffix), [tasksOfUnit, selectedVtvlSuffix]);
 
   useEffect(() => {
-    if (tasksForPosition.length > 0 && !activeTaskCode) setActiveTaskCode(tasksForPosition[0].fullTaskCode);
-  }, [tasksForPosition, activeTaskCode]);
+    if (tasksForPosition.length > 0) setActiveTaskCode(tasksForPosition[0].fullTaskCode);
+    const currentOpt = vtvlOptions.find((v) => v.suffix === selectedVtvlSuffix);
+    if (currentOpt) setPerformerTitle(`${currentOpt.name} (${currentOpt.level})`);
+  }, [tasksForPosition, selectedVtvlSuffix, vtvlOptions]);
 
   useEffect(() => {
     if (!running) return;
@@ -67,8 +96,7 @@ export default function BamGioPage() {
       ...prev,
       { id: `${Date.now()}`, taskCode: task.fullTaskCode, taskName: task.taskName, runNumber: runNum, date: manualDate, startTime: 'Đo trực tiếp', endTime: endStr, durationMinutes: durationMin, productCount: prods, minutesPerProduct: minPerProd, performerTitle }
     ]);
-    setRunning(false);
-    setElapsedSec(0);
+    setRunning(false); setElapsedSec(0);
   };
 
   const handleAddManualSession = (e: React.FormEvent) => {
@@ -105,50 +133,39 @@ export default function BamGioPage() {
               <div className="flex items-center">
                 <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">3</span>
                 <h1 className="text-base sm:text-lg font-extrabold text-[var(--foreground)]">
-                  Bước 3: Đo định mức thời gian thực hiện sản phẩm (Phút/sản phẩm)
+                  Bước 3: Đo định mức thời gian tại [{unit.code}] {unit.nameVi}
                 </h1>
                 <InfoTip title="Hướng dẫn đo định mức (Biểu 3. B1_KhoiLuong)">
-                  <p>Viên chức chọn đơn vị &amp; vị trí việc làm, bấm giờ trực tiếp hoặc nhập khung giờ thực tế để tính <strong>Trung bình phút/sản phẩm</strong> (Cột D biểu B1).</p>
-                  <p>Sau khi ghi nhận, bấm <strong>Xuất phiếu định mức (.xlsx)</strong> để gửi Tổ thư ký gộp tại Bước 4.</p>
+                  <p>Hệ thống tự động giữ nguyên đơn vị <strong>[{unit.code}] {unit.nameVi}</strong> cùng các Tên VTVL cụ thể và Bậc nghề nghiệp đã đặt ở Bước 1.</p>
+                  <p>Khi bấm <strong>Xuất phiếu định mức (.xlsx)</strong>, phiếu được tải về máy đồng thời tự động chuyển sang <strong>Bước 4 (Gộp phiếu)</strong>.</p>
                 </InfoTip>
               </div>
-              <Link href="/tao-tep?step=4" className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-bold hover:underline">
-                <span>Sang Bước 4: Gộp phiếu</span>
+              <Link href="/tao-tep?step=4" className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[var(--primary)] text-white text-xs font-bold hover:opacity-95">
+                <span>Sang Bước 4: Gộp phiếu ({unit.code})</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-bold mb-1">Đơn vị thuộc HCM-UTE</label>
-                <select
-                  value={selectedUnitCode}
-                  onChange={(e) => {
-                    const newCode = e.target.value;
-                    setSelectedUnitCode(newCode);
-                    const u = HCMUTE_UNITS.find((x) => x.code === newCode) || HCMUTE_UNITS[0];
-                    const firstSuffix = TASK_TEMPLATES_BY_GROUP[u.group][0]?.vtvlSuffix || 'QL-01';
-                    setSelectedVtvlSuffix(firstSuffix);
-                    setActiveTaskCode(`${u.code}-${TASK_TEMPLATES_BY_GROUP[u.group][0]?.taskSuffix}`);
-                  }}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs sm:text-sm font-semibold"
-                >
-                  {HCMUTE_UNITS.map((u) => (
-                    <option key={u.code} value={u.code}>[{u.code}] {u.nameVi}</option>
-                  ))}
-                </select>
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div className="sm:col-span-5">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-[var(--foreground)]">Đơn vị (đã chọn ở Bước 1)</label>
+                  <Link href="/tao-tep?step=1" className="text-[11px] font-bold text-[var(--primary)] hover:underline">Đổi tại Bước 1</Link>
+                </div>
+                <div className="w-full rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/[0.06] px-3 py-2 text-xs sm:text-sm font-extrabold text-[var(--foreground)] flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-[var(--primary)] shrink-0" />
+                  <span className="truncate">[{unit.code}] {unit.nameVi}</span>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold mb-1">Vị trí việc làm (Biểu C1)</label>
+              <div className="sm:col-span-4">
+                <label className="block text-xs font-bold mb-1">Vị trí việc làm cụ thể tại [{unit.code}]</label>
                 <select value={selectedVtvlSuffix} onChange={(e) => setSelectedVtvlSuffix(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs sm:text-sm font-semibold">
-                  {vtvlOptions.map((v) => (
-                    <option key={v.suffix} value={v.suffix}>[{v.code}] {v.name}</option>
-                  ))}
+                  {vtvlOptions.map((v) => <option key={v.suffix} value={v.suffix}>[{v.code}] {v.name} — {v.level}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-xs font-bold mb-1">Chức danh người kê khai</label>
-                <input type="text" value={performerTitle} onChange={(e) => setPerformerTitle(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs sm:text-sm" />
+              <div className="sm:col-span-3">
+                <label className="block text-xs font-bold mb-1">Chức danh &amp; bậc kê khai</label>
+                <input type="text" value={performerTitle} onChange={(e) => setPerformerTitle(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs sm:text-sm font-semibold" />
               </div>
             </div>
 
@@ -214,10 +231,10 @@ export default function BamGioPage() {
 
             <div className="pt-2 border-t border-[var(--border-subtle)] space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <strong className="text-xs sm:text-sm text-[var(--foreground)]">Nhật ký đã ghi ({sessions.length} bản ghi)</strong>
+                <strong className="text-xs sm:text-sm text-[var(--foreground)]">Nhật ký đã ghi tại [{unit.code}] ({sessions.length} bản ghi)</strong>
                 <button type="button" onClick={handleExport} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--primary)] text-white font-bold text-xs cursor-pointer shadow-2xs">
                   <Download className="w-3.5 h-3.5" />
-                  <span>Xuất phiếu định mức cá nhân (.xlsx)</span>
+                  <span>Xuất phiếu định mức [{unit.code}] (.xlsx) &amp; Đính kèm sang Bước 4</span>
                 </button>
               </div>
 

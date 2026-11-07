@@ -1,14 +1,20 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import * as XLSX from 'xlsx';
-import { UploadCloud, Sparkles, Search, Download, AlertOctagon, FileWarning, Eye } from 'lucide-react';
+import { UploadCloud, Sparkles, Search, Download, AlertOctagon, FileWarning, Eye, Building2 } from 'lucide-react';
 import { WorkflowSidebar, InfoTip } from '@/components/layout/MilestonesBar';
-import { AuditReportResult, AuditSeverity } from '@/types/vtvl';
+import { AuditReportResult, AuditSeverity, HcmuteUnit } from '@/types/vtvl';
 import { auditUnitWorkbooks } from '@/services/excel-audit/audit-engine';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
 import { HD07_CONSTANTS } from '@/configs/hcmute-hd07-catalog';
-import { recordActivity } from '@/services/telemetry/activity-log';
+import {
+  getActiveUnitDefinition,
+  getActiveUnitSession,
+  getSessionFilesForUnit,
+  recordActivity,
+  setSessionRootWorkbook
+} from '@/services/telemetry/activity-log';
 
 const SEVERITY_META: Record<
   AuditSeverity,
@@ -20,11 +26,54 @@ const SEVERITY_META: Record<
 };
 
 export default function RaSoatPage() {
+  const [activeUnit, setActiveUnit] = useState<HcmuteUnit>(() => getActiveUnitDefinition());
   const [auditing, setAuditing] = useState(false);
   const [report, setReport] = useState<AuditReportResult | null>(null);
   const [severityFilter, setSeverityFilter] = useState<'all' | AuditSeverity>('all');
   const [sheetFilter, setSheetFilter] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
+
+  const handleAuditActiveUnit = useCallback(async (unitToAudit: HcmuteUnit) => {
+    setAuditing(true);
+    try {
+      const session = getActiveUnitSession();
+      const cached = getSessionFilesForUnit(unitToAudit.code);
+      let fileToAudit = cached.mergedFile || cached.rootFile;
+
+      if (!fileToAudit) {
+        const split = await generateUnitFiles({
+          kind: unitToAudit.group,
+          unitCode: unitToAudit.code,
+          unitNameVi: unitToAudit.nameVi,
+          unitNameEn: unitToAudit.nameEn,
+          period: HD07_CONSTANTS.STATISTICAL_PERIOD,
+          exportDate: session.customDate || '2026-11-07',
+          includeZipPerPosition: false,
+          ngachOverrides: session.ngachOverrides,
+          customPositionNames: session.customPositionNames,
+          customCareerLevels: session.customCareerLevels
+        });
+        fileToAudit = setSessionRootWorkbook(unitToAudit.code, split.unitBlob, split.unitFileName);
+      }
+
+      const res = await auditUnitWorkbooks([fileToAudit]);
+      setReport(res);
+      recordActivity(
+        unitToAudit.code,
+        unitToAudit.nameVi,
+        'RA_SOAT',
+        `Thẩm định tự động bộ biểu của đơn vị ${unitToAudit.code} (${res.countsBySeverity.fix} mục chỉnh sửa)`
+      );
+    } finally {
+      setAuditing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const u = getActiveUnitDefinition();
+    setActiveUnit(u);
+    void handleAuditActiveUnit(u);
+  }, [handleAuditActiveUnit]);
 
   const handleFilesSelected = async (fileList: FileList | null) => {
     const files = Array.from(fileList || []);
@@ -34,34 +83,11 @@ export default function RaSoatPage() {
       const res = await auditUnitWorkbooks(files);
       setReport(res);
       recordActivity(
-        res.unitSummaries[0]?.unitCode || 'MULTI',
-        res.unitSummaries[0]?.unitName || 'Nhiều đơn vị',
+        res.unitSummaries[0]?.unitCode || activeUnit.code,
+        res.unitSummaries[0]?.unitName || activeUnit.nameVi,
         'RA_SOAT',
         `Thẩm định ${res.filesCount} tệp đơn vị (${res.countsBySeverity.fix} mục yêu cầu chỉnh sửa)`
       );
-    } finally {
-      setAuditing(false);
-    }
-  };
-
-  const handleLoadSampleDemo = async () => {
-    setAuditing(true);
-    try {
-      const fmeSplit = await generateUnitFiles({
-        kind: 'khoa-vien', unitCode: 'FME', unitNameVi: 'Khoa Cơ khí Chế tạo máy',
-        unitNameEn: 'Faculty of Mechanical Engineering', period: HD07_CONSTANTS.STATISTICAL_PERIOD,
-        exportDate: '2026-11-07', includeZipPerPosition: false, ngachOverrides: {}
-      });
-      const bmcSplit = await generateUnitFiles({
-        kind: 'phong-ban', unitCode: 'BMC', unitNameVi: 'Phòng Quản trị thương hiệu và Truyền thông',
-        unitNameEn: 'Office of Brand Management and Communications', period: HD07_CONSTANTS.STATISTICAL_PERIOD,
-        exportDate: '2026-11-07', includeZipPerPosition: false, ngachOverrides: {}
-      });
-      const file1 = new File([fmeSplit.unitBlob], fmeSplit.unitFileName, { type: fmeSplit.unitBlob.type });
-      const file2 = new File([bmcSplit.unitBlob], bmcSplit.unitFileName, { type: bmcSplit.unitBlob.type });
-      const res = await auditUnitWorkbooks([file1, file2]);
-      setReport(res);
-      recordActivity('FME, BMC', 'Khoa Cơ khí Chế tạo máy & Phòng QTTH&TT', 'RA_SOAT', 'Thực hiện đối soát mẫu đối với 2 đơn vị (FME, BMC)');
     } finally {
       setAuditing(false);
     }
@@ -85,7 +111,7 @@ export default function RaSoatPage() {
     if (!report) return;
     const wb = XLSX.utils.book_new();
     const wsIssues = XLSX.utils.aoa_to_sheet([
-      ['BÁO CÁO THẨM ĐỊNH VÀ KIỂM TRA CHÉO BỘ BIỂU VỊ TRÍ VIỆC LÀM — TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT TP.HCM (HCM-UTE)'],
+      [`BÁO CÁO THẨM ĐỊNH BỘ BIỂU VỊ TRÍ VIỆC LÀM — ĐƠN VỊ: [${activeUnit.code}] ${activeUnit.nameVi.toUpperCase()}`],
       ['Mã đơn vị', 'Tên tệp', 'Mã quy tắc', 'Biểu', 'Tọa độ ô', 'Phân loại mức độ', 'Nội dung phát hiện', 'Giá trị hiện tại', 'Hướng dẫn hoàn thiện'],
       ...report.issues.map((i) => [
         i.unitCode, i.fileName, i.ruleId, i.sheet, i.cellRef,
@@ -98,7 +124,7 @@ export default function RaSoatPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Bao_Cao_Tham_Dinh_VTVL_HCM-UTE_20261107.xlsx`;
+    a.download = `Bao_Cao_Tham_Dinh_VTVL_${activeUnit.code}_20261107.xlsx`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -107,7 +133,7 @@ export default function RaSoatPage() {
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         <div className="lg:col-span-3">
-          <WorkflowSidebar activeStep={5} />
+          <WorkflowSidebar activeStep={5} unitCode={activeUnit.code} />
         </div>
 
         <div className="lg:col-span-9 space-y-5">
@@ -116,36 +142,41 @@ export default function RaSoatPage() {
               <div className="flex items-center">
                 <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2">5</span>
                 <h1 className="text-base sm:text-lg font-extrabold text-[var(--foreground)]">
-                  Bước 5: Thẩm định và kiểm tra chéo 6 chỉ tiêu (Biểu 13. K_KiemTra)
+                  Bước 5: Thẩm định chéo 6 chỉ tiêu của [{activeUnit.code}] {activeUnit.nameVi}
                 </h1>
                 <InfoTip title="6 chỉ tiêu kiểm tra chéo tự động">
-                  <p>1. A2 ↔ A1 (Khớp mã nhiệm vụ); 2. B1 ↔ C1/C2 (Khớp mã VTVL &amp; Bậc nghề nghiệp); 3. Cột R biểu B1 (Nguồn số liệu &amp; lệch chuẩn &gt;30%); 4. B2_CT ↔ B1 (Giờ giảm số hóa); 5. D1 ↔ C1 (Không trùng nhân sự, rà soát Trợ giảng K5 Đ15 TT 31/2026); 6. C3 ↔ D2 (Phương án biên chế).</p>
+                  <p>Hệ thống tự động nạp hồ sơ của đơn vị <strong>[{activeUnit.code}] {activeUnit.nameVi}</strong> đã thiết lập từ Bước 1–4 để đối soát 6 chỉ tiêu (A2↔A1, B1↔C1/C2, Cột R B1, B2_CT↔B1, D1↔C1, C3↔D2).</p>
                 </InfoTip>
               </div>
-              <button type="button" onClick={handleLoadSampleDemo} disabled={auditing} className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]/30 font-bold text-xs cursor-pointer transition-colors">
+              <button type="button" onClick={() => void handleAuditActiveUnit(activeUnit)} disabled={auditing} className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]/30 font-bold text-xs cursor-pointer transition-colors">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Nạp hồ sơ mẫu (FME &amp; BMC)</span>
+                <span>Kiểm tra lại hồ sơ [{activeUnit.code}]</span>
               </button>
             </div>
 
-            <label className="block rounded-2xl border-2 border-dashed border-[var(--primary)]/40 hover:border-[var(--primary)] bg-[var(--background)] p-5 text-center cursor-pointer transition-all">
-              <input type="file" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => handleFilesSelected(e.target.files)} className="hidden" />
-              <UploadCloud className="w-7 h-7 text-[var(--primary)] mx-auto mb-1.5" />
-              <div className="text-xs sm:text-sm font-extrabold text-[var(--foreground)]">
-                {auditing ? 'Đang đối soát dữ liệu các biểu…' : 'Bấm chọn hoặc kéo thả tệp dữ liệu đơn vị (.xlsx) cần thẩm định'}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--background)] p-3.5">
+              <div className="flex items-center gap-2.5 text-xs">
+                <Building2 className="w-4 h-4 text-[var(--primary)] shrink-0" />
+                <span>
+                  Đang thẩm định tự động hồ sơ của đơn vị đã chọn tại Bước 1: <strong>[{activeUnit.code}] {activeUnit.nameVi}</strong>
+                </span>
               </div>
-              <p className="text-[11px] text-[var(--ink-muted)] mt-0.5">Hỗ trợ kiểm tra đồng thời một hoặc nhiều tệp đơn vị (.xlsx)</p>
-            </label>
+              <label className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[var(--primary)]/40 bg-[var(--sheet)] hover:border-[var(--primary)] text-xs font-bold text-[var(--primary)] cursor-pointer shrink-0">
+                <input type="file" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => handleFilesSelected(e.target.files)} className="hidden" />
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Tải tệp .xlsx khác để kiểm tra</span>
+              </label>
+            </div>
           </div>
 
           {report && (
             <div className="space-y-4">
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--sheet)] p-4 sm:p-5 space-y-3 shadow-2xs">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-sm font-extrabold text-[var(--foreground)]">Tổng hợp kết quả ({report.filesCount} đơn vị)</h3>
+                  <h3 className="text-sm font-extrabold text-[var(--foreground)]">Tổng hợp kết quả thẩm định [{activeUnit.code}]</h3>
                   <button type="button" onClick={handleExportAuditExcel} className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-xl bg-[var(--primary)] text-white font-semibold text-xs cursor-pointer">
                     <Download className="w-3.5 h-3.5" />
-                    <span>Xuất báo cáo thẩm định (.xlsx)</span>
+                    <span>Xuất báo cáo thẩm định [{activeUnit.code}] (.xlsx)</span>
                   </button>
                 </div>
                 <div className="overflow-x-auto rounded-xl border border-[var(--border)]">

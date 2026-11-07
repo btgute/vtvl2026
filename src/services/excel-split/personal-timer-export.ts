@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import { HD07_CONSTANTS, STANDARD_PRODUCTS_CATALOG } from '@/configs/hcmute-hd07-catalog';
 import { HcmuteUnit, JobTaskTemplate, TimeSessionRow } from '@/types/vtvl';
+import { addSessionSurveyFormFile } from '@/services/telemetry/activity-log';
 
 export function exportPersonalTimerWorkbook(
   unit: HcmuteUnit,
@@ -116,6 +117,7 @@ export function exportPersonalTimerWorkbook(
   const blob = new Blob([out], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   });
+  addSessionSurveyFormFile(unit.code, blob, fileName);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

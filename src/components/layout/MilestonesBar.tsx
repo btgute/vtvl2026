@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Check, ChevronRight, CalendarClock } from 'lucide-react';
+import { Check, ChevronRight, CalendarClock, Building2 } from 'lucide-react';
 import { VTVL_MILESTONES } from '@/configs/milestones';
+import { getActiveUnitDefinition } from '@/services/telemetry/activity-log';
 
 export interface InfoTipProps {
   title?: string;
@@ -12,10 +13,6 @@ export interface InfoTipProps {
   align?: 'left' | 'right';
 }
 
-/**
- * Nút "!" nhỏ gọn: rê chuột vào (hover) hoặc bấm vào (click) để xem diễn giải chi tiết,
- * giúp giao diện chính luôn gọn gàng, không hiển thị tràn lan văn bản.
- */
 export function InfoTip({ title, children, align = 'left' }: InfoTipProps) {
   const [pinned, setPinned] = useState(false);
 
@@ -75,28 +72,28 @@ export const SIDEBAR_FIVE_STEPS: SidebarStepItem[] = [
   {
     num: 2,
     title: 'Bước 2: Xuất bộ biểu gốc & Gói .zip',
-    shortDesc: 'Tải tệp gốc 21 biểu (v1) và gói phiếu khảo sát (.zip) từng vị trí.',
+    shortDesc: 'Tải tệp gốc 21 biểu (v1) và gói phiếu khảo sát (.zip) của đơn vị đã chọn.',
     href: '/tao-tep?step=2',
     badge: 'Phát phiếu'
   },
   {
     num: 3,
     title: 'Bước 3: Đo định mức thời gian',
-    shortDesc: 'Bấm giờ hoặc nhập thời gian thực hiện sản phẩm chuẩn (Biểu B1).',
+    shortDesc: 'Bấm giờ hoặc nhập thời gian thực hiện sản phẩm chuẩn của đơn vị (Biểu B1).',
     href: '/bam-gio',
     badge: 'Khảo sát'
   },
   {
     num: 4,
     title: 'Bước 4: Gộp phiếu & Xuất Tờ trình',
-    shortDesc: 'Tích hợp các phiếu khảo sát vào tệp đơn vị (v1 → v2) & tải Tờ trình.',
+    shortDesc: 'Tích hợp các phiếu khảo sát vào tệp gốc của đơn vị (v1 → v2) & tải Tờ trình.',
     href: '/tao-tep?step=4',
     badge: 'Tổng hợp'
   },
   {
     num: 5,
     title: 'Bước 5: Thẩm định chéo 6 chỉ tiêu',
-    shortDesc: 'Kiểm tra tự động biểu 13. K_KiemTra đạt 6/6 trước khi trình ký TCNS.',
+    shortDesc: 'Kiểm tra tự động biểu 13. K_KiemTra của đơn vị đạt 6/6 trước khi trình ký.',
     href: '/ra-soat',
     badge: 'Hoàn tất'
   }
@@ -110,6 +107,15 @@ interface WorkflowSidebarProps {
 
 export function WorkflowSidebar({ activeStep, onSelectStep, unitCode }: WorkflowSidebarProps) {
   const pathname = usePathname();
+  const [activeUnit, setActiveUnit] = useState(() => getActiveUnitDefinition(unitCode));
+
+  useEffect(() => {
+    setActiveUnit(getActiveUnitDefinition(unitCode));
+    const sync = () => setActiveUnit(getActiveUnitDefinition(unitCode));
+    window.addEventListener('vtvl-unit-session-updated', sync);
+    return () => window.removeEventListener('vtvl-unit-session-updated', sync);
+  }, [unitCode]);
+
   const currentStep =
     activeStep ??
     (pathname === '/bam-gio' ? 3 : pathname === '/ra-soat' ? 5 : 1);
@@ -132,10 +138,38 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode }: Workflow
             ))}
           </InfoTip>
         </div>
-        {unitCode && (
-          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-[var(--primary)]/10 text-[var(--primary)]">
-            {unitCode}
+      </div>
+
+      {/* Khối hiển thị cố định Đơn vị đang thực hiện xuyên suốt Bước 1 -> 5 */}
+      <div className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/[0.05] p-2.5 space-y-1">
+        <div className="flex items-center justify-between gap-1">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-muted)]">
+            <Building2 className="w-3 h-3 text-[var(--primary)]" />
+            <span>Đơn vị đang thực hiện</span>
           </span>
+          <span className="font-mono text-[11px] font-extrabold px-1.5 py-0.5 rounded bg-[var(--primary)] text-white">
+            {activeUnit.code}
+          </span>
+        </div>
+        <div className="text-xs font-extrabold text-[var(--foreground)] leading-snug">
+          {activeUnit.nameVi}
+        </div>
+        {currentStep > 1 && (
+          <div className="pt-0.5">
+            {onSelectStep ? (
+              <button
+                type="button"
+                onClick={() => onSelectStep(1)}
+                className="text-[11px] font-bold text-[var(--primary)] hover:underline cursor-pointer"
+              >
+                ← Đổi đơn vị tại Bước 1
+              </button>
+            ) : (
+              <Link href="/tao-tep?step=1" className="text-[11px] font-bold text-[var(--primary)] hover:underline">
+                ← Đổi đơn vị tại Bước 1
+              </Link>
+            )}
+          </div>
         )}
       </div>
 
