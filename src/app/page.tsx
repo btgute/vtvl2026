@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Building2, CheckCircle2, History, FileText, BookOpenCheck, Clock, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Building2, CheckCircle2, History, FileText, BookOpenCheck, Clock, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import { WorkflowSidebar, SIDEBAR_FIVE_STEPS } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS, UNIT_GROUPS } from '@/configs/hcmute-units';
 import { HD07_12_STEP_ORDER, HD07_CONSTANTS } from '@/configs/hcmute-hd07-catalog';
@@ -91,13 +91,22 @@ export default function HomePage() {
                   {nextActionText}
                 </p>
               </div>
-              <Link
-                href={continueHref}
-                className="btn-touch w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[48px] px-6 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-deep)] text-white text-sm sm:text-base font-bold shadow-2xs shrink-0 transition-colors"
-              >
-                <span>Tiếp tục hồ sơ</span>
-                <ArrowRight className="w-5 h-5 shrink-0" />
-              </Link>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href="/bang-tinh"
+                  className="btn-touch w-full sm:w-auto justify-center inline-flex items-center gap-1.5 min-h-[48px] px-5 rounded-xl bg-white hover:bg-[#f1f5f9] text-[#004776] border border-[#004776]/40 text-sm font-bold shadow-2xs shrink-0 transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4 shrink-0 text-[#004776]" />
+                  <span>Bảng tính Excel 15 sheet</span>
+                </Link>
+                <Link
+                  href={continueHref}
+                  className="btn-touch w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[48px] px-5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-deep)] text-white text-sm font-bold shadow-2xs shrink-0 transition-colors"
+                >
+                  <span>Tiếp tục hồ sơ</span>
+                  <ArrowRight className="w-5 h-5 shrink-0" />
+                </Link>
+              </div>
             </div>
 
             {/* Bố cục hai cột hợp nhất: Đơn vị đang thực hiện & Tiến độ hồ sơ hiện tại (phân tách bằng divider dọc) */}
