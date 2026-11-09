@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, Building2, CheckCircle2, History, FileText, BookOpenCheck, Clock, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import { WorkflowSidebar, SIDEBAR_FIVE_STEPS } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS, UNIT_GROUPS } from '@/configs/hcmute-units';
@@ -10,8 +11,13 @@ import { validateStep1Data } from '@/components/tao-tep/Step1ReviewConfirm';
 import { ActiveUnitSession, ActivityLogEntry, getActiveUnitDefinition, getActiveUnitSession, getActivityLogs } from '@/services/telemetry/activity-log';
 
 export default function HomePage() {
+  const router = useRouter();
   const [session, setSession] = useState<ActiveUnitSession>(() => getActiveUnitSession());
   const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
+
+  useEffect(() => {
+    router.replace('/bang-tinh');
+  }, [router]);
 
   useEffect(() => {
     const sync = () => {
@@ -244,7 +250,7 @@ export default function HomePage() {
             )}
           </section>
 
-          {/* Khu vực Hướng dẫn, Căn cứ pháp lý và Phạm vi 51 đơn vị (Lớp 3: nền phụ, không viền) */}
+          {/* Khu vực Hướng dẫn, Căn cứ pháp lý và Phạm vi 51 đơn vị */}
           <details className="surface-secondary rounded-xl overflow-hidden">
             <summary className="cursor-pointer px-5 min-h-[48px] text-sm font-bold text-[var(--foreground)] flex items-center justify-between">
               <span className="inline-flex items-center gap-2">
@@ -257,31 +263,18 @@ export default function HomePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-3 border-b border-[var(--border-subtle)]">
                 <div className="space-y-1">
                   <strong className="text-[var(--primary)] block">Căn cứ pháp lý hiện hành (2026)</strong>
-                  <p className="text-[var(--ink-muted)]">Hướng dẫn số 07-HD/BTCTW; Nghị định số 232/2026/NĐ-CP; Thông tư số 31/2026/TT-BGDĐT; Hướng dẫn số 02 (1907/HD-ĐHCNKT).</p>
+                  <p className="text-[var(--ink-muted)]">Hướng dẫn số 07-HD/BTCTW; Nghị định số 232/2026/NĐ-CP; Thông tư số 31/2026/TT-BGDĐT.</p>
                 </div>
                 <div className="space-y-1">
                   <strong className="text-[var(--primary)] block">Mốc số liệu thống kê chuẩn</strong>
-                  <p className="text-[var(--ink-muted)]">Kỳ thống kê khối lượng (Biểu B1, B2_CT): {HD07_CONSTANTS.STATISTICAL_PERIOD}. Chốt nhân sự hiện có (Biểu D1): {HD07_CONSTANTS.STAFF_CUTOFF_DATE}.</p>
+                  <p className="text-[var(--ink-muted)]">Kỳ thống kê B1, B2_CT: {HD07_CONSTANTS.STATISTICAL_PERIOD}. Chốt nhân sự D1: {HD07_CONSTANTS.STAFF_CUTOFF_DATE}.</p>
                 </div>
               </div>
-
-              <div>
-                <h3 className="text-sm font-bold text-[var(--foreground)] mb-2">4 khối đơn vị thuộc HCM-UTE ({HCMUTE_UNITS.length} đơn vị)</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {UNIT_GROUPS.map((g) => (
-                    <div key={g.id} className="border-l-2 border-[var(--primary)]/40 pl-3 py-0.5">
-                      <strong className="text-[var(--foreground)] block">{g.label}</strong>
-                      <span className="text-xs text-[var(--ink-muted)]">{g.factsText}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <div className="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between">
-                <span className="text-xs text-[var(--ink-muted)]">Quy trình 08 bước, 10 biểu nghiệp vụ (A1–D2) &amp; 12 bước liên kết công thức Excel ({HD07_12_STEP_ORDER.length} biểu)</span>
+                <span className="text-xs text-[var(--ink-muted)]">10 biểu nghiệp vụ A1–D2 ({HD07_12_STEP_ORDER.length} biểu liên kết)</span>
                 <Link href="/huong-dan" className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--primary)] hover:underline">
                   <BookOpenCheck className="w-4 h-4" />
-                  <span>Xem trang trợ giúp &amp; tải Bộ Phụ lục HD 07</span>
+                  <span>Xem cẩm nang &amp; tải tài liệu HD 07</span>
                 </Link>
               </div>
             </div>

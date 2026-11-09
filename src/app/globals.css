@@ -247,6 +247,15 @@ a.btn-touch {
   font-variant-numeric: tabular-nums;
 }
 
+/* Ẩn thanh cuộn mặc định của trình duyệt để các tab sheet gọn gàng, cuộn êm */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

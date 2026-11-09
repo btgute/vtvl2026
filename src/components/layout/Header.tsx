@@ -15,7 +15,6 @@ import {
 import { InfoTip } from './MilestonesBar';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Tổng quan (08 bước)', icon: Home },
   { href: '/bang-tinh', label: 'Bảng tính Excel 15 sheet', icon: FileSpreadsheet },
   { href: '/bam-gio', label: 'Bước 3·4: Khối lượng B1 & Tác động B2', icon: Timer },
   { href: '/ra-soat', label: 'Bước 8: Kiểm tra & Xác nhận (K–T–S)', icon: CheckCircle2 },
@@ -35,8 +34,8 @@ export function Header() {
       <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 flex h-16 items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 min-w-0 shrink-0">
           <Link
-            href="/"
-            aria-label="Trang chủ hệ thống Vị trí việc làm HCM-UTE"
+            href="/bang-tinh"
+            aria-label="Bảng tính Excel 15 sheet Vị trí việc làm HCM-UTE"
             className="flex items-center gap-2.5 py-1 min-h-[44px] min-w-0"
           >
             <img
