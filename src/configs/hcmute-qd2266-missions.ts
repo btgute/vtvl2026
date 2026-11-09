@@ -47,7 +47,7 @@ export interface UnitGroupCategory {
  */
 export const QD2266_GROUPED_UNITS_CATALOG: UnitGroupCategory[] = [
   {
-    groupLabel: 'Khối Khoa & Viện đào tạo (QĐ 2266 - PL01 & PL02)',
+    groupLabel: 'Khối Đơn vị đào tạo (14 Khoa & Viện đào tạo)',
     units: [
       { code: 'FME', nameVi: 'Khoa Cơ khí Chế tạo máy', plNum: 1, plLabel: 'PL01' },
       { code: 'FEET', nameVi: 'Khoa Cơ khí Động lực', plNum: 1, plLabel: 'PL01' },
@@ -58,7 +58,7 @@ export const QD2266_GROUPED_UNITS_CATALOG: UnitGroupCategory[] = [
       { code: 'FE', nameVi: 'Khoa Kinh tế', plNum: 1, plLabel: 'PL01' },
       { code: 'FAE', nameVi: 'Khoa Đào tạo Tiên tiến', plNum: 2, plLabel: 'PL02' },
       { code: 'FGAM', nameVi: 'Khoa In và Truyền thông', plNum: 1, plLabel: 'PL01' },
-      { code: 'FPI', nameVi: 'Khoa Lý luận Chính trị', plNum: 1, plLabel: 'PL01' },
+      { code: 'FPI', nameVi: 'Khoa Chính trị và Luật', plNum: 1, plLabel: 'PL01' },
       { code: 'FAS', nameVi: 'Khoa Khoa học Ứng dụng', plNum: 1, plLabel: 'PL01' },
       { code: 'FFL', nameVi: 'Khoa Ngoại ngữ', plNum: 1, plLabel: 'PL01' },
       { code: 'FFT', nameVi: 'Khoa Thời trang và Du lịch', plNum: 1, plLabel: 'PL01' },
@@ -69,7 +69,7 @@ export const QD2266_GROUPED_UNITS_CATALOG: UnitGroupCategory[] = [
     ]
   },
   {
-    groupLabel: 'Khối Phòng ban chức năng (QĐ 2266 - PL07..PL19)',
+    groupLabel: 'Khối Đơn vị quản lý hành chính (17 Phòng ban, Ban, Trạm, Viện)',
     units: [
       { code: 'TCNS', nameVi: 'Phòng Tổ chức - Nhân sự', plNum: 18, plLabel: 'PL18' },
       { code: 'PDT', nameVi: 'Phòng Đào tạo', plNum: 8, plLabel: 'PL08' },
@@ -84,21 +84,24 @@ export const QD2266_GROUPED_UNITS_CATALOG: UnitGroupCategory[] = [
       { code: 'PQHQT', nameVi: 'Phòng Quan hệ Quốc tế', plNum: 14, plLabel: 'PL14' },
       { code: 'PQHDN', nameVi: 'Phòng Quan hệ Doanh nghiệp', plNum: 15, plLabel: 'PL15' },
       { code: 'BQLKTX', nameVi: 'Ban Quản lý ký túc xá', plNum: 6, plLabel: 'PL06' },
-      { code: 'TYT', nameVi: 'Trạm Y tế', plNum: 19, plLabel: 'PL19' }
+      { code: 'TYT', nameVi: 'Trạm Y tế', plNum: 19, plLabel: 'PL19' },
+      { code: 'VPDU', nameVi: 'Văn phòng Đảng ủy', plNum: 27, plLabel: 'PL27' },
+      { code: 'IIE', nameVi: 'Viện Đào tạo quốc tế', plNum: 25, plLabel: 'PL25' },
+      { code: 'SDH', nameVi: 'Viện Sau đại học', plNum: 26, plLabel: 'PL26' }
     ]
   },
   {
-    groupLabel: 'Khối Trung tâm, Phân hiệu & Tạp chí (QĐ 2266 - PL03..PL28)',
+    groupLabel: 'Khối Trung tâm chức năng, Phân hiệu & Tạp chí (QĐ 2266 - PL03..PL28)',
     units: [
-      { code: 'PHBP', nameVi: 'Phân hiệu tại Bình Phước', plNum: 28, plLabel: 'PL28' },
-      { code: 'TTHLDHS', nameVi: 'Trung tâm Học liệu và Dạy học số', plNum: 22, plLabel: 'PL22' },
-      { code: 'TTTTMT', nameVi: 'Trung tâm Thông tin - Máy tính', plNum: 24, plLabel: 'PL24' },
+      { code: 'PHBP', nameVi: 'Phân hiệu Trường ĐHCNKT TP.HCM tại Bình Phước', plNum: 28, plLabel: 'PL28' },
+      { code: 'TCKHGDKT', nameVi: 'Tạp chí Khoa học Giáo dục Kỹ thuật', plNum: 20, plLabel: 'PL20' },
       { code: 'TTCNPM', nameVi: 'Trung tâm Công nghệ phần mềm', plNum: 21, plLabel: 'PL21' },
-      { code: 'TTSTKN&CGCN', nameVi: 'Trung tâm Sáng tạo khởi nghiệp và Chuyển giao công nghệ', plNum: 23, plLabel: 'PL23' },
-      { code: 'TTGDTC', nameVi: 'Trung tâm Giáo dục thể chất', plNum: 3, plLabel: 'PL03' },
       { code: 'TTGDQPAN', nameVi: 'Trung tâm Giáo dục Quốc phòng và An ninh', plNum: 4, plLabel: 'PL04' },
-      { code: 'BANTT', nameVi: 'Ban An ninh trật tự', plNum: 5, plLabel: 'PL05' },
-      { code: 'TCKHGDKT', nameVi: 'Tạp chí Khoa học Giáo dục Kỹ thuật', plNum: 20, plLabel: 'PL20' }
+      { code: 'TTGDTC', nameVi: 'Trung tâm Giáo dục Thể chất', plNum: 3, plLabel: 'PL03' },
+      { code: 'TTHLDHS', nameVi: 'Trung tâm Học liệu và Dạy học số', plNum: 22, plLabel: 'PL22' },
+      { code: 'TTSTKN&CGCN', nameVi: 'Trung tâm Sáng tạo khởi nghiệp và Chuyển giao công nghệ', plNum: 23, plLabel: 'PL23' },
+      { code: 'TTTTMT', nameVi: 'Trung tâm Thông tin - Máy tính', plNum: 24, plLabel: 'PL24' },
+      { code: 'BANTT', nameVi: 'Ban An ninh trật tự', plNum: 5, plLabel: 'PL05' }
     ]
   },
   {
@@ -124,7 +127,7 @@ export const QD2266_28_UNITS_CATALOG: { plNum: number; code: string; nameVi: str
   { plNum: 8, code: 'PDT', nameVi: 'Phòng Đào tạo' },
   { plNum: 9, code: 'PHCTH', nameVi: 'Phòng Hành chính - Tổng hợp' },
   { plNum: 10, code: 'PKTDBCL', nameVi: 'Phòng Khảo thí và Đảm bảo chất lượng' },
-  { plNum: 11, code: 'PKHTC', nameVi: 'Phòng Kế hoạch - Tài chính' },
+  { plNum: 11, code: 'PKHTC', nameVi: 'Phòng Kế hoạch Tài chính' },
   { plNum: 12, code: 'PKHCN', nameVi: 'Phòng Khoa học Công nghệ' },
   { plNum: 13, code: 'PQLDTXDDT', nameVi: 'Phòng Quản lý đầu tư xây dựng và Đấu thầu' },
   { plNum: 14, code: 'PQHQT', nameVi: 'Phòng Quan hệ Quốc tế' },
@@ -141,7 +144,7 @@ export const QD2266_28_UNITS_CATALOG: { plNum: number; code: string; nameVi: str
   { plNum: 25, code: 'VDTQT', nameVi: 'Viện Đào tạo quốc tế' },
   { plNum: 26, code: 'VSDH', nameVi: 'Viện Sau đại học' },
   { plNum: 27, code: 'VPDU', nameVi: 'Văn phòng Đảng ủy' },
-  { plNum: 28, code: 'PHBP', nameVi: 'Phân hiệu tại Bình Phước' }
+  { plNum: 28, code: 'PHBP', nameVi: 'Phân hiệu Trường ĐHCNKT TP.HCM tại Bình Phước' }
 ];
 
 export const UNIT_ALIAS_TO_QD2266: Record<string, string> = {
