@@ -122,6 +122,26 @@ export const HD07_SIX_PRODUCT_GROUPS = [
   }
 ] as const;
 
+export const HD07_EIGHT_STEPS_PROCESS = [
+  { step: 1, title: 'Bước 1 — Rà soát chức năng, nhiệm vụ và dữ liệu đã kê khai', appendix: 'Phụ lục I, V', sheets: '1. A1_NhiemVu (đối chiếu 6. C1_VTVL)', webStage: 'Giai đoạn 1–2 (/tao-tep)', result: 'Danh mục nhiệm vụ đơn vị đã loại bỏ chồng chéo, phân loại trạng thái tiếp tục / mới tiếp nhận / chuyển giao.', condition: 'Chỉ tính nhiệm vụ có căn cứ pháp lý còn hiệu lực (Quyết định chức năng nhiệm vụ đơn vị).' },
+  { step: 2, title: 'Bước 2 — Xác định công việc, công đoạn và sản phẩm đầu ra', appendix: 'Phụ lục I, II, V', sheets: '2. A2_CongViec · 11. DM_SAN_PHAM', webStage: 'Giai đoạn 1–2 (/tao-tep)', result: 'Danh mục công việc gắn Mã nhiệm vụ, Mã VTVL và sản phẩm đầu ra phân nhóm I–VI có đơn vị tính đếm được.', condition: 'Mỗi công việc phải gắn sản phẩm cụ thể; nếu áp dụng định mức chuẩn phải khai trước tại 11. DM_SAN_PHAM.' },
+  { step: 3, title: 'Bước 3 — Xác định số lượng sản phẩm và thời gian thực hiện', appendix: 'Phụ lục III, IV, V', sheets: '3. B1_KhoiLuong (19 cột A–S)', webStage: 'Giai đoạn 3 (/bam-gio) & Giai đoạn 4', result: 'Tổng giờ làm việc thực tế năm cơ sở (01/10/2025–30/9/2026) tính từ Số SP/năm × Phút/SP + Giờ bổ sung.', condition: 'Bắt buộc ghi rõ Nguồn SL (Cột H), Nguồn thời gian (Cột I) và giải trình tại Cột S nếu lệch chuẩn > 30%.' },
+  { step: 4, title: 'Bước 4 — Xác định thay đổi do chuyển đổi số, tự chủ, thuê dịch vụ', appendix: 'Phụ lục III, IV, V', sheets: '4. B2_CT_TacDong → 5. B2_ThayDoi', webStage: 'Giai đoạn 3–4 (Phiếu khảo sát B2_CT)', result: 'Giờ giảm hợp lệ / giờ việc mới phát sinh được tổng hợp tự động sang Biểu 5. B2_ThayDoi.', condition: 'Chỉ nhập tại 4. B2_CT_TacDong khi có bằng chứng vận hành thực tế (UTEx LMS, E-Office...) và đã đối chiếu trùng.' },
+  { step: 5, title: 'Bước 5 — Đối chiếu danh mục VTVL, bản mô tả và khung năng lực', appendix: 'Phụ lục II, V', sheets: '6. C1_VTVL · 7. C2_NangLuc', webStage: 'Giai đoạn 1–2 (/tao-tep)', result: 'Danh mục VTVL cụ thể gắn Khung 38 VTVL Trường, Bậc nghề nghiệp (Bậc 1–5) và Quỹ giờ chuẩn PP2 (1.904h / 1.760h).', condition: 'Không tách thêm VTVL mới nếu chỉ khác công cụ phần mềm hoặc tăng giảm khối lượng tạm thời.' },
+  { step: 6, title: 'Bước 6 — Xác định số người cần thiết theo từng vị trí việc làm', appendix: 'Phụ lục III, IV, V', sheets: '8. C3_NhuCau (14 cột A–N)', webStage: 'Giai đoạn 2 & Giai đoạn 4', result: 'Số người cần bố trí (FTE) năm cơ sở theo phương pháp PP1, PP2 (Giờ ròng / Quỹ giờ chuẩn) hoặc kết hợp.', condition: 'Cảnh báo Cột M tại 8. C3_NhuCau phải ĐẠT và Số dòng B1 chưa đạt (Cột N) phải bằng 0.' },
+  { step: 7, title: 'Bước 7 — Đối chiếu nhân lực hiện có và lập phương án biên chế 2027–2031', appendix: 'Phụ lục III, IV, V', sheets: '9. D1_NhanLuc · DU_BAO_5_NAM · 10. D2_PhuongAn', webStage: 'Giai đoạn 4 (/tao-tep?step=4)', result: 'Danh sách nhân sự chốt ngày 30/9/2026 tại D1, dự báo 5 năm và phương án biên chế từng năm 2027–2031 tại D2.', condition: 'Mỗi nhân sự 1 dòng tại D1; mỗi thay đổi nhân lực (± người) tại DU_BAO_5_NAM phải có căn cứ và được xác nhận.' },
+  { step: 8, title: 'Bước 8 — Kiểm tra chéo 10 biểu, xác nhận và gửi kết quả thẩm định', appendix: 'Phụ lục VI, VII, VIII', sheets: '13. K_KiemTra · 14. T_TienDo · 15. S_NhatKy', webStage: 'Giai đoạn 5 (/ra-soat)', result: 'Bộ biểu 10 biểu nghiệp vụ (A1–D2) đạt 6/6 chỉ tiêu tại 13. K_KiemTra kèm Tờ trình gửi Phòng TCNS.', condition: 'Chỉ gửi thẩm định khi 13. K_KiemTra không còn lỗi Phải sửa và đã ghi vết phiên bản tại 15. S_NhatKy.' }
+] as const;
+
+export const HD07_OFFICIAL_DOCS = [
+  { code: 'HD-07', title: 'Hướng dẫn số 07-HD/BTCTW (Bản ký chính thức PDF)', href: '/tai-ve/hd-07-btctw-2026.pdf', badge: 'PDF gốc' },
+  { code: 'TL-01', title: '01. Hướng dẫn quy trình 08 bước xác định VTVL & định biên', href: '/tai-ve/01-huong-dan-vtvl.docx', badge: 'DOCX' },
+  { code: 'TL-02', title: '02. Bộ Phụ lục I–VIII quy trình & phương pháp tính VTVL', href: '/tai-ve/02-bo-phu-luc.docx', badge: 'DOCX' },
+  { code: 'TL-04', title: '04. Hướng dẫn điền bộ biểu VTVL Excel (10 biểu A1–D2)', href: '/tai-ve/04-huong-dan-dien-bieu.docx', badge: 'DOCX' },
+  { code: 'TL-05', title: '05. Cẩm nang nghiệp vụ xây dựng Vị trí việc làm', href: '/tai-ve/05-cam-nang-vtvl.docx', badge: 'DOCX' },
+  { code: 'TL-06', title: 'Hướng dẫn chuẩn nhập dữ liệu Bộ biểu VTVL (12 bước Excel)', href: '/tai-ve/huong-dan-chuan-nhap-du-lieu-bo-bieu-vtvl.docx', badge: 'DOCX' }
+] as const;
+
 export const HD07_12_STEP_ORDER = [
   { step: 1, sheet: '6. C1_VTVL', title: 'Khai danh mục VTVL, mã chức danh TT 31/2026 & quỹ giờ chuẩn PP2 (1.904h / 1.760h)' },
   { step: 2, sheet: '1. A1_NhiemVu', title: 'Rà soát nhiệm vụ theo quy định chức năng, nhiệm vụ được giao' },

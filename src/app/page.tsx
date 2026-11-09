@@ -83,12 +83,10 @@ export default function HomePage() {
 
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6 space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        <div className="lg:col-span-3">
-          <WorkflowSidebar activeStep={currentStepNum} unitCode={activeUnit.code} />
-        </div>
+      <div className="flex flex-col lg:flex-row gap-5 items-start">
+        <WorkflowSidebar activeStep={currentStepNum} unitCode={activeUnit.code} />
 
-        <div className="lg:col-span-9 space-y-6 min-w-0">
+        <div className="flex-1 w-full space-y-6 min-w-0">
           {/* Vùng tổng quan hợp nhất (Lớp 2: Nền trắng không viền bao ngoài + Lớp 3: Nền xanh nhạt cho Việc cần làm tiếp theo) */}
           <section className="surface-canvas rounded-2xl p-5 sm:p-7 flex flex-col gap-6">
             <div className="space-y-1.5 border-b border-[var(--border-subtle)] pb-4">
@@ -99,7 +97,7 @@ export default function HomePage() {
                 Lập đề án vị trí việc làm của đơn vị
               </h1>
               <p className="text-sm text-[var(--ink-muted)]">
-                Hoàn thành 5 giai đoạn, hệ thống tự kiểm tra và xuất bộ hồ sơ.
+                Thực hiện quy trình 08 bước, 10 biểu nghiệp vụ (A1–D2) theo Hướng dẫn số 07-HD/BTCTW qua 5 giai đoạn trên phần mềm.
               </p>
             </div>
 
@@ -245,10 +243,10 @@ export default function HomePage() {
               </div>
 
               <div className="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between">
-                <span className="text-xs text-[var(--ink-muted)]">Thứ tự 12 bước liên kết công thức trong tệp Excel ({HD07_12_STEP_ORDER.length} biểu)</span>
+                <span className="text-xs text-[var(--ink-muted)]">Quy trình 08 bước, 10 biểu nghiệp vụ (A1–D2) &amp; 12 bước liên kết công thức Excel ({HD07_12_STEP_ORDER.length} biểu)</span>
                 <Link href="/huong-dan" className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--primary)] hover:underline">
                   <BookOpenCheck className="w-4 h-4" />
-                  <span>Xem trang trợ giúp chi tiết</span>
+                  <span>Xem trang trợ giúp &amp; tải Bộ Phụ lục HD 07</span>
                 </Link>
               </div>
             </div>

@@ -24,7 +24,7 @@ export function buildHd07CoreSheets(
 
   // 1. A1_NhiemVu (7 cột A–G)
   const wsA1 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 1. A1_NhiemVu — DANH MỤC NHIỆM VỤ CỦA ĐƠN VỊ (${opts.unitCode} — ${opts.unitNameVi})`],
+    [`Biểu A1_ Nhiệm vụ (${opts.unitCode} — ${opts.unitNameVi})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã nhiệm vụ', 'Tên nhiệm vụ', 'Cơ quan', 'Căn cứ', 'Kỳ', 'Trạng thái', 'Nguồn'],
     ...missions.map((m) => [
       `${opts.unitCode}-${m.missionSuffix}`, m.missionName, opts.unitNameVi, m.legalBasis, opts.period, m.status, m.source
@@ -34,7 +34,7 @@ export function buildHd07CoreSheets(
 
   // 2. A2_CongViec (8 cột A–H)
   const wsA2 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 2. A2_CongViec — DANH MỤC CÔNG VIỆC VÀ SẢN PHẨM ĐẦU RA (${opts.unitCode})`],
+    [`Biểu A2_ Công việc (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã công việc', 'Mã nhiệm vụ', 'Mã VTVL', 'Tên công việc', 'Sản phẩm', 'Đơn vị tính', 'Chất lượng', 'Căn cứ (nguồn)'],
     ...templates.map((t) => [
       `${opts.unitCode}-${t.taskSuffix}`, `${opts.unitCode}-${t.missionSuffix}`, `${opts.unitCode}-${t.vtvlSuffix}`,
@@ -64,7 +64,7 @@ export function buildHd07CoreSheets(
     ];
   });
   const wsB1 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 3. B1_KhoiLuong — THỐNG KÊ SẢN LƯỢNG VÀ THỜI GIAN LÀM VIỆC (${opts.unitCode})`],
+    [`Biểu B1_ Khối lượng (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     b1Header, ...b1Rows
   ]);
   XLSX.utils.book_append_sheet(wb, wsB1, '3. B1_KhoiLuong');
@@ -87,7 +87,7 @@ export function buildHd07CoreSheets(
     ];
   });
   const wsB2Ct = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 4. B2_CT_TacDong — CHI TIẾT TÁC ĐỘNG CHUYỂN ĐỔI SỐ, TỰ CHỦ, THUÊ DỊCH VỤ (${opts.unitCode})`],
+    [`Biểu B2_CT_ Tác động (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     b2CtHeader, ...b2CtRows
   ]);
   XLSX.utils.book_append_sheet(wb, wsB2Ct, '4. B2_CT_TacDong');
@@ -103,7 +103,7 @@ export function buildHd07CoreSheets(
     ];
   });
   const wsB2 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 5. B2_ThayDoi — TỔNG HỢP TÁC ĐỘNG RÒNG TỪ B2_CT (${opts.unitCode})`],
+    [`Biểu B2_ Thay đổi (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã công việc', 'Mã VTVL', 'Giờ giảm số hóa', 'Giờ giảm thuê/TCh/XHH', 'Giờ việc mới', 'Giờ tác động ròng', 'Trạng thái', 'Số dòng chi tiết', 'Cảnh báo'],
     ...b2SummaryRows
   ]);
@@ -111,7 +111,7 @@ export function buildHd07CoreSheets(
 
   // 6. C1_VTVL (11 cột A–K)
   const wsC1 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 6. C1_VTVL — DANH MỤC VỊ TRÍ VIỆC LÀM VÀ QUỸ GIỜ CHUẨN PP2 (${opts.unitCode})`],
+    [`Biểu C1_ VTVL (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã VTVL', 'Tên VTVL', 'Loại nhân lực', 'Quyết định', 'Giờ chuẩn PP2', 'Căn cứ xác định quỹ giờ', 'Trạng thái', 'Giờ riêng được xác nhận', 'Xác nhận giờ riêng', 'Chế độ làm việc', 'Kiểm tra quỹ giờ PP2'],
     ...positionBreakdown.map((p) => [
       p.vtvlCode,
@@ -135,7 +135,7 @@ export function buildHd07CoreSheets(
 
   // 7. C2_NangLuc (7 cột A–G)
   const wsC2 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 7. C2_NangLuc — BẢN MÔ TẢ VÀ KHUNG NĂNG LỰC VỊ TRÍ VIỆC LÀM (${opts.unitCode})`],
+    [`Biểu C2_ Năng lực (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã VTVL', 'Trách nhiệm', 'Năng lực chung', 'Chuyên môn', 'Lãnh đạo', 'Căn cứ', 'Nguồn bản mô tả'],
     ...templates.map((t) => {
       const pos = positionBreakdown.find((p) => p.vtvlCode === `${opts.unitCode}-${t.vtvlSuffix}`);
@@ -157,7 +157,7 @@ export function buildHd07CoreSheets(
 
   // 8. C3_NhuCau (14 cột A–N)
   const wsC3 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 8. C3_NhuCau — XÁC ĐỊNH NHU CẦU NHÂN LỰC THEO PP1, PP2, PP3 (${opts.unitCode})`],
+    [`Biểu C3_ Nhu cầu (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã VTVL', 'Phương pháp', 'Giờ B1', 'Giờ tác động B2', 'Giờ ròng', 'Giờ PP2 (từ C1)', 'Người quy đổi PP2', 'Người PP1', 'Người PP3 (ước lượng, cần giải trình)', 'Người cần bố trí', 'Nguồn/giải trình', 'Trạng thái', 'Cảnh báo', 'Số dòng B1 chưa đạt'],
     ...positionBreakdown.map((p) => [
       p.vtvlCode, p.method, p.b1HoursYear, p.b2NetHoursYear, p.netHoursYear, p.standardHoursYear,
@@ -200,7 +200,7 @@ export function buildHd07CoreSheets(
     });
   }
   const wsD1 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 9. D1_NhanLuc — NGUỒN NHÂN LỰC HIỆN CÓ CHỐT TẠI 30/9/2026 (${opts.unitCode})`],
+    [`Biểu D1_ Nhân lực (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã nguồn lực', 'Mã VTVL', 'Loại nhân lực', 'Giờ quy đổi/năm (tự lấy)', 'Giờ dành cho VTVL', 'Giờ việc khác', 'Nơi tính BC', 'Nguồn', 'Trạng thái', 'Cảnh báo', 'Giờ riêng theo chế độ'],
     ...d1Rows
   ]);
@@ -220,7 +220,7 @@ export function buildHd07CoreSheets(
     });
   });
   const wsD2 = XLSX.utils.aoa_to_sheet([
-    [`BIỂU 10. D2_PhuongAn — PHƯƠNG ÁN BIÊN CHẾ GIAI ĐOẠN 2027–2031 (${opts.unitCode})`],
+    [`Biểu D2_ Phương án (${opts.unitCode})`, '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã VTVL', 'Năm', 'Số người cần bố trí trong năm phương án', 'Số người có thể bố trí (cùng đơn vị tính)', 'Biên chế được giao theo đúng cấp', 'Điều chuyển/bố trí lại', 'Đề nghị điều chỉnh', 'Nguồn/giải trình', 'Trạng thái', 'Cảnh báo', 'PP2: người quy đổi (tham khảo)', 'Người cần bố trí C3 năm cơ sở (tham khảo)', 'Kiểm soát cơ sở đối chiếu', 'Văn bản thẩm định/quyết định (số, ngày, cơ quan)'],
     ...d2Rows
   ]);

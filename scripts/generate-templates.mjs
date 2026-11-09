@@ -18,19 +18,29 @@ const manifest = {};
 for (const tpl of templates) {
   const wb = XLSX.utils.book_new();
   const sheets = [
-    '1. A1_ThongTinChung',
-    '2. A2_CoCauToChuc',
+    'HUONG_DAN',
+    'HD_DIEN_BIEU',
+    '1. A1_NhiemVu',
+    '2. A2_CongViec',
     '3. B1_KhoiLuong',
-    '4. B2_PhieuKhaoSat',
-    '5. C1_DanhMucVTVL',
-    '6. C2_MoTaVTVL',
-    '7. C3_KhungNangLuc',
-    '8. D1_NhanSuHienCo',
-    '9. D2_DinhBien',
-    '12. DM_NgachCDNN',
+    '4. B2_CT_TacDong',
+    '5. B2_ThayDoi',
+    '6. C1_VTVL',
+    '7. C2_NangLuc',
+    '8. C3_NhuCau',
+    '9. D1_NhanLuc',
+    '10. D2_PhuongAn',
+    '11. DM_SAN_PHAM',
+    '12. CHIA_VUNG_CAP_XA',
     '13. K_KiemTra',
     '14. T_TienDo',
-    '15. S_NhatKy'
+    '15. S_NhatKy',
+    'THAO_TAC_NHANH',
+    'DM_06_NHOM',
+    'QUY_TAC_MA',
+    'DM_THAM_SO',
+    'DU_BAO_5_NAM',
+    'Can_cu_goi_y'
   ];
 
   for (const sh of sheets) {

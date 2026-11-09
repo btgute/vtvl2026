@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import {
   HD07_12_STEP_ORDER,
   HD07_CONSTANTS,
+  HD07_EIGHT_STEPS_PROCESS,
   HD07_SIX_PRODUCT_GROUPS,
   STANDARD_PRODUCTS_CATALOG
 } from '@/configs/hcmute-hd07-catalog';
@@ -117,17 +118,25 @@ export function appendHd07GuideAndRefSheets(
   // 7. 15. S_NhatKy
   const wsS = XLSX.utils.aoa_to_sheet([
     ['BIỂU 15. S_NhatKy — NHẬT KÝ PHIÊN BẢN VÀ LỊCH SỬ CẬP NHẬT DỮ LIỆU ĐƠN VỊ'],
-    ['Kỳ', 'Biểu', 'Mã', 'Trường', 'Giá trị cũ', 'Giá trị mới', 'Nguồn', 'Người thực hiện / xác nhận', 'Ngày', 'Phiên bản'],
+    ['Kỳ', 'Biểu', 'Mã', 'Trường', 'Giá trị cũ', 'Giá trị mới', 'Nguồn', 'Người xác nhận', 'Ngày', 'Phiên bản'],
     [
-      opts.period, 'Toàn bộ 15 biểu', opts.unitCode,
-      'Khởi tạo tệp đơn vị chuẩn HD 07-HD/BTCTW, NĐ 232/2026/NĐ-CP & TT 31/2026/TT-BGDĐT',
+      opts.period, 'Toàn bộ 10 biểu (A1–D2)', opts.unitCode,
+      'Khởi tạo tệp đơn vị theo quy trình 08 bước, 10 biểu chuẩn HD 07-HD/BTCTW, NĐ 232/2026 & TT 31/2026',
       'Mẫu gốc XXX', `${opts.unitCode}_K2526_v1_${compactDate}.xlsx`,
       'Hệ thống VTVL HCM-UTE', actorDisplay, opts.exportDate, 'v1'
     ]
   ]);
   XLSX.utils.book_append_sheet(wb, wsS, '15. S_NhatKy');
 
-  // 8. DM_06_NHOM
+  // 8. THAO_TAC_NHANH (Quy trình 08 bước sử dụng 10 biểu nghiệp vụ chuẩn 03. Bo bieu VTVL)
+  const wsThaoTacNhanh = XLSX.utils.aoa_to_sheet([
+    ['THAO TÁC NHANH THEO QUY TRÌNH 08 BƯỚC VÀ 10 BIỂU NGHIỆP VỤ (HƯỚNG DẪN SỐ 07-HD/BTCTW & BỘ PHỤ LỤC I–VIII)'],
+    ['BƯỚC', 'BIỂU SỬ DỤNG', 'CƠ SỞ CẦN LÀM', 'KHÔNG LÀM / ĐIỀU KIỆN ĐƯỢC TÍNH'],
+    ...HD07_EIGHT_STEPS_PROCESS.map((s) => [s.title, s.sheets, s.result, s.condition])
+  ]);
+  XLSX.utils.book_append_sheet(wb, wsThaoTacNhanh, 'THAO_TAC_NHANH');
+
+  // 9. DM_06_NHOM
   const ws6Nhom = XLSX.utils.aoa_to_sheet([
     ['DANH MỤC 06 NHÓM SẢN PHẨM CHUẨN (I–VI) THEO HƯỚNG DẪN SỐ 07-HD/BTCTW'],
     ['Ký hiệu Nhóm', 'Tên nhóm sản phẩm chuẩn', 'Ví dụ sản phẩm điển hình tại HCM-UTE'],
@@ -135,7 +144,7 @@ export function appendHd07GuideAndRefSheets(
   ]);
   XLSX.utils.book_append_sheet(wb, ws6Nhom, 'DM_06_NHOM');
 
-  // 9. QUY_TAC_MA & DM_THAM_SO
+  // 10. QUY_TAC_MA & DM_THAM_SO
   const wsQuyTacMa = XLSX.utils.aoa_to_sheet([
     ['QUY TẮC ĐẶT MÃ THỐNG NHẤT TRONG BỘ BIỂU VTVL HCM-UTE'],
     ['Đối tượng', 'Cấu trúc mã chuẩn', 'Ví dụ minh họa'],
@@ -160,20 +169,21 @@ export function appendHd07GuideAndRefSheets(
   ]);
   XLSX.utils.book_append_sheet(wb, wsThamSo, 'DM_THAM_SO');
 
-  // 10. DU_BAO_5_NAM
+  // 11. DU_BAO_5_NAM (10 cột A–J chuẩn 03. Bo bieu VTVL 25-10-2026.xlsx)
   const duBaoRows: (string | number)[][] = [];
   positions.forEach((p) => {
     HD07_CONSTANTS.FORECAST_YEARS.forEach((yr) => {
       duBaoRows.push([
         p.vtvlCode, yr, 0,
-        'Ổn định theo quy mô đào tạo và chuyển đổi số HCM-UTE',
-        'Đã kiểm chứng', p.recommendedFte, 'ĐẠT'
+        'Không thay đổi so với năm cơ sở (ổn định theo quy mô đào tạo và chuyển đổi số HCM-UTE)',
+        `Đề án VTVL ${opts.unitCode} & Kế hoạch chiến lược HCM-UTE giai đoạn 2027–2031`,
+        'Đã xác nhận', p.recommendedFte, p.recommendedFte, 'ĐẠT', ''
       ]);
     });
   });
   const wsDuBao = XLSX.utils.aoa_to_sheet([
-    ['BẢNG DỰ BÁO THAY ĐỔI KHỐI LƯỢNG CÔNG VIỆC VÀ NHU CẦU 5 NĂM (2027–2031)'],
-    ['Mã VTVL', 'Năm dự báo', 'Tỷ lệ thay đổi khối lượng (%)', 'Căn cứ / Thuyết minh dự báo', 'Trạng thái dự báo', 'Nhu cầu dự kiến (người)', 'Kiểm tra'],
+    ['DU_BAO_5_NAM — DỰ BÁO THAY ĐỔI NHU CẦU NHÂN LỰC GIAI ĐOẠN 2027–2031', '→ Điền trước khi lập D2_PhuongAn; mỗi năm có thay đổi phải ghi rõ căn cứ và được xác nhận'],
+    ['Mã VTVL', 'Năm', 'Biến động so C3 (+/− người)', 'Nội dung thay đổi / xác nhận không đổi', 'Căn cứ nguồn và thời điểm', 'Trạng thái xác nhận', 'Người C3 năm cơ sở', 'Người cần bố trí trong năm', 'Kiểm tra, đối chiếu', 'Ghi chú đầu mối'],
     ...duBaoRows
   ]);
   XLSX.utils.book_append_sheet(wb, wsDuBao, 'DU_BAO_5_NAM');

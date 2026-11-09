@@ -6,7 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 export const metadata: Metadata = {
   title: 'Vị trí việc làm — Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)',
   description:
-    'Hệ thống Vị trí việc làm (Tạo tệp đơn vị, Phát phiếu khảo sát B2, Bấm giờ đo định mức, Nạp gộp phiếu và Rà soát 9 biểu) của Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE).'
+    'Hệ thống Vị trí việc làm theo quy trình 08 bước, 10 biểu chuẩn Hướng dẫn số 07-HD/BTCTW của Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE).'
 };
 
 export default function RootLayout({

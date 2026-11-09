@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { BookOpenCheck, FileText, Layers, Download, Award, Briefcase, Database, Eye, Copy, Check, X } from 'lucide-react';
-import { HD07_12_STEP_ORDER, HD07_CONSTANTS, HD07_SIX_PRODUCT_GROUPS } from '@/configs/hcmute-hd07-catalog';
+import { BookOpenCheck, FileText, Layers, Download, Award, Briefcase, Database, Eye, Copy, Check, X, ListOrdered } from 'lucide-react';
+import { HD07_12_STEP_ORDER, HD07_CONSTANTS, HD07_EIGHT_STEPS_PROCESS, HD07_SIX_PRODUCT_GROUPS } from '@/configs/hcmute-hd07-catalog';
 import { ND232_2026_VTVL_CATALOG, Nd232PositionCatalogItem } from '@/configs/hcmute-nd232-catalog';
 import { DM_CHUC_DANH_TT31_TABLE, ERD_ENTITIES_CATALOG } from '@/configs/hcmute-erd-tables';
 import { HcmuteUnit, SplitResultSummary } from '@/types/vtvl';
@@ -15,7 +15,7 @@ interface Props {
 type GroupFilter = 'ALL' | Nd232PositionCatalogItem['appendix'];
 
 export function Hd07OrderGuideCard({ unit, splitResult }: Props) {
-  const [tab, setTab] = useState<'nd232' | 'erd' | 'tt31' | '12buoc' | '6nhom'>('nd232');
+  const [tab, setTab] = useState<'8buoc' | 'nd232' | 'erd' | 'tt31' | '12buoc' | '6nhom'>('8buoc');
   const [appendixFilter, setAppendixFilter] = useState<GroupFilter>('ALL');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [copiedToTrinh, setCopiedToTrinh] = useState(false);
@@ -95,24 +95,44 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
         <div className="flex items-center gap-2">
           <BookOpenCheck className="w-4 h-4 text-[var(--primary)]" />
-          <h3 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">
-            Khung 38 VTVL HCM-UTE (HD 1907/HD-ĐHCNKT) · Bảng chuẩn ERD · TT 31/2026/TT-BGDĐT
-          </h3>
+          <h3 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">Quy trình 08 bước &amp; 10 biểu HD 07-HD/BTCTW · Khung 38 VTVL HCM-UTE · TT 31/2026/TT-BGDĐT</h3>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          <button type="button" onClick={() => setTab('nd232')} className={tabBtnClass(tab === 'nd232')}>
-            <Briefcase className="w-3.5 h-3.5" /><span>Khung 38 VTVL Trường (04 nhóm)</span>
-          </button>
-          <button type="button" onClick={() => setTab('erd')} className={tabBtnClass(tab === 'erd')}>
-            <Database className="w-3.5 h-3.5" /><span>Bảng chuẩn ERD (18 bảng)</span>
-          </button>
-          <button type="button" onClick={() => setTab('tt31')} className={tabBtnClass(tab === 'tt31')}>
-            <Award className="w-3.5 h-3.5" /><span>DM_CHUC_DANH_TT31 (28 mã)</span>
-          </button>
+          <button type="button" onClick={() => setTab('8buoc')} className={tabBtnClass(tab === '8buoc')}><ListOrdered className="w-3.5 h-3.5" /><span>Quy trình 08 bước &amp; 10 biểu HD 07</span></button>
+          <button type="button" onClick={() => setTab('nd232')} className={tabBtnClass(tab === 'nd232')}><Briefcase className="w-3.5 h-3.5" /><span>Khung 38 VTVL Trường (04 nhóm)</span></button>
+          <button type="button" onClick={() => setTab('erd')} className={tabBtnClass(tab === 'erd')}><Database className="w-3.5 h-3.5" /><span>Bảng chuẩn ERD (18 bảng)</span></button>
+          <button type="button" onClick={() => setTab('tt31')} className={tabBtnClass(tab === 'tt31')}><Award className="w-3.5 h-3.5" /><span>DM_CHUC_DANH_TT31 (28 mã)</span></button>
           <button type="button" onClick={() => setTab('12buoc')} className={tabBtnClass(tab === '12buoc')}>12 bước nhập bảng</button>
           <button type="button" onClick={() => setTab('6nhom')} className={tabBtnClass(tab === '6nhom')}>06 nhóm SP (I–VI)</button>
         </div>
       </div>
+
+      {tab === '8buoc' && (
+        <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)]">
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)]">
+                <th className="py-2 px-3 text-left">Bước (Quy trình 08 bước HD 07)</th>
+                <th className="py-2 px-3 text-left">Phụ lục</th>
+                <th className="py-2 px-3 text-left">Biểu sử dụng (10 biểu A1–D2)</th>
+                <th className="py-2 px-3 text-left">Giai đoạn Web</th>
+                <th className="py-2 px-3 text-left">Kết quả đầu ra &amp; Điều kiện được tính</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border-subtle)]">
+              {HD07_EIGHT_STEPS_PROCESS.map((item) => (
+                <tr key={item.step}>
+                  <td className="py-2 px-3 font-bold text-[var(--foreground)]">{item.title}</td>
+                  <td className="py-2 px-3 font-semibold text-[var(--primary)] whitespace-nowrap">{item.appendix}</td>
+                  <td className="py-2 px-3 font-mono font-bold text-[var(--primary)] whitespace-nowrap">{item.sheets}</td>
+                  <td className="py-2 px-3 font-semibold whitespace-nowrap">{item.webStage}</td>
+                  <td className="py-2 px-3 text-[11px] text-[var(--ink-muted)]"><span className="text-[var(--foreground)] font-medium">{item.result}</span> <span className="block italic mt-0.5">Điều kiện: {item.condition}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {tab === 'nd232' && (
         <div className="space-y-3">

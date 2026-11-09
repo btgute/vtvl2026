@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Users, CheckSquare, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Users, CheckSquare, AlertTriangle, ArrowRight, Download, FileSpreadsheet, ListOrdered } from 'lucide-react';
 import { WorkflowSidebar, InfoTip } from '@/components/layout/MilestonesBar';
-import { HD07_12_STEP_ORDER } from '@/configs/hcmute-hd07-catalog';
+import { HD07_12_STEP_ORDER, HD07_EIGHT_STEPS_PROCESS, HD07_OFFICIAL_DOCS } from '@/configs/hcmute-hd07-catalog';
 
 const ROLE_CARDS = [
   {
@@ -48,33 +48,43 @@ const COMMON_PITFALLS = [
 
 export default function HuongDanDonViPage() {
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({ 1: true, 2: true });
+  const [checklistMode, setChecklistMode] = useState<'8buoc' | '12buoc'>('8buoc');
   const toggleStep = (step: number) => setCheckedSteps((prev) => ({ ...prev, [step]: !prev[step] }));
-  const completedCount = Object.values(checkedSteps).filter(Boolean).length;
+  const totalSteps = checklistMode === '8buoc' ? 8 : 12;
+  const completedCount = Object.entries(checkedSteps).filter(([k, v]) => Number(k) <= totalSteps && v).length;
 
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        <div className="lg:col-span-3">
-          <WorkflowSidebar activeStep={1} />
-        </div>
+      <div className="flex flex-col lg:flex-row gap-5 items-start">
+        <WorkflowSidebar activeStep={1} />
 
-        <div className="lg:col-span-9 space-y-5 min-w-0">
+        <div className="flex-1 w-full space-y-5 min-w-0">
           <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3.5">
               <div className="flex items-center">
                 <Users className="w-5 h-5 text-[var(--primary)] mr-2.5 shrink-0" />
                 <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">
-                  Phân công 3 nhóm vai trò &amp; hướng dẫn thực hiện tại đơn vị
+                  Quy trình 08 bước, 10 biểu HD 07-HD/BTCTW &amp; phân công tại đơn vị
                 </h1>
                 <InfoTip title="Thành phần hồ sơ trình Phòng TCNS">
-                  <p>1. Tệp dữ liệu đơn vị 22 trang tính (<code className="font-mono">[MÃ_ĐV]_K2526_v2_YYYYMMDD.xlsx</code>) đạt 6/6 chỉ tiêu kiểm tra chéo.</p>
+                  <p>1. Tệp dữ liệu đơn vị 23 trang tính (<code className="font-mono">[MÃ_ĐV]_K2526_v2_YYYYMMDD.xlsx</code>) gồm 10 biểu nghiệp vụ (A1–D2) đạt 6/6 chỉ tiêu tại <code className="font-mono">13. K_KiemTra</code>.</p>
                   <p>2. Tờ trình đề nghị thẩm định đề án vị trí việc làm trình ký qua E-Office.</p>
                 </InfoTip>
               </div>
-              <Link href="/tao-tep?step=1" className="btn-touch inline-flex items-center gap-1.5 min-h-[40px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold shadow-2xs">
-                <span>Bắt đầu Giai đoạn 1</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href="/tai-ve/so-do-quy-trinh-vtvl-hcmute.png"
+                  download="so-do-quy-trinh-vtvl-hcmute.png"
+                  className="btn-touch inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-[var(--foreground)] text-xs sm:text-sm font-bold"
+                >
+                  <Download className="w-4 h-4 text-[var(--primary)]" />
+                  <span>Tải Sơ đồ quy trình (.png)</span>
+                </a>
+                <Link href="/tao-tep?step=1" className="btn-touch inline-flex items-center gap-1.5 min-h-[40px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold shadow-2xs">
+                  <span>Bắt đầu Giai đoạn 1</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -97,39 +107,112 @@ export default function HuongDanDonViPage() {
             </div>
           </section>
 
+          {/* Bộ tài liệu gốc Hướng dẫn số 07-HD/BTCTW & Biểu mẫu tải về */}
+          <section className="surface-canvas rounded-2xl p-5 space-y-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-2.5">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4 text-[var(--primary)]" />
+                <h2 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">
+                  Bộ tài liệu gốc kèm theo Hướng dẫn số 07-HD/BTCTW (Bộ Phụ lục I–VIII &amp; Cẩm nang)
+                </h2>
+              </div>
+              <span className="text-xs font-semibold text-[var(--ink-muted)]">Nhấn để tải trực tiếp tệp gốc</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {HD07_OFFICIAL_DOCS.map((doc) => (
+                <a
+                  key={doc.code}
+                  href={doc.href}
+                  download
+                  className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] hover:border-[var(--primary)] p-3 flex items-center justify-between gap-2.5 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[var(--surface-tint)] text-[var(--primary)] mr-1.5">{doc.badge}</span>
+                    <strong className="text-xs font-bold text-[var(--foreground)] block mt-1 leading-snug">{doc.title}</strong>
+                  </div>
+                  <Download className="w-4 h-4 text-[var(--primary)] shrink-0" />
+                </a>
+              ))}
+            </div>
+          </section>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
             <section className="surface-canvas rounded-2xl p-5 space-y-3.5">
-              <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-2.5">
                 <div className="flex items-center gap-2">
                   <CheckSquare className="w-4 h-4 text-[var(--primary)]" />
-                  <h2 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">Checklist 12 bước nhập bảng Excel</h2>
+                  <h2 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">
+                    {checklistMode === '8buoc' ? 'Quy trình 08 bước & 10 biểu HD 07' : 'Thứ tự 12 bước nhập bảng Excel'}
+                  </h2>
                 </div>
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[var(--surface-tint)] text-[var(--primary)] tabular-nums">
-                  {completedCount}/12 bước
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setChecklistMode('8buoc')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1 ${checklistMode === '8buoc' ? 'bg-[var(--primary)] text-white' : 'bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border-subtle)]'}`}
+                  >
+                    <ListOrdered className="w-3.5 h-3.5" />
+                    <span>08 bước HD 07</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChecklistMode('12buoc')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer ${checklistMode === '12buoc' ? 'bg-[var(--primary)] text-white' : 'bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border-subtle)]'}`}
+                  >
+                    <span>12 bước Excel</span>
+                  </button>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[var(--surface-tint)] text-[var(--primary)] tabular-nums">
+                    {completedCount}/{totalSteps}
+                  </span>
+                </div>
               </div>
               <div className="divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] max-h-80 overflow-y-auto">
-                {HD07_12_STEP_ORDER.map((s) => {
-                  const done = !!checkedSteps[s.step];
-                  return (
-                    <label
-                      key={s.step}
-                      onClick={() => toggleStep(s.step)}
-                      className={`cursor-pointer px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs transition-colors ${
-                        done ? 'bg-[var(--ok-soft)]/35' : 'bg-[var(--sheet)] hover:bg-[var(--surface-secondary)]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <input type="checkbox" checked={done} onChange={() => {}} className="w-4 h-4 accent-[var(--primary)]" />
-                        <span className="font-bold text-[var(--foreground)] shrink-0">Bước {s.step}:</span>
-                        <code className="font-mono font-bold text-[var(--primary)] truncate">{s.sheet}</code>
-                      </div>
-                      <InfoTip title={`Bước ${s.step}: ${s.sheet}`} align="right">
-                        <p>{s.title}</p>
-                      </InfoTip>
-                    </label>
-                  );
-                })}
+                {checklistMode === '8buoc'
+                  ? HD07_EIGHT_STEPS_PROCESS.map((s) => {
+                      const done = !!checkedSteps[s.step];
+                      return (
+                        <label
+                          key={s.step}
+                          onClick={() => toggleStep(s.step)}
+                          className={`cursor-pointer px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs transition-colors ${
+                            done ? 'bg-[var(--ok-soft)]/35' : 'bg-[var(--sheet)] hover:bg-[var(--surface-secondary)]'
+                          }`}
+                        >
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <input type="checkbox" checked={done} onChange={() => {}} className="w-4 h-4 accent-[var(--primary)] mt-0.5 shrink-0" />
+                            <div className="min-w-0">
+                              <span className="font-bold text-[var(--foreground)] block leading-snug">{s.title}</span>
+                              <span className="text-[11px] font-mono font-bold text-[var(--primary)]">{s.sheets} · {s.appendix}</span>
+                            </div>
+                          </div>
+                          <InfoTip title={s.title} align="right">
+                            <p><strong>Kết quả:</strong> {s.result}</p>
+                            <p className="mt-1"><strong>Điều kiện:</strong> {s.condition}</p>
+                          </InfoTip>
+                        </label>
+                      );
+                    })
+                  : HD07_12_STEP_ORDER.map((s) => {
+                      const done = !!checkedSteps[s.step];
+                      return (
+                        <label
+                          key={s.step}
+                          onClick={() => toggleStep(s.step)}
+                          className={`cursor-pointer px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs transition-colors ${
+                            done ? 'bg-[var(--ok-soft)]/35' : 'bg-[var(--sheet)] hover:bg-[var(--surface-secondary)]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <input type="checkbox" checked={done} onChange={() => {}} className="w-4 h-4 accent-[var(--primary)]" />
+                            <span className="font-bold text-[var(--foreground)] shrink-0">Bước {s.step}:</span>
+                            <code className="font-mono font-bold text-[var(--primary)] truncate">{s.sheet}</code>
+                          </div>
+                          <InfoTip title={`Bước ${s.step}: ${s.sheet}`} align="right">
+                            <p>{s.title}</p>
+                          </InfoTip>
+                        </label>
+                      );
+                    })}
               </div>
             </section>
 
