@@ -58,7 +58,7 @@ export default function HomePage() {
             ? `Bước 7/8 (Biểu 9. D1 & 10. D2): Gộp phiếu khảo sát cá nhân và lập phương án biên chế 2027–2031 của ${activeUnit.nameVi}.`
             : `Bước 8/8 (Biểu 13. K_KiemTra): Kiểm tra chéo 10 biểu (A1–D2) và xuất báo cáo gửi Phòng Tổ chức - Nhân sự.`;
 
-  const continueHref = currentStepInfo.href;
+  const continueHref = '/bang-tinh';
   const progressPercent = Math.min(100, Math.round((currentStepNum / 8) * 100));
 
   return (

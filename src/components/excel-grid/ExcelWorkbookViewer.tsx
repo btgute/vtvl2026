@@ -7,59 +7,49 @@ import { ExcelSheetTabs } from './ExcelSheetTabs';
 import { ExcelTableRenderer } from './ExcelTableRenderer';
 import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
 import { DataQualityReportModal } from './DataQualityReportModal';
+import { OperatorSessionModal } from './OperatorSessionModal';
+import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
-import {
-  FileSpreadsheet,
-  Download,
-  Building2,
-  Sparkles,
-  ShieldCheck,
-  CheckCircle2,
-  RefreshCw,
-  Clock
-} from 'lucide-react';
+import { FileSpreadsheet, Download, Building2, Sparkles, ShieldCheck, CheckCircle2, RefreshCw } from 'lucide-react';
 
 interface ExcelWorkbookViewerProps {
   initialUnitCode?: string;
 }
 
 export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookViewerProps) {
-  const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
-  const [showQualityModal, setShowQualityModal] = useState<boolean>(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [showQualityModal, setShowQualityModal] = useState(false);
   const {
-    unitCode,
-    currentUnit,
-    orderMode,
-    setOrderMode,
-    currentSheetOrder,
-    activeSheet,
-    activeSheetIndex,
-    data,
-    lastSaved,
-    lastSavedSheet,
-    isExporting,
-    dynamicOptionsMap,
-    isC1Unlocked,
-    unlockC1,
-    lockC1,
-    handleUnitChange,
-    handleLoadTcnsData,
-    loadFullPl1Catalog,
-    loadRecommendedVtvls,
-    setActiveSheet,
-    updateCell,
-    addRow,
-    deleteRow,
-    saveSheetData,
-    saveAndGoNext,
-    exportFullWorkbook,
-    goToNextSheet,
-    goToPrevSheet
+    session, isModalOpen, touchedCells, isRestoredSession,
+    markCellTouched, submitSession, switchSession, persistDataForSession
+  } = useOperatorSession();
+  const {
+    unitCode, currentUnit, orderMode, setOrderMode, currentSheetOrder,
+    activeSheet, activeSheetIndex, data, lastSaved, lastSavedSheet,
+    isExporting, dynamicOptionsMap, isC1Unlocked, unlockC1, lockC1,
+    handleUnitChange, handleLoadTcnsData, restoreWorkbookData,
+    loadFullPl1Catalog, loadRecommendedVtvls, setActiveSheet,
+    updateCell, addRow, deleteRow, saveSheetData, saveAndGoNext,
+    exportFullWorkbook, goToNextSheet, goToPrevSheet
   } = useExcelGridState(initialUnitCode);
 
   const activeMeta = EXCEL_SHEET_METAS[activeSheet];
   const activeRows = data[activeSheet] || [];
+
+  const handleSessionSubmit = (em: string, uCode: string, tit: string) => {
+    const { restoredData } = submitSession(em, uCode, tit);
+    if (restoredData) {
+      restoreWorkbookData(restoredData, uCode);
+    } else {
+      handleUnitChange(uCode);
+    }
+  };
+
+  const handleSave = () => {
+    saveSheetData(activeSheet);
+    persistDataForSession(data);
+  };
 
   const qualityReport = useMemo(() => {
     return validateWorkbookData(data, unitCode, currentUnit.nameVi);
@@ -70,26 +60,39 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
       {/* Top action toolbar */}
       <div className="bg-white border border-[#cbd5e1] rounded-xl p-3.5 shadow-2xs">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Unit selector */}
-          <div className="flex items-center gap-2.5 min-w-[280px]">
-            <Building2 className="w-5 h-5 text-[#004776] shrink-0" />
-            <div className="flex flex-col">
-              <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
-                Đơn vị đang thao tác:
-              </span>
-              <select
-                aria-label="Chọn đơn vị triển khai VTVL"
-                value={unitCode}
-                onChange={(e) => handleUnitChange(e.target.value)}
-                className="font-bold text-[#004776] bg-[#f8fafc] border border-[#cbd5e1] rounded-lg px-2.5 py-1 text-sm focus:ring-2 focus:ring-[#004776] focus:outline-none"
+          {/* Operator identification & Unit selector */}
+          <div className="flex flex-wrap items-center gap-2">
+            {session ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#004776]/5 border border-[#004776]/20 text-xs">
+                <span className="font-bold text-[#004776]">👤 {session.email}</span>
+                <span className="text-[#cbd5e1]">|</span>
+                <span className="text-[#334155] font-semibold">🏢 {session.unitNameVi}</span>
+                <span className="text-[#cbd5e1]">|</span>
+                <span className="text-[#64748b]">🏷️ {session.title}</span>
+                <button
+                  type="button"
+                  onClick={switchSession}
+                  className="ml-1 text-[11px] font-bold text-[#004776] hover:underline cursor-pointer"
+                  title="Đổi tài khoản email hoặc đơn vị công tác"
+                >
+                  (Đổi)
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={switchSession}
+                className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer shadow-xs animate-pulse"
               >
-                {HCMUTE_UNITS.map((u) => (
-                  <option key={u.code} value={u.code}>
-                    [{u.code}] {u.nameVi}
-                  </option>
-                ))}
-              </select>
-            </div>
+                ⚠️ Điền email &amp; đơn vị để bắt đầu
+              </button>
+            )}
+
+            {isRestoredSession && (
+              <span className="px-2 py-0.5 rounded text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200">
+                Đã khôi phục phiên trước
+              </span>
+            )}
           </div>
 
           {/* Quick actions: Load TCNS template, Check, Export Excel */}
@@ -238,10 +241,15 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         lastSaved={lastSaved}
         lastSavedSheet={lastSavedSheet}
         isC1Unlocked={isC1Unlocked}
-        onCellChange={(rowId, field, val) => updateCell(activeSheet, rowId, field, val)}
+        touchedCells={touchedCells}
+        onCellTouch={markCellTouched}
+        onCellChange={(rowId, field, val) => {
+          markCellTouched(`${rowId}_${field}`);
+          updateCell(activeSheet, rowId, field, val);
+        }}
         onAddRow={() => addRow(activeSheet)}
         onDeleteRow={(rowId) => deleteRow(activeSheet, rowId)}
-        onSaveSheet={() => saveSheetData(activeSheet)}
+        onSaveSheet={handleSave}
         onSaveAndNext={saveAndGoNext}
         canNext={activeSheetIndex < currentSheetOrder.length - 1}
       />
@@ -272,6 +280,14 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onClose={() => setShowQualityModal(false)}
         report={qualityReport}
         onSelectSheet={setActiveSheet}
+      />
+
+      {/* Operator Session Gate Modal */}
+      <OperatorSessionModal
+        isOpen={isModalOpen}
+        currentSession={session}
+        onSubmit={handleSessionSubmit}
+        onClose={session ? () => switchSession() : undefined}
       />
     </div>
   );

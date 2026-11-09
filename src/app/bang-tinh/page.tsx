@@ -33,18 +33,11 @@ function BangTinhContent() {
 
         <div className="flex items-center gap-2">
           <Link
-            href="/tao-tep"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#004776] bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-lg transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Trình hướng dẫn từng chặng</span>
-          </Link>
-          <Link
             href="/huong-dan"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#004776] bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-lg transition-colors cursor-pointer"
           >
             <BookOpenCheck className="w-4 h-4" />
-            <span>Phụ lục hướng dẫn</span>
+            <span>Phụ lục hướng dẫn HD 07</span>
           </Link>
         </div>
       </div>

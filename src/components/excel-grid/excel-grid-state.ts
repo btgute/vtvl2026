@@ -1,21 +1,9 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import {
-  ExcelSheetKey,
-  GenericGridRow,
-  SheetOrderMode,
-  EXCEL_NATURAL_SHEET_ORDER,
-  TECHNICAL_DEPENDENCY_ORDER
-} from './excel-grid-types';
+import { ExcelSheetKey, GenericGridRow, SheetOrderMode, EXCEL_NATURAL_SHEET_ORDER, TECHNICAL_DEPENDENCY_ORDER } from './excel-grid-types';
 import { buildDefaultGridWorkbook } from './excel-grid-defaults';
 import { recalculateGridFormulas } from './excel-grid-formulas';
 import { getNextMissionCode, getNextTaskCode, buildNewGridRow } from './excel-grid-code-helpers';
-import {
-  findPl1Item,
-  getPl1CareerLevel,
-  buildFullPl1C1Rows,
-  buildFullPl1C2Rows,
-  buildRecommendedC1Rows
-} from '@/configs/hcmute-pl1-builder';
+import { findPl1Item, getPl1CareerLevel, buildFullPl1C1Rows, buildFullPl1C2Rows, buildRecommendedC1Rows } from '@/configs/hcmute-pl1-builder';
 import { PL1_VTVL_CATALOG } from '@/configs/hcmute-pl1-catalog';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
@@ -63,6 +51,12 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     if (typeof window !== 'undefined') {
       localStorage.setItem('hcmute_vtvl_grid_TCNS', JSON.stringify(tcnsData));
     }
+  }, []);
+
+  const restoreWorkbookData = useCallback((restoredData: Record<ExcelSheetKey, GenericGridRow[]>, newUnitCode?: string) => {
+    if (newUnitCode) setUnitCode(newUnitCode);
+    setData(restoredData);
+    setActiveSheet('A1');
   }, []);
 
   const updateCell = useCallback((sheetKey: ExcelSheetKey, rowId: string, field: string, value: string | number) => {
@@ -278,6 +272,7 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     lockC1,
     handleUnitChange,
     handleLoadTcnsData,
+    restoreWorkbookData,
     loadFullPl1Catalog,
     loadRecommendedVtvls,
     setActiveSheet,

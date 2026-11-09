@@ -50,22 +50,22 @@ export function Footer() {
             </h3>
             <ul className="flex flex-col space-y-2 text-xs sm:text-sm text-white/85">
               <li>
-                <Link href="/tao-tep" className="hover:text-white hover:underline">
+                <Link href="/bang-tinh" className="hover:text-white hover:underline">
                   Khối Khoa và Viện đào tạo (16 đơn vị)
                 </Link>
               </li>
               <li>
-                <Link href="/tao-tep" className="hover:text-white hover:underline">
+                <Link href="/bang-tinh" className="hover:text-white hover:underline">
                   Khối Phòng và Ban chức năng (14 đơn vị)
                 </Link>
               </li>
               <li>
-                <Link href="/tao-tep" className="hover:text-white hover:underline">
+                <Link href="/bang-tinh" className="hover:text-white hover:underline">
                   Khối Trung tâm và Phân hiệu (16 đơn vị)
                 </Link>
               </li>
               <li>
-                <Link href="/tao-tep" className="hover:text-white hover:underline">
+                <Link href="/bang-tinh" className="hover:text-white hover:underline">
                   Khối Quản trị và Đảng – Đoàn thể (5 đơn vị)
                 </Link>
               </li>
