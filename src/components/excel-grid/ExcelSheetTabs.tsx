@@ -77,6 +77,7 @@ export function ExcelSheetTabs({
           {/* Scrollable list of sheets */}
           <div
             ref={scrollRef}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             className="flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
             role="tablist"
             aria-label="Danh sách các sheet nghiệp vụ theo chuẩn Excel"

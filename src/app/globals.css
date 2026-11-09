@@ -249,11 +249,13 @@ a.btn-touch {
 
 /* Ẩn thanh cuộn mặc định của trình duyệt để các tab sheet gọn gàng, cuộn êm */
 .no-scrollbar::-webkit-scrollbar {
-  display: none;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 .no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

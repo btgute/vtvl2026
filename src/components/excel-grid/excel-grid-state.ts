@@ -3,7 +3,8 @@ import { ExcelSheetKey, GenericGridRow, SheetOrderMode, EXCEL_NATURAL_SHEET_ORDE
 import { buildDefaultGridWorkbook } from './excel-grid-defaults';
 import { recalculateGridFormulas } from './excel-grid-formulas';
 import { getNextMissionCode, getNextTaskCode, buildNewGridRow } from './excel-grid-code-helpers';
-import { findPl1Item, getPl1CareerLevel, buildFullPl1C1Rows, buildFullPl1C2Rows, buildRecommendedC1Rows } from '@/configs/hcmute-pl1-builder';
+import { isMissionCodeDuplicate, canDeleteMission, performSplitMission, buildAuditLogEntry, syncA1MissionChange, syncC1VtvlChange } from './excel-grid-a1-helpers';
+import { buildFullPl1C1Rows, buildFullPl1C2Rows, buildRecommendedC1Rows } from '@/configs/hcmute-pl1-builder';
 import { PL1_VTVL_CATALOG } from '@/configs/hcmute-pl1-catalog';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
@@ -64,26 +65,15 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     setData((prev) => {
       const sheetRows = prev[sheetKey] || [];
 
-      // 1. Khi đổi mã nhiệm vụ ở A1 -> đồng bộ mã nhiệm vụ và prefix mã công việc ở A2
+      // 1. Khi đổi mã nhiệm vụ ở A1 -> kiểm tra chống trùng và đồng bộ sang A2
       if (sheetKey === 'A1' && field === 'maNhiemVu') {
-        const oldRow = sheetRows.find((r) => r.id === rowId);
-        const oldMission = String(oldRow?.maNhiemVu || '');
-        const newMission = String(value);
-        const updatedA1 = sheetRows.map((row) => (row.id === rowId ? { ...row, [field]: value } : row));
-
-        if (oldMission && newMission && oldMission !== newMission && prev.A2) {
-          const syncedA2 = prev.A2.map((t) => {
-            if (String(t.maNhiemVu) === oldMission) {
-              const oldTaskCode = String(t.maCongViec || '');
-              const taskSuffixMatch = oldTaskCode.match(/CV\d+/i);
-              const suffix = taskSuffixMatch ? taskSuffixMatch[0] : 'CV01';
-              return { ...t, maNhiemVu: newMission, maCongViec: `${newMission}.${suffix}` };
-            }
-            return t;
-          });
-          return recalculateGridFormulas({ ...prev, A1: updatedA1, A2: syncedA2 }, currentUnit.code, currentUnit.nameVi);
+        const newMission = String(value).trim();
+        if (isMissionCodeDuplicate(sheetRows, rowId, newMission)) {
+          alert(`Mã nhiệm vụ "${newMission}" đã tồn tại trong danh mục A1. Vui lòng nhập mã duy nhất.`);
+          return prev;
         }
-        return recalculateGridFormulas({ ...prev, A1: updatedA1 }, currentUnit.code, currentUnit.nameVi);
+        const { updatedA1, syncedA2 } = syncA1MissionChange(prev, rowId, newMission);
+        return recalculateGridFormulas({ ...prev, A1: updatedA1, ...(syncedA2 ? { A2: syncedA2 } : {}) }, currentUnit.code, currentUnit.nameVi);
       }
 
       // 2. Khi đổi mã nhiệm vụ ở A2 -> tự động sinh lại mã công việc theo nhiệm vụ mới
@@ -98,32 +88,7 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
 
       // 3. Khi đổi mã VTVL ở C1 -> tra cứu tên chuẩn từ Phụ lục I và đồng bộ sang C2
       if (sheetKey === 'C1' && field === 'maVtvl') {
-        const newVtvl = String(value);
-        const pl1Item = findPl1Item(newVtvl);
-        const isQl = pl1Item?.pl1Code.startsWith('QL') ?? newVtvl.includes('QL');
-        const oldRow = sheetRows.find((r) => r.id === rowId);
-        const oldVtvl = String(oldRow?.maVtvl || '');
-        const updatedC1 = sheetRows.map((row) =>
-          row.id === rowId
-            ? {
-                ...row,
-                maVtvl: newVtvl,
-                tenVtvl: pl1Item ? (pl1Item.titleOrRole || pl1Item.positionName) : row.tenVtvl,
-                canCuQuyGio: isQl ? 'PP1 – theo cơ cấu và chức danh quản lý' : 'Mức chung 1.904 giờ – quy định về thời giờ làm việc'
-              }
-            : row
-        );
-        const existingC2 = prev.C2 || [];
-        const updatedC2 = existingC2.map((c2) =>
-          String(c2.maVtvl) === oldVtvl
-            ? {
-                ...c2,
-                maVtvl: newVtvl,
-                tenVtvl: pl1Item ? (pl1Item.titleOrRole || pl1Item.positionName) : c2.tenVtvl,
-                bacNgheNghiep: getPl1CareerLevel(newVtvl)
-              }
-            : c2
-        );
+        const { updatedC1, updatedC2 } = syncC1VtvlChange(prev, rowId, String(value));
         return recalculateGridFormulas({ ...prev, C1: updatedC1, C2: updatedC2 }, currentUnit.code, currentUnit.nameVi);
       }
 
@@ -150,32 +115,55 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
 
   const deleteRow = useCallback((sheetKey: ExcelSheetKey, rowId: string) => {
     if (sheetKey === 'C1' && !isC1Unlocked) return;
+    if (sheetKey === 'A1') {
+      const check = canDeleteMission(data.A1 || [], data.A2 || [], rowId);
+      if (!check.canDelete) {
+        alert(check.message);
+        return;
+      }
+    }
     setData((prev) => {
       const sheetRows = (prev[sheetKey] || []).filter((r) => r.id !== rowId);
       return recalculateGridFormulas({ ...prev, [sheetKey]: sheetRows }, currentUnit.code, currentUnit.nameVi);
     });
-  }, [currentUnit.code, currentUnit.nameVi, isC1Unlocked]);
+  }, [currentUnit.code, currentUnit.nameVi, isC1Unlocked, data.A1, data.A2]);
+
+  const splitRow = useCallback((sheetKey: ExcelSheetKey, rowId: string) => {
+    if (sheetKey !== 'A1') return;
+    setData((prev) => {
+      const res = performSplitMission(prev.A1 || [], rowId, currentUnit.code);
+      if (!res) return prev;
+      const { nextRows, newRow, nextCode } = res;
+      const targetRow = (prev.A1 || []).find((r) => r.id === rowId);
+      const audit = buildAuditLogEntry({
+        bieu: '1. A1_NhiemVu',
+        ma: nextCode,
+        truong: 'Tách nhiệm vụ',
+        giaTriCu: `Tách từ ${targetRow?.maNhiemVu || ''}`,
+        giaTriMoi: `${nextCode}: ${newRow.tenNhiemVu}`,
+        nguon: String(targetRow?.canCu || 'QĐ 2266'),
+        nguoiXacNhan: `Tổ công tác [${currentUnit.code}]`,
+        versionCount: prev.S?.length || 0
+      });
+      return recalculateGridFormulas({ ...prev, A1: nextRows, S: [audit, ...(prev.S || [])] }, currentUnit.code, currentUnit.nameVi);
+    });
+  }, [currentUnit.code, currentUnit.nameVi]);
 
   const saveSheetData = useCallback((sheetKey: ExcelSheetKey) => {
     const timeStr = new Date().toLocaleTimeString('vi-VN');
-    const dateStr = new Date().toISOString().slice(0, 10);
     setData((prev) => {
       const synced = recalculateGridFormulas(prev, currentUnit.code, currentUnit.nameVi);
-      // Append or update in S_NhatKy
-      const sRows = [...(synced.S || [])];
-      const logEntry: GenericGridRow = {
-        id: `s-${Date.now()}`,
-        ky: '2025–2026',
-        bieu: `Biểu ${sheetKey}`,
+      const logEntry = buildAuditLogEntry({
+        bieu: sheetKey === 'A1' ? '1. A1_NhiemVu' : `Biểu ${sheetKey}`,
         ma: currentUnit.code,
-        noiDung: `Lưu cập nhật biểu ${sheetKey} lúc ${timeStr}`,
-        nguon: 'Giao diện Bảng tính Excel HCM-UTE',
+        truong: 'Lưu dữ liệu biểu',
+        giaTriCu: 'Bản lưu trước',
+        giaTriMoi: `Lưu cập nhật biểu ${sheetKey} lúc ${timeStr}`,
+        nguon: 'QĐ 2266/QĐ-ĐHCNKT',
         nguoiXacNhan: `Tổ công tác VTVL [${currentUnit.code}]`,
-        ngay: dateStr,
-        phienBan: 'v1.x'
-      };
-      synced.S = [logEntry, ...sRows.slice(0, 19)];
-
+        versionCount: prev.S?.length || 0
+      });
+      synced.S = [logEntry, ...(synced.S || []).slice(0, 49)];
       if (typeof window !== 'undefined') {
         localStorage.setItem(`hcmute_vtvl_grid_${currentUnit.code}`, JSON.stringify(synced));
       }
@@ -278,6 +266,7 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     setActiveSheet,
     updateCell,
     addRow,
+    splitRow,
     deleteRow,
     saveSheetData,
     saveAndGoNext,

@@ -113,3 +113,4 @@ export function saveEmailSessionData(
     /* ignore storage errors */
   }
 }
+

@@ -77,8 +77,34 @@ export function getNextTaskCode(
 }
 
 /**
- * Sinh dòng mới tự động cho các bảng tính A1, A2, C1 từ danh mục Phụ lục I
+ * Nhân bản / tách một nhiệm vụ thành dòng mới kế thừa căn cứ và sinh mã kế tiếp
  */
+export function splitMissionRow(
+  targetRow: GenericGridRow,
+  a1Rows: GenericGridRow[],
+  unitCode: string
+): { newRow: GenericGridRow; nextCode: string } {
+  const nextCode = getNextMissionCode(a1Rows, unitCode);
+  const newId = `a1-split-${Date.now().toString(36)}`;
+  const originalName = String(targetRow.tenNhiemVu || '');
+  const splitName = originalName.includes(';')
+    ? originalName.split(';').slice(1).join(';').trim()
+    : `${originalName} (Phần tách)`;
+
+  const newRow: GenericGridRow = {
+    id: newId,
+    maNhiemVu: nextCode,
+    tenNhiemVu: splitName,
+    coQuan: targetRow.coQuan,
+    canCu: targetRow.canCu,
+    ky: targetRow.ky || '01/10/2025–30/9/2026',
+    trangThai: targetRow.trangThai || 'Tiếp tục thực hiện',
+    nguon: targetRow.nguon || 'QĐ 2266/QĐ-ĐHCNKT ngày 23/6/2026'
+  };
+
+  return { newRow, nextCode };
+}
+
 export function buildNewGridRow(
   sheetKey: string,
   prevData: Record<string, GenericGridRow[]>,
@@ -96,9 +122,9 @@ export function buildNewGridRow(
         tenNhiemVu: `Nhiệm vụ mới (${nextCode})`,
         coQuan: currentUnit.nameVi,
         canCu: 'QĐ 2266/QĐ-ĐHCNKT',
-        ky: '2025–2026',
+        ky: '01/10/2025–30/9/2026',
         trangThai: 'Tiếp tục thực hiện',
-        nguon: 'QĐ 2266'
+        nguon: 'QĐ 2266/QĐ-ĐHCNKT ngày 23/6/2026'
       }
     };
   }

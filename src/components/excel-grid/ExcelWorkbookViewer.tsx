@@ -11,6 +11,7 @@ import { OperatorSessionModal } from './OperatorSessionModal';
 import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
+import { QD2266_28_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import { FileSpreadsheet, Download, Building2, Sparkles, ShieldCheck, CheckCircle2, RefreshCw } from 'lucide-react';
 
 interface ExcelWorkbookViewerProps {
@@ -30,7 +31,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     isExporting, dynamicOptionsMap, isC1Unlocked, unlockC1, lockC1,
     handleUnitChange, handleLoadTcnsData, restoreWorkbookData,
     loadFullPl1Catalog, loadRecommendedVtvls, setActiveSheet,
-    updateCell, addRow, deleteRow, saveSheetData, saveAndGoNext,
+    updateCell, addRow, splitRow, deleteRow, saveSheetData, saveAndGoNext,
     exportFullWorkbook, goToNextSheet, goToPrevSheet
   } = useExcelGridState(initialUnitCode);
 
@@ -97,17 +98,28 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
           {/* Quick actions: Load TCNS template, Check, Export Excel */}
           <div className="flex flex-wrap items-center gap-2">
+            {activeSheet === 'A1' && (
+              <div className="flex items-center gap-1.5 bg-[#f1f5f9] px-2 py-1 rounded-lg border border-[#cbd5e1]">
+                <span className="text-xs font-bold text-[#004776]">Đơn vị QĐ 2266:</span>
+                <select
+                  value={unitCode}
+                  onChange={(e) => handleUnitChange(e.target.value)}
+                  className="bg-white border border-[#cbd5e1] rounded px-2 py-0.5 text-xs font-bold text-[#004776] cursor-pointer"
+                >
+                  {QD2266_28_UNITS_CATALOG.map((u) => (
+                    <option key={u.code} value={u.code}>
+                      PL{u.plNum < 10 ? `0${u.plNum}` : u.plNum} · {u.code} – {u.nameVi}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {activeSheet === 'C1' && (
               <>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (!isC1Unlocked) {
-                      setShowUnlockModal(true);
-                    } else {
-                      loadRecommendedVtvls();
-                    }
-                  }}
+                  onClick={() => (!isC1Unlocked ? setShowUnlockModal(true) : loadRecommendedVtvls())}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg cursor-pointer transition-colors"
                   title={`Nạp danh mục VTVL chuẩn theo loại hình ${currentUnit.nameVi}`}
                 >
@@ -116,18 +128,12 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (!isC1Unlocked) {
-                      setShowUnlockModal(true);
-                    } else {
-                      loadFullPl1Catalog();
-                    }
-                  }}
+                  onClick={() => (!isC1Unlocked ? setShowUnlockModal(true) : loadFullPl1Catalog())}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg cursor-pointer transition-colors"
                   title="Nạp toàn bộ 56 VTVL chuẩn theo Phụ lục I kèm Quyết định của Hiệu trưởng"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Nạp trọn bộ 56 VTVL (Phụ lục I)</span>
+                  <span>Nạp trọn bộ 56 VTVL (PL1)</span>
                 </button>
               </>
             )}
@@ -204,17 +210,14 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         <div className="mt-2.5 pt-2 border-t border-[#e2e8f0] flex flex-wrap items-center justify-between gap-2 text-xs text-[#64748b]">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-[#004776]">
-              {orderMode === 'excel'
-                ? 'Thứ tự sheet chuẩn tệp Excel (Văn bản 04):'
-                : 'Trình tự kỹ thuật phụ thuộc dữ liệu (12 bước Mục II):'}
+              {orderMode === 'excel' ? 'Thứ tự sheet chuẩn file Excel:' : 'Trình tự kỹ thuật 12 bước:'}
             </span>
             <span className="text-[#334155]">
               {orderMode === 'excel'
                 ? '1. A1 → 2. A2 → 3. B1 → 4. B2_CT → 5. B2 → 6. C1 → 7. C2 → 8. C3 → 9. D1 → 10. D2 → 11. DM_SP → DU_BAO → 13. K → 14. T → 15. S'
-                : '11. DM_SP (B.2) → 6. C1 (B.3) → 1. A1 (B.4) → 2. A2 (B.5) → 3. B1 (B.6) → 4. B2_CT (B.7) → 5. B2 → 7. C2 (B.8) → 9. D1 (B.9) → 8. C3 (B.10) → DU_BAO (B.11) → 10. D2 (B.12)'}
+                : '11. DM_SP → 6. C1 → 1. A1 → 2. A2 → 3. B1 → 4. B2_CT → 5. B2 → 7. C2 → 9. D1 → 8. C3 → DU_BAO → 10. D2'}
             </span>
           </div>
-
           {lastSaved && (
             <div className="flex items-center gap-1 text-emerald-700 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -248,6 +251,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
           updateCell(activeSheet, rowId, field, val);
         }}
         onAddRow={() => addRow(activeSheet)}
+        onSplitRow={(rowId) => splitRow(activeSheet, rowId)}
         onDeleteRow={(rowId) => deleteRow(activeSheet, rowId)}
         onSaveSheet={handleSave}
         onSaveAndNext={saveAndGoNext}

@@ -4,6 +4,7 @@ import { PL1_VTVL_CATALOG, TCNS_REAL_MISSIONS, TCNS_REAL_TASKS, TCNS_C2_PROFILES
 import { buildRecommendedC1Rows, createC2RowFromPl1 } from '@/configs/hcmute-pl1-builder';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { TASK_TEMPLATES_BY_GROUP } from '@/configs/hcmute-quotas';
+import { getQd2266A1RowsForUnit } from '@/configs/hcmute-qd2266-missions';
 import { UnitGroupKind } from '@/types/vtvl';
 
 export const DM_SP_DEFAULT_ROWS: GenericGridRow[] = [
@@ -32,23 +33,8 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
       ]
     : buildRecommendedC1Rows(unitCode, group);
 
-  // 2. A1_NhiemVu
-  const a1Rows: GenericGridRow[] = isTcns
-    ? TCNS_REAL_MISSIONS.map((m, idx) => ({
-        id: `a1-${idx + 1}`,
-        maNhiemVu: `${unitCode}.${m.missionSuffix}`,
-        tenNhiemVu: m.missionName,
-        coQuan: unitDef.nameVi,
-        canCu: m.legalBasis || 'QĐ 2266/QĐ-ĐHCNKT',
-        ky: '01/10/2025–30/9/2026',
-        trangThai: 'Tiếp tục thực hiện',
-        nguon: m.source || 'QĐ 2266 & Đề án đơn vị'
-      }))
-    : [
-        { id: 'a1-1', maNhiemVu: `${unitCode}.NV01`, tenNhiemVu: `Quản lý, điều hành và tổ chức chuyên môn tại ${unitDef.nameVi}`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '01/10/2025–30/9/2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
-        { id: 'a1-2', maNhiemVu: `${unitCode}.NV02`, tenNhiemVu: `Thực hiện nghiệp vụ chuyên ngành và tham mưu phát triển đơn vị`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '01/10/2025–30/9/2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
-        { id: 'a1-3', maNhiemVu: `${unitCode}.NV03`, tenNhiemVu: `Quản lý hồ sơ, phục vụ người học và cán bộ viên chức`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '01/10/2025–30/9/2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' }
-      ];
+  // 2. A1_NhiemVu — Nạp tự động từ QĐ 2266 (28 Phụ lục) theo chuẩn ${unitCode}.NV01
+  const a1Rows: GenericGridRow[] = getQd2266A1RowsForUnit(unitCode, unitDef.nameVi);
 
   // 3. A2_CongViec
   const taskSource = isTcns ? TCNS_REAL_TASKS : (TASK_TEMPLATES_BY_GROUP[group] || TASK_TEMPLATES_BY_GROUP['khoa-vien']);
@@ -245,17 +231,19 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
     }
   ];
 
-  // 15. S_NhatKy
+  // 15. S_NhatKy — Chuẩn 10 cột A–J ghi vết phiên bản
   const sRows: GenericGridRow[] = [
     {
       id: 's-1',
       ky: '01/10/2025–30/9/2026',
-      bieu: 'Toàn bộ 15 biểu',
+      bieu: '1. A1_NhiemVu',
       ma: unitDef.code,
-      noiDung: `Khởi tạo dữ liệu chuẩn bộ biểu VTVL đơn vị ${unitDef.nameVi}`,
-      nguon: 'Hệ thống VTVL 360 HCM-UTE',
-      nguoiXacNhan: 'Tổ công tác VTVL đơn vị',
-      ngay: '2026-11-09',
+      truong: 'Khởi tạo danh mục nhiệm vụ',
+      giaTriCu: 'QĐ 2266/QĐ-ĐHCNKT',
+      giaTriMoi: `Nạp tự động ${a1Rows.length} nhiệm vụ từ QĐ 2266 cho ${unitDef.nameVi}`,
+      nguon: 'QĐ 2266/QĐ-ĐHCNKT ngày 23/6/2026',
+      nguoiXacNhan: `Tổ công tác VTVL [${unitDef.code}]`,
+      ngay: '09/11/2026',
       phienBan: 'v1.0'
     }
   ];

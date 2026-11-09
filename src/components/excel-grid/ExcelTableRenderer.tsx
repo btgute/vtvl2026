@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ExcelSheetMeta, GenericGridRow } from './excel-grid-types';
-import { Plus, Trash2, Info, FunctionSquare, Save, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Info, FunctionSquare, Save, ArrowRight, CheckCircle2, Copy } from 'lucide-react';
 
 interface ExcelTableRendererProps {
   meta: ExcelSheetMeta;
@@ -15,6 +15,7 @@ interface ExcelTableRendererProps {
   onCellTouch?: (cellKey: string) => void;
   onCellChange: (rowId: string, field: string, value: string | number) => void;
   onAddRow: () => void;
+  onSplitRow?: (rowId: string) => void;
   onDeleteRow: (rowId: string) => void;
   onSaveSheet: () => void;
   onSaveAndNext: () => void;
@@ -24,7 +25,7 @@ interface ExcelTableRendererProps {
 export function ExcelTableRenderer({
   meta, rows, dynamicOptionsMap, lastSaved, lastSavedSheet,
   isC1Unlocked = false, touchedCells, onCellTouch, onCellChange,
-  onAddRow, onDeleteRow, onSaveSheet, onSaveAndNext, canNext = true
+  onAddRow, onSplitRow, onDeleteRow, onSaveSheet, onSaveAndNext, canNext = true
 }: ExcelTableRendererProps) {
   const isJustSaved = lastSavedSheet === meta.key && Boolean(lastSaved);
   const isC1Locked = meta.key === 'C1' && !isC1Unlocked;
@@ -55,21 +56,11 @@ export function ExcelTableRenderer({
           {/* Row 1: Excel column letters (A, B, C...) */}
           <thead>
             <tr className="bg-[#f1f5f9] text-[#64748b] border-b border-[#cbd5e1]">
-              <th className="w-12 min-w-[48px] py-1 text-center font-bold border-r border-[#cbd5e1] select-none bg-[#e2e8f0]">
-                #
-              </th>
+              <th className="w-12 min-w-[48px] py-1 text-center font-bold border-r border-[#cbd5e1] select-none bg-[#e2e8f0]">#</th>
               {meta.columns.map((col) => (
-                <th
-                  key={col.colLetter}
-                  style={{ width: col.width || '140px', minWidth: col.width || '140px' }}
-                  className="py-1 px-2 text-center font-bold border-r border-[#cbd5e1] select-none text-[#475569]"
-                >
-                  {col.colLetter}
-                </th>
+                <th key={col.colLetter} style={{ width: col.width || '140px', minWidth: col.width || '140px' }} className="py-1 px-2 text-center font-bold border-r border-[#cbd5e1] select-none text-[#475569]">{col.colLetter}</th>
               ))}
-              <th className="w-10 min-w-[40px] py-1 text-center border-r border-[#cbd5e1] select-none">
-                ...
-              </th>
+              <th className="w-14 min-w-[56px] py-1 text-center border-r border-[#cbd5e1] select-none">...</th>
             </tr>
 
             {/* Row 2: Header title names */}
@@ -217,19 +208,32 @@ export function ExcelTableRenderer({
                       );
                     })}
 
-                    {/* Delete row button */}
-                    <td className="w-10 py-1 text-center border-r border-[#cbd5e1]">
-                      {!isC1Locked && (
-                        <button
-                          type="button"
-                          onClick={() => onDeleteRow(row.id)}
-                          aria-label={`Xóa dòng ${rowNum}`}
-                          title="Xóa dòng này"
-                          className="w-6 h-6 inline-flex items-center justify-center rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                    {/* Action buttons (Tách & Xóa) */}
+                    <td className="w-14 py-1 text-center border-r border-[#cbd5e1]">
+                      <div className="flex items-center justify-center gap-1">
+                        {meta.key === 'A1' && (
+                          <button
+                            type="button"
+                            onClick={() => onSplitRow?.(row.id)}
+                            aria-label={`Tách nhiệm vụ dòng ${rowNum}`}
+                            title="Tách nhiệm vụ (nhân bản sang mã mới để chia nhỏ các ý gạch đầu dòng)"
+                            className="w-6 h-6 inline-flex items-center justify-center rounded text-indigo-600 hover:bg-indigo-50 cursor-pointer"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {!isC1Locked && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteRow(row.id)}
+                            aria-label={`Xóa dòng ${rowNum}`}
+                            title="Xóa dòng này"
+                            className="w-6 h-6 inline-flex items-center justify-center rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -249,7 +253,7 @@ export function ExcelTableRenderer({
               className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-[#004776] text-white rounded-md hover:bg-[#00385c] cursor-pointer shadow-2xs transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Thêm dòng mới</span>
+              <span>{meta.key === 'A1' ? 'Thêm nhiệm vụ mới' : 'Thêm dòng mới'}</span>
             </button>
           )}
 

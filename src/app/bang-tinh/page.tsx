@@ -4,7 +4,7 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ExcelWorkbookViewer } from '@/components/excel-grid/ExcelWorkbookViewer';
-import { FileSpreadsheet, ArrowLeft, BookOpenCheck } from 'lucide-react';
+import { FileSpreadsheet, Home, BookOpenCheck } from 'lucide-react';
 
 function BangTinhContent() {
   const searchParams = useSearchParams();
@@ -32,6 +32,13 @@ function BangTinhContent() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#004776] bg-[#f0f9ff] hover:bg-[#e0f2fe] border border-[#004776]/30 hover:border-[#004776] rounded-lg transition-colors cursor-pointer"
+          >
+            <Home className="w-4 h-4" />
+            <span>Tổng quan (08 bước)</span>
+          </Link>
           <Link
             href="/huong-dan"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#004776] bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-lg transition-colors cursor-pointer"
