@@ -82,9 +82,9 @@ export async function mergeSurveyFormsIntoUnit(
     const isHd07B1 = String(headerRow[0] || '').includes('Mã công việc');
 
     // Kiểm tra xem phiếu có thuộc đúng mã đơn vị không
-    const firstTaskCode = rows.slice(2).map((r) => String(isHd07B1 ? r[0] : r[3] || '').trim()).find((c) => c.includes('-'));
-    if (firstTaskCode && !firstTaskCode.toUpperCase().startsWith(`${unitCode}-`)) {
-      const foreignUnit = firstTaskCode.split('-')[0];
+    const firstTaskCode = rows.slice(2).map((r) => String(isHd07B1 ? r[0] : r[3] || '').trim()).find((c) => c.includes('-') || c.includes('.'));
+    if (firstTaskCode && !firstTaskCode.toUpperCase().startsWith(`${unitCode}-`) && !firstTaskCode.toUpperCase().startsWith(`${unitCode}.`)) {
+      const foreignUnit = firstTaskCode.split(/[-.]/)[0];
       rejectedForms.push({
         fileName: formFile.name,
         reason: `Phiếu thuộc đơn vị [${foreignUnit}], không khớp với tệp gốc của đơn vị [${unitCode}] (đã tự động từ chối gộp).`
@@ -96,7 +96,7 @@ export async function mergeSurveyFormsIntoUnit(
     for (let r = 2; r < rows.length; r++) {
       const row = rows[r];
       const taskCode = String(isHd07B1 ? row[0] : row[3] || '').trim();
-      if (!taskCode || !taskCode.includes('-')) continue;
+      if (!taskCode || (!taskCode.includes('-') && !taskCode.includes('.'))) continue;
       const taskName = taskNameMap.get(taskCode) || taskCode;
 
       const qty = isHd07B1 ? row[2] : row[8];

@@ -41,10 +41,11 @@ export async function regenerateFormsFromEditedUnitWorkbook(
   const methodByVtvl = new Map<string, { name: string; method: string }>();
   let pp2PositionCount = 0;
 
+  const isC3Hd07 = String(c3Rows[1]?.[1] || '').includes('Phương pháp');
   for (let r = 2; r < c3Rows.length; r++) {
     const vCode = String(c3Rows[r][0] || '').trim();
-    const vName = String(c3Rows[r][1] || vCode).trim();
-    const method = String(c3Rows[r][2] || 'PP2').trim();
+    const vName = String((isC3Hd07 ? vCode : c3Rows[r][1]) || vCode).trim();
+    const method = String((isC3Hd07 ? c3Rows[r][1] : c3Rows[r][2]) || 'PP2').trim();
     if (!vCode) continue;
     methodByVtvl.set(vCode, { name: vName, method });
     if (method.includes('PP2')) pp2PositionCount++;

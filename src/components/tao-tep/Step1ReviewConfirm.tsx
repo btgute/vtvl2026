@@ -209,6 +209,20 @@ export function Step1ReviewConfirm({
             <strong>Sản phẩm đầu ra ({customDate}):</strong> Tệp đơn vị gốc (17 sheet · 10 biểu A1–D2), Tệp dự thảo, Phiếu khảo sát B1–B2 &amp; Gói .zip
           </div>
         </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border-subtle)] text-xs">
+          <span className="font-semibold text-[var(--ink-muted)]">Tài liệu &amp; mẫu thực tế chuẩn HCM-UTE đã tích hợp:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <a href="/tai-ve/pl1-danh-muc-vtvl-bac-nghe-nghiep-hcmute.docx" download className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] font-bold text-[var(--primary)]">
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Tải Phụ lục I (QL10–QL60, CM63–CM113, HT26–HT62)</span>
+            </a>
+            <a href="/tai-ve/tcns-hcmute-bo-bieu-hd07.xlsx" download className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] font-bold text-[var(--primary)]">
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Tải mẫu thực tế TCNS_HCMUTE_Bo_bieu_HD07.xlsx</span>
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Danh sách lỗi cần xử lý hoặc nút xác nhận xuất bộ biểu */}

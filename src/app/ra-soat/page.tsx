@@ -94,6 +94,20 @@ export default function RaSoatPage() {
     }
   };
 
+  const handleLoadRealTcnsTemplate = async () => {
+    setAuditing(true);
+    try {
+      const resp = await fetch('/mau/TCNS_HCMUTE_Bo_bieu_HD07.xlsx');
+      const blob = await resp.blob();
+      const tcnsFile = new File([blob], 'TCNS_HCMUTE_Bo_bieu_HD07.xlsx', {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      await handleFilesSelected([tcnsFile]);
+    } finally {
+      setAuditing(false);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
@@ -117,9 +131,14 @@ export default function RaSoatPage() {
                   <p>Công cụ tự đọc các cột nhập liệu từ một hoặc nhiều tệp .xlsx để tự tính lại Giờ B1, đối chiếu Người quy đổi PP2 — Người C3 — Nhân sự D1, và xuất tệp Excel kết quả gồm cả trang <strong>Chua_du_can_cu</strong> và <strong>Gop_y_bieu_mau</strong>.</p>
                 </InfoTip>
               </div>
-              <button type="button" onClick={() => void handleAuditActiveUnit(activeUnit, true)} disabled={auditing} className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] hover:border-[var(--primary)] text-xs font-bold text-[var(--foreground)] cursor-pointer">
-                <FlaskConical className="w-3.5 h-3.5 text-[var(--primary)]" /><span>Xem ví dụ minh họa (X99)</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => void handleLoadRealTcnsTemplate()} disabled={auditing} className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-[var(--primary)]/40 bg-[var(--surface-tint)] hover:border-[var(--primary)] text-xs font-bold text-[var(--primary)] cursor-pointer">
+                  <Briefcase className="w-3.5 h-3.5" /><span>Nạp mẫu thực tế TCNS (200 việc)</span>
+                </button>
+                <button type="button" onClick={() => void handleAuditActiveUnit(activeUnit, true)} disabled={auditing} className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] hover:border-[var(--primary)] text-xs font-bold text-[var(--foreground)] cursor-pointer">
+                  <FlaskConical className="w-3.5 h-3.5 text-[var(--primary)]" /><span>Xem ví dụ minh họa (X99)</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">

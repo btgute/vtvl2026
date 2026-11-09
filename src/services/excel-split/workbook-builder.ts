@@ -6,6 +6,7 @@ import {
 } from '@/configs/hcmute-quotas';
 import { HD07_CONSTANTS, MISSIONS_BY_GROUP } from '@/configs/hcmute-hd07-catalog';
 import { buildDefaultSpecificVtvlName } from '@/configs/hcmute-nd232-catalog';
+import { TCNS_REAL_MISSIONS, TCNS_REAL_TASKS } from '@/configs/hcmute-pl1-catalog';
 import { HCMUTE_UNITS, UNIT_GROUPS } from '@/configs/hcmute-units';
 import { SplitResultSummary, UnitSplitOptions } from '@/types/vtvl';
 import { buildHd07CoreSheets } from './hd07-core-sheets';
@@ -32,11 +33,13 @@ export async function generateUnitFiles(opts: UnitSplitOptions): Promise<SplitRe
   const unit = HCMUTE_UNITS.find((u) => u.code === opts.unitCode) || HCMUTE_UNITS[0];
   const groupMeta = UNIT_GROUPS.find((g) => g.id === opts.kind) || UNIT_GROUPS[0];
   const ngachList = NGACH_LIST_BY_GROUP[opts.kind];
-  const missions = MISSIONS_BY_GROUP[opts.kind];
+  const isTcns = opts.unitCode === 'TCNS';
+  const missions = isTcns ? TCNS_REAL_MISSIONS : MISSIONS_BY_GROUP[opts.kind];
   const scaleMult = opts.scaleMetrics?.scaleMultiplier || 1;
-  const templates = TASK_TEMPLATES_BY_GROUP[opts.kind].map((t) => ({
+  const baseTemplates = isTcns ? TCNS_REAL_TASKS : TASK_TEMPLATES_BY_GROUP[opts.kind];
+  const templates = baseTemplates.map((t) => ({
     ...t,
-    defaultQtyPerYear: Math.max(1, Math.round(t.defaultQtyPerYear * scaleMult))
+    defaultQtyPerYear: isTcns ? t.defaultQtyPerYear : Math.max(1, Math.round(t.defaultQtyPerYear * scaleMult))
   }));
   const compactDate = opts.exportDate.replace(/-/g, '');
 

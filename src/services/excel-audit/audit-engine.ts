@@ -84,7 +84,7 @@ export async function auditUnitWorkbooks(files: File[], isSampleDemo = false): P
       for (let r = 2; r < c2Rows.length; r++) {
         const vCode = String(c2Rows[r][0] || '').trim();
         const competency = String(c2Rows[r][3] || '').trim();
-        if (vCode && !/bậc\s*[1-5]/i.test(competency) && !/phụ lục\s*i/i.test(competency) && !/không áp dụng bậc/i.test(competency)) {
+        if (vCode && !/(bậc\s*[1-5]|cấp độ\s*[1-5]|đáp ứng năng lực|phụ lục\s*i|không áp dụng bậc)/i.test(competency)) {
           pushIssue('R-ND232-BAC', 'C2', `C2_NangLuc!D${r + 1}`, 'review', `Khung năng lực của "${vCode}" chưa ghi rõ Bậc nghề nghiệp (Bậc 1–5) theo NĐ 232/2026/NĐ-CP`, competency || 'Trống', 'Ghi rõ Bậc nghề nghiệp theo Phụ lục I văn bản 1907/HD-ĐHCNKT.');
         }
       }
@@ -101,8 +101,9 @@ export async function auditUnitWorkbooks(files: File[], isSampleDemo = false): P
         const vName = String(row[1] || '').trim();
         if (!vCode) continue;
         validVtvlSet.add(vCode);
-        const stdHours = Number(row[11] || 1904);
-        const levelText = String(row[4] || 'Bậc 3').trim();
+        const stdHours = Number(row[4] || row[11] || 1904);
+        const levelMatch = vName.match(/Bậc\s*[1-5](?:,\s*Bậc\s*[1-5])*/i);
+        const levelText = levelMatch ? levelMatch[0] : vCode.includes('QL') ? 'Không áp dụng bậc' : 'Bậc 3';
         vtvlMetaMap.set(vCode, { name: vName, level: levelText, stdHours });
         const excelRow = r + 1;
         if (vCode.startsWith('XXX')) pushIssue('R-C1-01', 'C1', `C1_VTVL!A${excelRow}`, 'fix', 'Mã VTVL tại C1_VTVL còn giữ tiền tố mẫu XXX', vCode, `Đổi tiền tố XXX thành ${unitCode}.`);
@@ -183,18 +184,19 @@ export async function auditUnitWorkbooks(files: File[], isSampleDemo = false): P
     let proposedFte = 0;
     if (c3Name) {
       const c3Rows = XLSX.utils.sheet_to_json<(string | number)[]>(wb.Sheets[c3Name], { header: 1, defval: '' });
+      const isC3Hd07 = String(c3Rows[1]?.[1] || '').includes('Phương pháp');
       for (let r = 2; r < c3Rows.length; r++) {
         const row = c3Rows[r];
         const vCode = String(row[0] || '').trim();
         if (!vCode) continue;
-        const vName = String(row[1] || vtvlMetaMap.get(vCode)?.name || vCode).trim();
-        const method = String(row[2] || 'PP2').trim();
-        const b2Delta = Number(row[5] || 0);
-        const stdH = Number(row[7] || vtvlMetaMap.get(vCode)?.stdHours || 1904);
+        const vName = String((isC3Hd07 ? vtvlMetaMap.get(vCode)?.name : row[1]) || vtvlMetaMap.get(vCode)?.name || vCode).trim();
+        const method = String((isC3Hd07 ? row[1] : row[2]) || 'PP2').trim();
+        const b2Delta = Number((isC3Hd07 ? row[3] : row[5]) || 0);
+        const stdH = Number((isC3Hd07 ? row[5] : row[7]) || vtvlMetaMap.get(vCode)?.stdHours || 1904);
         const c3Fte = Number(row[9] || 0);
         proposedFte += c3Fte;
 
-        const recalcB1 = recalcB1ByVtvl.get(vCode) || { taskCount: 0, hours: Number(row[4] || 0) };
+        const recalcB1 = recalcB1ByVtvl.get(vCode) || { taskCount: 0, hours: Number((isC3Hd07 ? row[2] : row[4]) || 0) };
         const netH = Number(Math.max(0, recalcB1.hours + b2Delta).toFixed(1));
         const recalcPp2 = stdH > 0 ? Number((netH / stdH).toFixed(2)) : 0;
 
