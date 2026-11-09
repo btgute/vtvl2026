@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   FileSpreadsheet,
-  CheckCircle2,
-  Timer,
   Home,
   Menu,
   X,
@@ -17,8 +15,6 @@ import { InfoTip } from './MilestonesBar';
 const NAV_ITEMS = [
   { href: '/', label: 'Tổng quan (08 bước)', icon: Home },
   { href: '/bang-tinh', label: 'Bảng tính Excel 15 sheet', icon: FileSpreadsheet },
-  { href: '/bam-gio', label: 'Bước 3·4: Khối lượng B1 & Tác động B2', icon: Timer },
-  { href: '/ra-soat', label: 'Bước 8: Kiểm tra & Xác nhận (K–T–S)', icon: CheckCircle2 },
   { href: '/huong-dan', label: 'Phụ lục HD 07', icon: BookOpenCheck }
 ];
 

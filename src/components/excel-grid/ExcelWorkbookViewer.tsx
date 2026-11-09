@@ -5,6 +5,7 @@ import { useExcelGridState } from './excel-grid-state';
 import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
 import { ExcelSheetTabs } from './ExcelSheetTabs';
 import { ExcelTableRenderer } from './ExcelTableRenderer';
+import { ExcelOrderSwitcher } from './ExcelOrderSwitcher';
 import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
 import { DataQualityReportModal } from './DataQualityReportModal';
 import { OperatorSessionModal } from './OperatorSessionModal';
@@ -206,25 +207,12 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
           </div>
         </div>
 
-        {/* Status bar: Order workflow hint and auto-save */}
-        <div className="mt-2.5 pt-2 border-t border-[#e2e8f0] flex flex-wrap items-center justify-between gap-2 text-xs text-[#64748b]">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-[#004776]">
-              {orderMode === 'excel' ? 'Thứ tự sheet chuẩn file Excel:' : 'Trình tự kỹ thuật 12 bước:'}
-            </span>
-            <span className="text-[#334155]">
-              {orderMode === 'excel'
-                ? '1. A1 → 2. A2 → 3. B1 → 4. B2_CT → 5. B2 → 6. C1 → 7. C2 → 8. C3 → 9. D1 → 10. D2 → 11. DM_SP → DU_BAO → 13. K → 14. T → 15. S'
-                : '11. DM_SP → 6. C1 → 1. A1 → 2. A2 → 3. B1 → 4. B2_CT → 5. B2 → 7. C2 → 9. D1 → 8. C3 → DU_BAO → 10. D2'}
-            </span>
-          </div>
-          {lastSaved && (
-            <div className="flex items-center gap-1 text-emerald-700 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Đã lưu thành công lúc {lastSaved}</span>
-            </div>
-          )}
-        </div>
+        {/* Status bar: Order workflow switcher and auto-save */}
+        <ExcelOrderSwitcher
+          orderMode={orderMode}
+          onToggleOrderMode={setOrderMode}
+          lastSaved={lastSaved}
+        />
       </div>
 
       {/* C1 Admin protection banner when viewing C1 */}
@@ -263,7 +251,6 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         activeSheet={activeSheet}
         sheetOrder={currentSheetOrder}
         orderMode={orderMode}
-        onToggleOrderMode={setOrderMode}
         onSelectSheet={setActiveSheet}
         onPrev={goToPrevSheet}
         onNext={goToNextSheet}

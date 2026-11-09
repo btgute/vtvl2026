@@ -8,7 +8,7 @@ import {
   WORKFLOW_SHEET_ORDER
 } from './excel-grid-types';
 import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
-import { ChevronLeft, ChevronRight, FileSpreadsheet, Layers, ListOrdered } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react';
 
 interface ExcelSheetTabsProps {
   activeSheet: ExcelSheetKey;
@@ -19,7 +19,6 @@ interface ExcelSheetTabsProps {
   canNext: boolean;
   sheetOrder?: ExcelSheetKey[];
   orderMode?: SheetOrderMode;
-  onToggleOrderMode?: (mode: SheetOrderMode) => void;
 }
 
 export function ExcelSheetTabs({
@@ -30,8 +29,7 @@ export function ExcelSheetTabs({
   canPrev,
   canNext,
   sheetOrder = EXCEL_NATURAL_SHEET_ORDER,
-  orderMode = 'excel',
-  onToggleOrderMode
+  orderMode = 'excel'
 }: ExcelSheetTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -134,38 +132,6 @@ export function ExcelSheetTabs({
             })}
           </div>
         </div>
-
-        {/* View mode toggle switch */}
-        {onToggleOrderMode && (
-          <div className="flex items-center gap-1 bg-[#e2e8f0] p-0.5 rounded-md text-[11px] shrink-0 font-medium border border-[#cbd5e1]">
-            <button
-              type="button"
-              onClick={() => onToggleOrderMode('excel')}
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded transition-all cursor-pointer ${
-                orderMode === 'excel'
-                  ? 'bg-white text-[#004776] font-bold shadow-2xs'
-                  : 'text-[#64748b] hover:text-[#004776]'
-              }`}
-              title="Sắp xếp theo thứ tự số sheet tự nhiên của file Excel (1. A1 -> 15. S)"
-            >
-              <ListOrdered className="w-3 h-3" />
-              <span>Theo file Excel (1..15)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onToggleOrderMode('technical')}
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded transition-all cursor-pointer ${
-                orderMode === 'technical'
-                  ? 'bg-white text-[#004776] font-bold shadow-2xs'
-                  : 'text-[#64748b] hover:text-[#004776]'
-              }`}
-              title="Sắp xếp theo thứ tự 12 bước liên kết kỹ thuật trong Hướng dẫn chuẩn nhập dữ liệu"
-            >
-              <Layers className="w-3 h-3" />
-              <span>Luồng kỹ thuật (12 bước)</span>
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
