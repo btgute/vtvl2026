@@ -1,0 +1,136 @@
+{
+  "name": "20skill-van-phong",
+  "description": "20 skill AI văn phòng – kinh doanh cho thị trường Việt Nam: hợp đồng, báo giá, công văn, quyết định, tờ trình, biên bản, Excel, PDF, content bán hàng...",
+  "owner": {
+    "name": "nguyenvansuai",
+    "url": "https://github.com/nguyenvansuai"
+  },
+  "plugins": [
+    {
+      "name": "bang-excel",
+      "source": "./skills/bang-excel",
+      "description": "Làm việc với Excel/Google Sheets cho văn phòng Việt Nam — tạo bảng tính có công thức (bảng lương, chấm công, BHXH, thuế TNCN, công nợ, tồn kho, doanh thu), viết/giải thích công thức (VLOOKUP, XLOOKUP, SUMIFS, IF lồng, PivotTable), làm sạch dữ liệu tiếng Việt (dấu, khoảng trắng, số điện thoại, trùng lặp), đọc số tiền thành chữ. Dùng khi người dùng nói \"làm bảng Excel\", \"công thức Excel\", \"làm bảng lương\", \"chấm công\", \"làm sạch dữ liệu\", \"lọc trùng\", \"pivot\", \"Google Sheets\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "bao-cao",
+      "source": "./skills/bao-cao",
+      "description": "Soạn báo cáo công việc rõ số liệu, có nhận định và đề xuất — báo cáo tuần/tháng/quý/năm, báo cáo kết quả kinh doanh, báo cáo tiến độ dự án, báo cáo sự cố, báo cáo tổng kết; dạng văn bản hành chính hoặc email/tin nhắn gửi sếp. Dùng khi người dùng nói \"viết báo cáo\", \"báo cáo tuần\", \"báo cáo tháng\", \"báo cáo doanh thu\", \"báo cáo tiến độ\", \"báo cáo sự cố\", \"tổng kết năm\", \"báo cáo gửi sếp\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "bien-ban",
+      "source": "./skills/bien-ban",
+      "description": "Lập biên bản từ ghi chú, transcript hoặc mô tả sự việc — biên bản họp, bàn giao (tài sản, công việc, hồ sơ), nghiệm thu, thanh lý hợp đồng, xác nhận công nợ, vi phạm/sự cố, kiểm kê. Ghi đúng ý, đúng quyết nghị, không tự thêm kết luận. Dùng khi người dùng nói \"làm biên bản\", \"biên bản họp\", \"biên bản bàn giao\", \"biên bản nghiệm thu\", \"biên bản thanh lý hợp đồng\", \"chuyển ghi chú thành biên bản\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "chuyen-doi-file",
+      "source": "./skills/chuyen-doi-file",
+      "description": "Chuyển đổi định dạng file văn phòng — Word ↔ PDF, Excel ↔ PDF/CSV, PowerPoint → PDF, .doc/.xls đời cũ → .docx/.xlsx, Markdown → Word, chuyển hàng loạt; sửa lỗi font tiếng Việt TCVN3 (.VnTime) và VNI sang Unicode. Dùng khi người dùng nói \"chuyển Word sang PDF\", \"đổi PDF sang Word\", \"chuyển file\", \"file bị lỗi font\", \"chữ bị lỗi kiểu ViÖt Nam\", \"font .VnTime\", \"chuyển mã Unicode\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "cong-van",
+      "source": "./skills/cong-van",
+      "description": "Soạn công văn hành chính đúng thể thức Nghị định 30/2020/NĐ-CP — công văn đề nghị, phúc đáp, đôn đốc, giải trình, xin ý kiến, thông báo gửi đối tác hoặc cơ quan nhà nước. Dùng khi người dùng nói \"soạn công văn\", \"viết công văn gửi...\", \"công văn phúc đáp\", \"công văn đề nghị\", \"V/v ...\", hoặc cần một văn bản giao dịch chính thức không có tên loại.",
+      "category": "van-phong"
+    },
+    {
+      "name": "content-ban-hang",
+      "source": "./skills/content-ban-hang",
+      "description": "Viết nội dung bán hàng cho thị trường Việt Nam theo từng kênh — bài Facebook, Zalo OA/tin nhắn, kịch bản video TikTok/Reels, mô tả sản phẩm Shopee/TikTok Shop/Lazada, landing page, tiêu đề, CTA, tin nhắn chốt đơn, chăm sóc khách cũ. Có kiểm tra từ ngữ vi phạm Luật Quảng cáo. Dùng khi người dùng nói \"viết content bán hàng\", \"viết bài quảng cáo\", \"viết caption\", \"viết mô tả sản phẩm Shopee\", \"kịch bản TikTok bán hàng\", \"viết tiêu đề\", \"viết CTA\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "de-xuat",
+      "source": "./skills/de-xuat",
+      "description": "Viết đề xuất ngắn gọn, dễ phê duyệt — đề xuất mua sắm, tăng ngân sách, tuyển thêm người, tăng lương, thay đổi quy trình, triển khai phần mềm/AI, hợp tác với đối tác; có so sánh phương án và chi phí–lợi ích. Dùng khi người dùng nói \"viết đề xuất\", \"làm đề xuất gửi sếp\", \"đề xuất mua\", \"đề xuất tăng lương\", \"proposal\", \"thuyết phục sếp duyệt\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "ke-hoach",
+      "source": "./skills/ke-hoach",
+      "description": "Lập kế hoạch theo mục tiêu, tiến độ, đầu việc — kế hoạch kinh doanh/marketing tháng-quý-năm, kế hoạch sự kiện, kế hoạch triển khai dự án, kế hoạch tuyển dụng, đào tạo, kế hoạch cá nhân; có OKR/KPI, bảng phân công, timeline, ngân sách, rủi ro. Dùng khi người dùng nói \"lập kế hoạch\", \"làm kế hoạch\", \"kế hoạch marketing\", \"kế hoạch sự kiện\", \"kế hoạch triển khai\", \"lên timeline\", \"phân công công việc\", \"OKR\", \"KPI\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "kiem-tra-loi-ai",
+      "source": "./skills/kiem-tra-loi-ai",
+      "description": "Rà soát nội dung do AI tạo ra (hoặc bất kỳ bản nháp nào) trước khi dùng — phát hiện thông tin bịa, số liệu không nguồn, điều luật sai/hết hiệu lực, tên riêng sai, mâu thuẫn nội bộ, lỗi tính toán, lỗi chính tả và dịch máy tiếng Việt; đánh dấu chỗ cần xác minh. Dùng khi người dùng nói \"kiểm tra lỗi AI\", \"check lại bài này\", \"rà soát nội dung\", \"AI viết có đúng không\", \"fact-check\", \"soát chính tả\", \"kiểm tra trước khi gửi\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "phan-tich-tai-lieu",
+      "source": "./skills/phan-tich-tai-lieu",
+      "description": "Phân tích sâu tài liệu để ra quyết định — bóc tách trọng tâm, rủi ro, nghĩa vụ, hàm ý thực thi của hợp đồng, hồ sơ mời thầu, văn bản pháp luật mới, chính sách đối tác/sàn TMĐT, đề xuất của nhà cung cấp, báo cáo tài chính; so sánh nhiều tài liệu/phiên bản. Dùng khi người dùng nói \"phân tích tài liệu\", \"phân tích hợp đồng\", \"văn bản này ảnh hưởng gì đến công ty\", \"rủi ro gì\", \"so sánh 2 bản\", \"hồ sơ mời thầu yêu cầu gì\", \"nên ký không\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "prompt-master",
+      "source": "./skills/prompt-master",
+      "description": "Viết lại yêu cầu mơ hồ thành prompt rõ ràng trước khi giao cho AI (Claude, ChatGPT, Gemini) — thêm vai trò, bối cảnh, dữ liệu đầu vào, ràng buộc, định dạng đầu ra, ví dụ; tạo prompt mẫu dùng lại cho cả phòng ban. Dùng khi người dùng nói \"viết prompt\", \"tối ưu prompt\", \"sửa câu lệnh cho AI\", \"AI trả lời không đúng ý\", \"tạo mẫu prompt cho nhân viên\", \"prompt master\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "quyet-dinh",
+      "source": "./skills/quyet-dinh",
+      "description": "Soạn quyết định cá biệt của doanh nghiệp/cơ quan đúng thể thức Nghị định 30/2020/NĐ-CP — quyết định bổ nhiệm, miễn nhiệm, điều chuyển, tăng lương, khen thưởng, kỷ luật, chấm dứt hợp đồng lao động, thành lập ban/tổ, ban hành quy chế, phê duyệt. Dùng khi người dùng nói \"soạn quyết định\", \"làm QĐ bổ nhiệm\", \"quyết định khen thưởng\", \"quyết định kỷ luật\", \"quyết định thành lập\", \"quyết định ban hành quy chế\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "slide-pptx",
+      "source": "./skills/slide-pptx",
+      "description": "Lên dàn ý, viết nội dung từng slide và tạo file PowerPoint (.pptx) cho thuyết trình văn phòng — báo cáo sếp/giao ban, pitch khách hàng, giới thiệu công ty, đào tạo nội bộ, kế hoạch kinh doanh, kêu gọi đầu tư. Dùng khi người dùng nói \"làm slide\", \"làm PowerPoint\", \"dàn ý thuyết trình\", \"slide báo cáo\", \"slide giới thiệu công ty\", \"pitch deck\", \"chuyển tài liệu này thành slide\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "thong-bao",
+      "source": "./skills/thong-bao",
+      "description": "Soạn thông báo nội bộ hoặc thông báo gửi khách hàng/đối tác — nghỉ lễ Tết, lịch họp, thay đổi chính sách, tuyển dụng, thay đổi địa chỉ/tài khoản ngân hàng, tăng giá, bảo trì hệ thống. Có cả bản chính thức (đúng thể thức NĐ 30) và bản ngắn để gửi Zalo/email. Dùng khi người dùng nói \"soạn thông báo\", \"thông báo nghỉ lễ\", \"thông báo họp\", \"thông báo cho khách\", \"viết thông báo gửi nhóm Zalo\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "to-trinh",
+      "source": "./skills/to-trinh",
+      "description": "Soạn tờ trình xin phê duyệt gửi cấp trên — xin chủ trương, phê duyệt dự toán/kinh phí, mua sắm, tuyển dụng, ban hành quy chế, ký hợp đồng, thanh lý tài sản. Dùng khi người dùng nói \"viết tờ trình\", \"làm tờ trình xin duyệt\", \"trình giám đốc phê duyệt\", \"tờ trình mua sắm\", \"tờ trình xin kinh phí\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "tom-tat-tai-lieu",
+      "source": "./skills/tom-tat-tai-lieu",
+      "description": "Tóm tắt tài liệu dài thành ý chính và việc cần làm — văn bản pháp luật, công văn, hợp đồng, báo cáo, biên bản, email dài, bài nghiên cứu, sách, transcript cuộc họp/video. Tóm tắt nhiều tầng (1 câu – ý chính – chi tiết) và trích \"ai phải làm gì, hạn nào\". Dùng khi người dùng nói \"tóm tắt\", \"tóm tắt giúp\", \"đọc giúp file này nói gì\", \"rút ý chính\", \"TL;DR\", \"có gì cần làm trong văn bản này\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "tro-ly-bao-gia",
+      "source": "./skills/tro-ly-bao-gia",
+      "description": "Soạn báo giá (bảng chào giá) chuyên nghiệp cho khách hàng Việt Nam — có VAT, chiết khấu, hiệu lực báo giá, điều khoản thanh toán, giao hàng, bảo hành, số tiền bằng chữ; xuất được Excel. Dùng khi người dùng nói \"làm báo giá\", \"soạn báo giá\", \"bảng chào giá\", \"gửi báo giá cho khách\", \"báo giá dịch vụ\", \"quotation\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "tro-ly-hop-dong",
+      "source": "./skills/tro-ly-hop-dong",
+      "description": "Soạn và rà soát hợp đồng theo pháp luật Việt Nam — hợp đồng mua bán hàng hóa, cung cấp dịch vụ, thuê nhà/văn phòng, lao động, cộng tác viên/khoán việc, đại lý, NDA bảo mật, phụ lục hợp đồng. Có checklist điều khoản dễ tranh chấp. Dùng khi người dùng nói \"soạn hợp đồng\", \"làm hợp đồng mua bán\", \"hợp đồng dịch vụ\", \"hợp đồng thuê\", \"hợp đồng lao động\", \"hợp đồng CTV\", \"rà hợp đồng\", \"kiểm tra hợp đồng này có rủi ro gì\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "viet-nhu-nguoi",
+      "source": "./skills/viet-nhu-nguoi",
+      "description": "Gỡ \"giọng máy\" khỏi văn bản tiếng Việt do AI viết — bỏ các cụm sáo rỗng, cấu trúc lặp, giọng quảng cáo, kết luận thừa — để đọc như người thật viết, giữ nguyên dữ kiện. Dùng khi người dùng nói \"viết lại cho tự nhiên\", \"nghe như AI quá\", \"gỡ giọng AI\", \"viết như người\", \"humanize\", \"sửa cho đỡ máy móc\", hoặc dán một đoạn văn và muốn nó bớt sến, bớt sáo.",
+      "category": "van-phong"
+    },
+    {
+      "name": "xu-ly-pdf",
+      "source": "./skills/xu-ly-pdf",
+      "description": "Xử lý file PDF — gộp, tách, trích trang, xoay trang, rút chữ, rút bảng ra Excel, nhận dạng chữ (OCR) tiếng Việt cho bản scan, đọc và trích thông tin từ hóa đơn, hợp đồng, công văn PDF. Dùng khi người dùng nói \"gộp PDF\", \"tách PDF\", \"cắt trang PDF\", \"lấy bảng trong PDF ra Excel\", \"PDF scan không copy được chữ\", \"OCR\", \"đọc file PDF này\".",
+      "category": "van-phong"
+    },
+    {
+      "name": "tron-bo-20-skill",
+      "source": "./",
+      "description": "Cài cả 20 skill văn phòng – kinh doanh Việt Nam trong một lần.",
+      "category": "van-phong"
+    }
+  ]
+}
