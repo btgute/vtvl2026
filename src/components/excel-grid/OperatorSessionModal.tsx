@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
+import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import {
   OperatorSession,
   EmailSessionRecord,
@@ -192,10 +193,14 @@ export function OperatorSessionModal({
                 onChange={(e) => setUnitCode(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] focus:border-[#004776] outline-hidden text-[#004776] font-medium bg-white"
               >
-                {HCMUTE_UNITS.map((u) => (
-                  <option key={u.code} value={u.code}>
-                    [{u.code}] {u.nameVi}
-                  </option>
+                {QD2266_GROUPED_UNITS_CATALOG.map((group) => (
+                  <optgroup key={group.groupLabel} label={group.groupLabel}>
+                    {group.units.map((u) => (
+                      <option key={u.code} value={u.code}>
+                        [{u.code}] {u.nameVi}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>

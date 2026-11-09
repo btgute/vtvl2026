@@ -1,7 +1,7 @@
 /**
  * src/configs/hcmute-qd2266-missions.ts
  * Bóc tách và quản lý Danh mục Nhiệm vụ (Biểu 1. A1_NhiemVu) từ Quyết định số 2266/QĐ-ĐHCNKT
- * ngày 23/6/2026 cho 28 đơn vị và toàn bộ 51 đơn vị thuộc HCM-UTE.
+ * ngày 23/6/2026 cho 28 đơn vị và toàn bộ các Khoa, Viện, Phòng ban thuộc HCM-UTE.
  */
 
 import qd2266DataRaw from './hcmute-qd2266-missions.json';
@@ -30,9 +30,89 @@ export interface Qd2266UnitRecord {
 
 export const QD2266_UNITS_DATA = qd2266DataRaw as Record<string, Qd2266UnitRecord>;
 
+export interface GroupedUnitOption {
+  code: string;
+  nameVi: string;
+  plNum?: number;
+  plLabel?: string;
+}
+
+export interface UnitGroupCategory {
+  groupLabel: string;
+  units: GroupedUnitOption[];
+}
+
 /**
- * Danh mục chuẩn 28 Phụ lục theo QĐ 2266/QĐ-ĐHCNKT
+ * Danh mục chuẩn đầy đủ các Khoa, Viện, Phòng ban, Trung tâm theo 4 khối của HCM-UTE
  */
+export const QD2266_GROUPED_UNITS_CATALOG: UnitGroupCategory[] = [
+  {
+    groupLabel: 'Khối Khoa & Viện đào tạo (QĐ 2266 - PL01 & PL02)',
+    units: [
+      { code: 'FME', nameVi: 'Khoa Cơ khí Chế tạo máy', plNum: 1, plLabel: 'PL01' },
+      { code: 'FEET', nameVi: 'Khoa Cơ khí Động lực', plNum: 1, plLabel: 'PL01' },
+      { code: 'FEEE', nameVi: 'Khoa Điện - Điện tử', plNum: 1, plLabel: 'PL01' },
+      { code: 'FIT', nameVi: 'Khoa Công nghệ Thông tin', plNum: 1, plLabel: 'PL01' },
+      { code: 'FCFT', nameVi: 'Khoa Công nghệ Hóa học và Thực phẩm', plNum: 1, plLabel: 'PL01' },
+      { code: 'FCE', nameVi: 'Khoa Xây dựng', plNum: 1, plLabel: 'PL01' },
+      { code: 'FE', nameVi: 'Khoa Kinh tế', plNum: 1, plLabel: 'PL01' },
+      { code: 'FAE', nameVi: 'Khoa Đào tạo Tiên tiến', plNum: 2, plLabel: 'PL02' },
+      { code: 'FGAM', nameVi: 'Khoa In và Truyền thông', plNum: 1, plLabel: 'PL01' },
+      { code: 'FPI', nameVi: 'Khoa Lý luận Chính trị', plNum: 1, plLabel: 'PL01' },
+      { code: 'FAS', nameVi: 'Khoa Khoa học Ứng dụng', plNum: 1, plLabel: 'PL01' },
+      { code: 'FFL', nameVi: 'Khoa Ngoại ngữ', plNum: 1, plLabel: 'PL01' },
+      { code: 'FFT', nameVi: 'Khoa Thời trang và Du lịch', plNum: 1, plLabel: 'PL01' },
+      { code: 'ITE', nameVi: 'Viện Sư phạm Kỹ thuật', plNum: 1, plLabel: 'PL01' },
+      { code: 'IIE', nameVi: 'Viện Đào tạo quốc tế', plNum: 25, plLabel: 'PL25' },
+      { code: 'SDH', nameVi: 'Viện Sau đại học', plNum: 26, plLabel: 'PL26' },
+      { code: 'TPC', nameVi: 'Trường Trung học Kỹ thuật thực hành', plNum: 1, plLabel: 'PL01' }
+    ]
+  },
+  {
+    groupLabel: 'Khối Phòng ban chức năng (QĐ 2266 - PL07..PL19)',
+    units: [
+      { code: 'TCNS', nameVi: 'Phòng Tổ chức - Nhân sự', plNum: 18, plLabel: 'PL18' },
+      { code: 'PDT', nameVi: 'Phòng Đào tạo', plNum: 8, plLabel: 'PL08' },
+      { code: 'PHCTH', nameVi: 'Phòng Hành chính - Tổng hợp', plNum: 9, plLabel: 'PL09' },
+      { code: 'PKHTC', nameVi: 'Phòng Kế hoạch - Tài chính', plNum: 11, plLabel: 'PL11' },
+      { code: 'PKHCN', nameVi: 'Phòng Khoa học Công nghệ', plNum: 12, plLabel: 'PL12' },
+      { code: 'PKTDBCL', nameVi: 'Phòng Khảo thí và Đảm bảo chất lượng', plNum: 10, plLabel: 'PL10' },
+      { code: 'PCTSV', nameVi: 'Phòng Công tác sinh viên', plNum: 7, plLabel: 'PL07' },
+      { code: 'PQTTH&TT', nameVi: 'Phòng Quản trị thương hiệu và Truyền thông', plNum: 16, plLabel: 'PL16' },
+      { code: 'PQTCSVC', nameVi: 'Phòng Quản trị cơ sở vật chất', plNum: 17, plLabel: 'PL17' },
+      { code: 'PQLDTXDDT', nameVi: 'Phòng Quản lý đầu tư xây dựng và Đấu thầu', plNum: 13, plLabel: 'PL13' },
+      { code: 'PQHQT', nameVi: 'Phòng Quan hệ Quốc tế', plNum: 14, plLabel: 'PL14' },
+      { code: 'PQHDN', nameVi: 'Phòng Quan hệ Doanh nghiệp', plNum: 15, plLabel: 'PL15' },
+      { code: 'BQLKTX', nameVi: 'Ban Quản lý ký túc xá', plNum: 6, plLabel: 'PL06' },
+      { code: 'TYT', nameVi: 'Trạm Y tế', plNum: 19, plLabel: 'PL19' }
+    ]
+  },
+  {
+    groupLabel: 'Khối Trung tâm, Phân hiệu & Tạp chí (QĐ 2266 - PL03..PL28)',
+    units: [
+      { code: 'PHBP', nameVi: 'Phân hiệu tại Bình Phước', plNum: 28, plLabel: 'PL28' },
+      { code: 'TTHLDHS', nameVi: 'Trung tâm Học liệu và Dạy học số', plNum: 22, plLabel: 'PL22' },
+      { code: 'TTTTMT', nameVi: 'Trung tâm Thông tin - Máy tính', plNum: 24, plLabel: 'PL24' },
+      { code: 'TTCNPM', nameVi: 'Trung tâm Công nghệ phần mềm', plNum: 21, plLabel: 'PL21' },
+      { code: 'TTSTKN&CGCN', nameVi: 'Trung tâm Sáng tạo khởi nghiệp và Chuyển giao công nghệ', plNum: 23, plLabel: 'PL23' },
+      { code: 'TTGDTC', nameVi: 'Trung tâm Giáo dục thể chất', plNum: 3, plLabel: 'PL03' },
+      { code: 'TTGDQPAN', nameVi: 'Trung tâm Giáo dục Quốc phòng và An ninh', plNum: 4, plLabel: 'PL04' },
+      { code: 'BANTT', nameVi: 'Ban An ninh trật tự', plNum: 5, plLabel: 'PL05' },
+      { code: 'TCKHGDKT', nameVi: 'Tạp chí Khoa học Giáo dục Kỹ thuật', plNum: 20, plLabel: 'PL20' }
+    ]
+  },
+  {
+    groupLabel: 'Khối Quản trị & Đảng - Đoàn thể',
+    units: [
+      { code: 'VPDU', nameVi: 'Văn phòng Đảng ủy', plNum: 27, plLabel: 'PL27' },
+      { code: 'HDT', nameVi: 'Hội đồng trường' },
+      { code: 'BGH', nameVi: 'Ban Giám hiệu' },
+      { code: 'CDT', nameVi: 'Công đoàn Trường' },
+      { code: 'DTN', nameVi: 'Đoàn Thanh niên - Hội Sinh viên' }
+    ]
+  }
+];
+
 export const QD2266_28_UNITS_CATALOG: { plNum: number; code: string; nameVi: string }[] = [
   { plNum: 1, code: 'KHOA', nameVi: 'Các Khoa, Viện đào tạo' },
   { plNum: 2, code: 'KDTTT', nameVi: 'Khoa Đào tạo tiên tiến' },
@@ -64,9 +144,6 @@ export const QD2266_28_UNITS_CATALOG: { plNum: number; code: string; nameVi: str
   { plNum: 28, code: 'PHBP', nameVi: 'Phân hiệu tại Bình Phước' }
 ];
 
-/**
- * Bảng ánh xạ mã đơn vị trong HCMUTE_UNITS (cả mã tiếng Anh và viết tắt khác) sang mã 28 Phụ lục QĐ 2266
- */
 export const UNIT_ALIAS_TO_QD2266: Record<string, string> = {
   // Phòng ban chức năng
   AAO: 'PDT', PDT: 'PDT',
@@ -97,27 +174,23 @@ export const UNIT_ALIAS_TO_QD2266: Record<string, string> = {
   // Viện & Khoa đặc thù
   IIE: 'VDTQT', VDTQT: 'VDTQT',
   SDH: 'VSDH', VSDH: 'VSDH',
-  FAE: 'KDTTT', KDTTT: 'KDTTT',
+  FAE: 'KDTTT', KDTTT: 'KDTTT', FHQ: 'KDTTT',
   // Khối Khoa chung (PL1)
-  FME: 'KHOA', FEET: 'KHOA', FEEE: 'KHOA', FIT: 'KHOA', FCFT: 'KHOA',
-  FCE: 'KHOA', FE: 'KHOA', FGAM: 'KHOA', FPI: 'KHOA', FAS: 'KHOA',
-  FFL: 'KHOA', ITE: 'KHOA', TPC: 'KHOA', KHOA: 'KHOA'
+  FME: 'KHOA', FEET: 'KHOA', FVE: 'KHOA', FEEE: 'KHOA', FIT: 'KHOA', FCFT: 'KHOA',
+  FCE: 'KHOA', FE: 'KHOA', FGAM: 'KHOA', FGA: 'KHOA', FPI: 'KHOA', FPT: 'KHOA',
+  FLLCT: 'KHOA', FAS: 'KHOA', FFL: 'KHOA', FFT: 'KHOA', FFD: 'KHOA', FTT: 'KHOA', ITE: 'KHOA', TPC: 'KHOA',
+  KHOA: 'KHOA'
 };
 
-/**
- * Lấy danh sách nhiệm vụ gốc chuẩn A1 cho bất kỳ đơn vị nào thuộc HCM-UTE
- */
 export function getQd2266A1RowsForUnit(unitCode: string, unitNameVi?: string): GenericGridRow[] {
   const normCode = unitCode.toUpperCase().trim();
   const targetPlKey = UNIT_ALIAS_TO_QD2266[normCode] || 'KHOA';
   const unitRecord = QD2266_UNITS_DATA[targetPlKey] || QD2266_UNITS_DATA['KHOA'];
-  
   if (!unitRecord) return [];
 
   const actualUnitDef = HCMUTE_UNITS.find((u) => u.code.toUpperCase() === normCode);
   const agencyName = unitNameVi || actualUnitDef?.nameVi || unitRecord.unitName;
 
-  // Với TCNS: Sử dụng 39 nhiệm vụ chuẩn từ Excel
   if (normCode === 'TCNS' || targetPlKey === 'TCNS') {
     return unitRecord.missions.map((m, idx) => ({
       id: `a1-${idx + 1}`,
@@ -131,13 +204,11 @@ export function getQd2266A1RowsForUnit(unitCode: string, unitNameVi?: string): G
     }));
   }
 
-  // Với các đơn vị khác: Format đúng mã [MÃ_ĐV].NV<XX> và tên cơ quan
   return unitRecord.missions.map((m, idx) => {
     const seq = String(idx + 1).padStart(2, '0');
-    const taskCode = `${normCode}.NV${seq}`;
     return {
       id: `a1-${idx + 1}`,
-      maNhiemVu: taskCode,
+      maNhiemVu: `${normCode}.NV${seq}`,
       tenNhiemVu: m.tenNhiemVu,
       coQuan: agencyName,
       canCu: m.canCu,
@@ -147,4 +218,3 @@ export function getQd2266A1RowsForUnit(unitCode: string, unitNameVi?: string): G
     };
   });
 }
-

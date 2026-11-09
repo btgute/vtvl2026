@@ -14,13 +14,13 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Biểu 1 (Bước 1 nghiệp vụ): Rà soát chức năng, nhiệm vụ được giao theo QĐ chức năng nhiệm vụ (QĐ 2266, Phụ lục 18) và phân loại tiếp tục thực hiện.',
     ruleHint: 'Mã nhiệm vụ chuẩn: [MÃ_ĐV].NV[01..99] (ví dụ: TCNS.NV01). Mỗi nhiệm vụ có một mã riêng, tự động tăng dần khi thêm mới.',
     columns: [
-      { colLetter: 'A', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ ([ĐV].NVxx)', width: '150px' },
-      { colLetter: 'B', field: 'tenNhiemVu', headerName: 'Tên nhiệm vụ được giao', width: '440px' },
-      { colLetter: 'C', field: 'coQuan', headerName: 'Cơ quan / Đơn vị thực hiện', width: '220px' },
-      { colLetter: 'D', field: 'canCu', headerName: 'Căn cứ giao nhiệm vụ (QĐ 2266)', width: '260px' },
-      { colLetter: 'E', field: 'ky', headerName: 'Kỳ số liệu', width: '140px' },
-      { colLetter: 'F', field: 'trangThai', headerName: 'Trạng thái', width: '150px', type: 'select', selectOptions: ['Tiếp tục thực hiện', 'Mới tiếp nhận', 'Đã chuyển giao', 'Không còn thực hiện'] },
-      { colLetter: 'G', field: 'nguon', headerName: 'Nguồn dữ liệu / Quyết định', width: '240px' }
+      { colLetter: 'A', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ ([ĐV].NVxx)', width: '170px' },
+      { colLetter: 'B', field: 'tenNhiemVu', headerName: 'Tên nhiệm vụ được giao', width: '480px' },
+      { colLetter: 'C', field: 'coQuan', headerName: 'Cơ quan / Đơn vị thực hiện', width: '250px' },
+      { colLetter: 'D', field: 'canCu', headerName: 'Căn cứ giao nhiệm vụ (QĐ 2266)', width: '280px' },
+      { colLetter: 'E', field: 'ky', headerName: 'Kỳ số liệu', width: '160px' },
+      { colLetter: 'F', field: 'trangThai', headerName: 'Trạng thái', width: '170px', type: 'select', selectOptions: ['Tiếp tục thực hiện', 'Mới tiếp nhận', 'Đã chuyển giao', 'Không còn thực hiện'] },
+      { colLetter: 'G', field: 'nguon', headerName: 'Nguồn dữ liệu / Quyết định', width: '260px' }
     ]
   },
   A2: {

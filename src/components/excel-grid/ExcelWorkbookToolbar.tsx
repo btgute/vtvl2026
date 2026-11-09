@@ -5,7 +5,7 @@ import { ExcelSheetKey, ExcelSheetMeta } from './excel-grid-types';
 import { HcmuteUnit } from '@/types/vtvl';
 import { OperatorSession } from '@/services/telemetry/operator-session';
 import { ValidationReport } from '@/services/validation/vtvl-validation-types';
-import { QD2266_28_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
+import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import {
   Download, Building2, Sparkles, ShieldCheck, CheckCircle2, RefreshCw
 } from 'lucide-react';
@@ -92,22 +92,26 @@ export function ExcelWorkbookToolbar({
 
       {/* Quick actions: Unit Selector, VTVL Templates, Save, QA & Export */}
       <div className="flex flex-wrap items-center gap-2">
-        {activeSheet === 'A1' && (
-          <div className="flex items-center gap-1.5 bg-[#f1f5f9] px-2 py-1 rounded-lg border border-[#cbd5e1]">
-            <span className="text-xs font-bold text-[#004776]">Đơn vị QĐ 2266:</span>
-            <select
-              value={unitCode}
-              onChange={(e) => onUnitChange(e.target.value)}
-              className="bg-white border border-[#cbd5e1] rounded px-2 py-0.5 text-xs font-bold text-[#004776] cursor-pointer"
-            >
-              {QD2266_28_UNITS_CATALOG.map((u) => (
-                <option key={u.code} value={u.code}>
-                  PL{u.plNum < 10 ? `0${u.plNum}` : u.plNum} · {u.code} – {u.nameVi}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        {/* Unit Selector: Always visible so user can select any Khoa or Unit from any sheet */}
+        <div className="flex items-center gap-1.5 bg-[#f1f5f9] px-2.5 py-1 rounded-lg border border-[#cbd5e1]">
+          <span className="text-xs font-bold text-[#004776] shrink-0">Đơn vị:</span>
+          <select
+            value={unitCode}
+            onChange={(e) => onUnitChange(e.target.value)}
+            className="bg-white border border-[#cbd5e1] rounded px-2.5 py-1 text-xs font-bold text-[#004776] cursor-pointer max-w-[280px] sm:max-w-[340px]"
+            title="Chọn Khoa, Viện, Phòng ban hoặc Trung tâm để tải dữ liệu"
+          >
+            {QD2266_GROUPED_UNITS_CATALOG.map((group) => (
+              <optgroup key={group.groupLabel} label={group.groupLabel}>
+                {group.units.map((u) => (
+                  <option key={u.code} value={u.code}>
+                    [{u.code}] {u.nameVi} {u.plLabel ? `(${u.plLabel})` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
 
         {activeSheet === 'C1' && (
           <>

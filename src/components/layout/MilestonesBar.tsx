@@ -59,7 +59,7 @@ interface WorkflowSidebarProps {
 }
 
 export function WorkflowSidebar({
-  activeStep, onSelectStep, unitCode, errorStep, alwaysExpanded = false
+  activeStep, onSelectStep, unitCode, errorStep, alwaysExpanded = true
 }: WorkflowSidebarProps) {
   const pathname = usePathname();
   const [activeUnit, setActiveUnit] = useState(() => getActiveUnitDefinition(unitCode));
