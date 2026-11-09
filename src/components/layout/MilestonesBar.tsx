@@ -36,7 +36,7 @@ export const SIDEBAR_EIGHT_STEPS: SidebarStepItem[] = [
   { num: 4, shortTitle: 'Tác động CĐS, tự chủ, thuê dịch vụ', sheets: 'Biểu 4. B2_CT → 5. B2', title: 'Bước 4 — Thay đổi do CĐS, tự chủ, thuê DV (B2_CT → B2)', href: '/bam-gio?step=4', subTasks: [{ id: 'task-3-export', label: 'Kê khai công đoạn số hóa & xuất phiếu B1–B2' }] },
   { num: 5, shortTitle: 'Danh mục VTVL, mô tả & năng lực', sheets: 'Biểu 6. C1 · 7. C2', title: 'Bước 5 — Danh mục VTVL, bản mô tả & năng lực (C1, C2)', href: '/tao-tep?step=5', subTasks: [{ id: 'task-1-name', label: 'Tên VTVL cụ thể, Bậc 1–5 & Quỹ giờ PP2' }] },
   { num: 6, shortTitle: 'Xác định số người cần thiết (FTE)', sheets: 'Biểu 8. C3_NhuCau', title: 'Bước 6 — Xác định số người cần thiết PP1/PP2/PP3 (C3)', href: '/tao-tep?step=6', subTasks: [{ id: 'task-2-export', label: 'Tính nhu cầu C3 & Xuất bộ 10 biểu gốc (v1)' }] },
-  { num: 7, shortTitle: 'Đối chiếu nhân lực & phương án biên chế', sheets: 'Biểu 9. D1 · 10. D2', title: 'Bước 7 — Đối chiếu nhân lực D1 & phương án biên chế D2', href: '/tao-tep?step=7', subTasks: [{ id: 'task-4-forms', label: 'Gộp phiếu khảo sát & lập phương án 2027–2031 (v2)' }] },
+  { num: 7, shortTitle: 'Đối chiếu nhân lực & phương án biên chế', sheets: 'Biểu 9. D1 · 10. D2 · DU_BAO', title: 'Bước 7 — Đối chiếu nhân lực D1 & phương án biên chế D2', href: '/tao-tep?step=7', subTasks: [{ id: 'task-4-forms', label: 'Gộp phiếu khảo sát & lập phương án 2027–2031 (v2)' }] },
   { num: 8, shortTitle: 'Kiểm tra, xác nhận & gửi kết quả', sheets: 'Biểu 13. K · 14. T · 15. S', title: 'Bước 8 — Kiểm tra 10 biểu, xác nhận & gửi kết quả (K–T–S)', href: '/ra-soat', subTasks: [{ id: 'task-5-run', label: 'Kiểm tra chéo 6 chỉ tiêu K_KiemTra' }, { id: 'task-5-export', label: 'Xuất báo cáo thẩm định & Tờ trình' }] }
 ];
 
@@ -125,6 +125,7 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
         const needsSupplement = !isCurrent && !isDone && !hasError && s.num === 1 && (!actorInfo.email || !actorInfo.title);
         const handleInternal = Boolean(
           onSelectStep && (
+            pathname === '/bang-tinh' ||
             (pathname === '/tao-tep' && (s.num === 1 || s.num === 2 || s.num === 5 || s.num === 6 || s.num === 7)) ||
             (pathname === '/bam-gio' && (s.num === 3 || s.num === 4))
           )
