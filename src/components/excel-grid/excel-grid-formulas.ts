@@ -17,6 +17,11 @@ export function recalculateGridFormulas(
     const extra = Number(existing?.gioBoSung ?? 0);
     const hours = Math.round((qty * mins / 60) * 10) / 10;
     const total = Math.round((hours + extra) * 10) / 10;
+    const rawGiaiTrinh = String(existing?.giaiTrinhKhacChuan || '');
+    let b1Alert = total > 0 ? 'ĐẠT' : 'CHƯA ĐẠT';
+    if (rawGiaiTrinh.trim() !== '' && !rawGiaiTrinh.trim().startsWith('Đã xác nhận:')) {
+      b1Alert = 'CHỜ XÁC NHẬN KHÁC CHUẨN';
+    }
     return {
       id: existing?.id || `b1-sync-${idx + 1}`,
       maCongViec: t.maCongViec,
@@ -29,7 +34,8 @@ export function recalculateGridFormulas(
       nguon: existing?.nguon || 'Hệ thống S-Link & Sổ theo dõi 2025–2026',
       ppThucTe: existing?.ppThucTe || 'nhật ký công việc',
       phutApDung: mins,
-      canhBao: total > 0 ? 'ĐẠT' : 'CHƯA ĐẠT'
+      canhBao: b1Alert,
+      giaiTrinhKhacChuan: rawGiaiTrinh
     };
   });
   next.B1 = updatedB1;
@@ -72,6 +78,12 @@ export function recalculateGridFormulas(
     const fteCalc = Math.round((netHours / stdHours) * 100) / 100;
     const qlPeople = existing?.nguoiPp1 ? Number(existing.nguoiPp1) : (vCode.includes('QL43') || vCode.includes('PTP') || vCode.includes('PTK') ? 2 : 1);
     const people = isQl ? qlPeople : Math.max(1, Math.ceil(fteCalc));
+    const pp1Explain = 'Định biên theo PP1; QĐ 2266, PL18 và BMTCV&KNL';
+    const pp2Explain = 'Kết quả đo lường khối lượng công việc tại Biểu B1 kỳ 01/10/2025–30/9/2026; quỹ giờ chuẩn 1.904 giờ theo C1';
+    const rawExplain = String(existing?.nguonGiaiTrinh || '').trim();
+    const resolvedExplain = (rawExplain === '' || rawExplain === 'a')
+      ? (isQl ? pp1Explain : pp2Explain)
+      : rawExplain;
     return {
       id: existing?.id || `c3-sync-${idx + 1}`,
       maVtvl: vCode,
@@ -83,7 +95,7 @@ export function recalculateGridFormulas(
       nguoiQuyDoi: isQl ? '' : fteCalc,
       nguoiPp1: isQl ? qlPeople : 0,
       nguoiCanBoTri: people,
-      nguonGiaiTrinh: existing?.nguonGiaiTrinh || (isQl ? 'PP1 theo cơ cấu chức danh lãnh đạo (NĐ 232/2026/NĐ-CP & QĐ 2266)' : 'Khối lượng B1 chia quỹ giờ chuẩn'),
+      nguonGiaiTrinh: resolvedExplain,
       canhBao: 'ĐẠT'
     };
   });
@@ -96,17 +108,20 @@ export function recalculateGridFormulas(
     const existing = duBaoMap.get(vCode);
     const c3Match = updatedC3.find((r) => r.maVtvl === vCode);
     const basePeople = Number(c3Match?.nguoiCanBoTri) || 1;
-    const diff = Number(existing?.bienDong) || 0;
+    const rawBienDong = existing?.bienDong;
+    const isMissingBienDong = rawBienDong === '' || rawBienDong === null || rawBienDong === undefined;
+    const diff = isMissingBienDong ? 0 : Number(rawBienDong);
+    const duBaoAlert = isMissingBienDong ? 'THIẾU BIẾN ĐỘNG (NHẬP 0 NẾU KHÔNG ĐỔI)' : 'ĐẠT';
     return {
       id: existing?.id || `dubao-sync-${idx + 1}`,
       maVtvl: vCode,
       nam: existing?.nam || '2027',
-      bienDong: diff,
+      bienDong: isMissingBienDong ? '' : diff,
       noiDungThayDoi: existing?.noiDungThayDoi || 'Duy trì ổn định nhân lực',
       canCuNguon: existing?.canCuNguon || 'Kế hoạch chiến lược HCM-UTE',
       nguoiC3: basePeople,
       nguoiCanBoTriNam: Math.max(0, basePeople + diff),
-      kiemTra: 'ĐẠT'
+      kiemTra: duBaoAlert
     };
   });
   next.DU_BAO = updatedDuBao;
@@ -120,6 +135,10 @@ export function recalculateGridFormulas(
     const duBaoMatch = updatedDuBao.find((d) => d.maVtvl === vCode);
     const need = Number(duBaoMatch?.nguoiCanBoTriNam) || 1;
     const countD1 = d1Staff.filter((d) => d.maVtvl === vCode).length;
+    const rawAdjust = existing?.deNghiDieuChinh;
+    const isMissingAdjust = rawAdjust === '' || rawAdjust === null || rawAdjust === undefined;
+    const adjustVal = isMissingAdjust ? (need - countD1) : Number(rawAdjust);
+    const d2Alert = isMissingAdjust ? 'THIẾU BIẾN ĐỘNG (NHẬP 0 NẾU KHÔNG ĐỔI)' : 'ĐẠT';
     return {
       id: existing?.id || `d2-sync-${idx + 1}`,
       maVtvl: vCode,
@@ -127,9 +146,9 @@ export function recalculateGridFormulas(
       soNguoiCanBoTri: need,
       soNguoiCoTheBoTri: countD1,
       bienCheGiao: existing?.bienCheGiao ?? countD1,
-      deNghiDieuChinh: need - countD1,
+      deNghiDieuChinh: isMissingAdjust ? '' : adjustVal,
       nguonGiaiTrinh: existing?.nguonGiaiTrinh || 'Cân đối nhân sự năm 2027',
-      canhBao: 'ĐẠT'
+      canhBao: d2Alert
     };
   });
   next.D2 = updatedD2;

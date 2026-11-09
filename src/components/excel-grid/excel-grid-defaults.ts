@@ -23,12 +23,12 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
   // 1. C1_VTVL — Nạp danh mục VTVL chuẩn theo Phụ lục I và loại hình đơn vị
   const c1Rows: GenericGridRow[] = isTcns
     ? [
-        { id: 'c1-1', maVtvl: 'TCNS.HT45', tenVtvl: 'Tổ chức cán bộ, thi đua khen thưởng', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-2', maVtvl: 'TCNS.HT47', tenVtvl: 'Tiếp công dân, giải quyết khiếu nại, tố cáo', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-3', maVtvl: 'TCNS.HT48', tenVtvl: 'Phòng, chống tham nhũng, tiêu cực, lãng phí', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-4', maVtvl: 'TCNS.HT49', tenVtvl: 'Hành chính – Tổng hợp', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-5', maVtvl: 'TCNS.QL33', tenVtvl: 'Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'PP1 – theo cơ cấu và chức danh quản lý', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-6', maVtvl: 'TCNS.QL43', tenVtvl: 'Phó Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'PP1 – theo cơ cấu và chức danh quản lý', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' }
+        { id: 'c1-1', maVtvl: 'TCNS.HT45', tenVtvl: 'Tổ chức cán bộ, thi đua khen thưởng', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'Tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-2', maVtvl: 'TCNS.HT47', tenVtvl: 'Tiếp công dân, giải quyết khiếu nại, tố cáo', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'Tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-3', maVtvl: 'TCNS.HT48', tenVtvl: 'Phòng, chống tham nhũng, tiêu cực, lãng phí', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'Tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-4', maVtvl: 'TCNS.HT49', tenVtvl: 'Hành chính – Tổng hợp', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'Tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-5', maVtvl: 'TCNS.QL33', tenVtvl: 'Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'PP1 – theo cơ cấu và chức danh quản lý', trangThai: 'Tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-6', maVtvl: 'TCNS.QL43', tenVtvl: 'Phó Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'PP1 – theo cơ cấu và chức danh quản lý', trangThai: 'Tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' }
       ]
     : buildRecommendedC1Rows(unitCode, group);
 
@@ -40,14 +40,14 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
         tenNhiemVu: m.missionName,
         coQuan: unitDef.nameVi,
         canCu: m.legalBasis || 'QĐ 2266/QĐ-ĐHCNKT',
-        ky: '2025–2026',
-        trangThai: m.status || 'Tiếp tục thực hiện',
+        ky: '01/10/2025–30/9/2026',
+        trangThai: 'Tiếp tục thực hiện',
         nguon: m.source || 'QĐ 2266 & Đề án đơn vị'
       }))
     : [
-        { id: 'a1-1', maNhiemVu: `${unitCode}.NV01`, tenNhiemVu: `Quản lý, điều hành và tổ chức chuyên môn tại ${unitDef.nameVi}`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
-        { id: 'a1-2', maNhiemVu: `${unitCode}.NV02`, tenNhiemVu: `Thực hiện nghiệp vụ chuyên ngành và tham mưu phát triển đơn vị`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
-        { id: 'a1-3', maNhiemVu: `${unitCode}.NV03`, tenNhiemVu: `Quản lý hồ sơ, phục vụ người học và cán bộ viên chức`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' }
+        { id: 'a1-1', maNhiemVu: `${unitCode}.NV01`, tenNhiemVu: `Quản lý, điều hành và tổ chức chuyên môn tại ${unitDef.nameVi}`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '01/10/2025–30/9/2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
+        { id: 'a1-2', maNhiemVu: `${unitCode}.NV02`, tenNhiemVu: `Thực hiện nghiệp vụ chuyên ngành và tham mưu phát triển đơn vị`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '01/10/2025–30/9/2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
+        { id: 'a1-3', maNhiemVu: `${unitCode}.NV03`, tenNhiemVu: `Quản lý hồ sơ, phục vụ người học và cán bộ viên chức`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '01/10/2025–30/9/2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' }
       ];
 
   // 3. A2_CongViec
@@ -179,7 +179,9 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
       nguoiQuyDoi: isQl ? '' : fteCalc,
       nguoiPp1: isQl ? qlPeople : 0,
       nguoiCanBoTri: requiredPeople,
-      nguonGiaiTrinh: isQl ? 'PP1 theo cơ cấu chức danh lãnh đạo (NĐ 232/2026/NĐ-CP & QĐ 2266)' : 'Khối lượng B1 thực tế kỳ 2025–2026 chia 1.904h',
+      nguonGiaiTrinh: isQl
+        ? 'Định biên theo PP1; QĐ 2266, PL18 và BMTCV&KNL'
+        : 'Kết quả đo lường khối lượng công việc tại Biểu B1 kỳ 01/10/2025–30/9/2026; quỹ giờ chuẩn 1.904 giờ theo C1',
       canhBao: 'ĐẠT'
     };
   });
@@ -231,12 +233,31 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
 
   // 14. T_TienDo
   const tRows: GenericGridRow[] = [
-    { id: 't-1', maDonVi: unitDef.code, tenDonVi: unitDef.nameVi, soNhiemVu: a1Rows.length, soCongViec: a2Rows.length, soVtvl: c1Rows.length, tongFte: c3Rows.reduce((acc, c) => acc + (Number(c.nguoiCanBoTri) || 0), 0), trangThai: 'Đạt 6/6 chỉ tiêu kiểm tra' }
+    {
+      id: 't-1',
+      maDonVi: unitDef.code,
+      tenDonVi: isTcns ? 'Phòng Tổ chức – Nhân sự (HCM-UTE)' : `${unitDef.nameVi} (HCM-UTE)`,
+      soNhiemVu: a1Rows.length,
+      soCongViec: a2Rows.length,
+      soVtvl: c1Rows.length,
+      tongFte: c3Rows.reduce((acc, c) => acc + (Number(c.nguoiCanBoTri) || 0), 0),
+      trangThai: 'Đạt 6/6 chỉ tiêu kiểm tra'
+    }
   ];
 
   // 15. S_NhatKy
   const sRows: GenericGridRow[] = [
-    { id: 's-1', ky: '2025–2026', bieu: 'Toàn bộ 15 biểu', ma: unitDef.code, noiDung: `Khởi tạo dữ liệu chuẩn bộ biểu VTVL đơn vị ${unitDef.nameVi}`, nguon: 'Hệ thống VTVL 360 HCM-UTE', nguoiXacNhan: 'Tổ công tác VTVL đơn vị', ngay: '2026-11-09', phienBan: 'v1.0' }
+    {
+      id: 's-1',
+      ky: '01/10/2025–30/9/2026',
+      bieu: 'Toàn bộ 15 biểu',
+      ma: unitDef.code,
+      noiDung: `Khởi tạo dữ liệu chuẩn bộ biểu VTVL đơn vị ${unitDef.nameVi}`,
+      nguon: 'Hệ thống VTVL 360 HCM-UTE',
+      nguoiXacNhan: 'Tổ công tác VTVL đơn vị',
+      ngay: '2026-11-09',
+      phienBan: 'v1.0'
+    }
   ];
 
   return {

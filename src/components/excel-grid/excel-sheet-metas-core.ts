@@ -20,7 +20,7 @@ export const CORE_EXCEL_SHEET_METAS: Record<
       { colLetter: 'D', field: 'quyetDinh', headerName: 'Quyết định / Căn cứ VTVL', width: '200px' },
       { colLetter: 'E', field: 'gioChuanPp2', headerName: 'Giờ chuẩn PP2', width: '110px', isFormula: true, formulaHint: '=IF(J="Đặc thù",1760,1904)' },
       { colLetter: 'F', field: 'canCuQuyGio', headerName: 'Căn cứ xác định quỹ giờ', width: '220px' },
-      { colLetter: 'G', field: 'trangThai', headerName: 'Trạng thái', width: '130px', type: 'select', selectOptions: ['tiếp tục sử dụng', 'mới đề xuất', 'chờ phê duyệt'] },
+      { colLetter: 'G', field: 'trangThai', headerName: 'Trạng thái', width: '150px', type: 'select', selectOptions: ['Tiếp tục sử dụng', 'Cần cập nhật', 'Đề nghị bổ sung', 'Đề nghị sửa đổi', 'Đề nghị bãi bỏ'] },
       { colLetter: 'H', field: 'gioRieng', headerName: 'Giờ riêng được xác nhận', width: '110px' },
       { colLetter: 'I', field: 'xacNhanGioRieng', headerName: 'Xác nhận giờ riêng', width: '130px' },
       { colLetter: 'J', field: 'cheDoLamViec', headerName: 'Chế độ làm việc', width: '170px', type: 'select', selectOptions: ['Phổ biến (40 giờ/tuần)', 'Đặc thù'] },
@@ -106,7 +106,8 @@ export const CORE_EXCEL_SHEET_METAS: Record<
       { colLetter: 'H', field: 'nguon', headerName: 'Nguồn số liệu sản lượng', width: '200px' },
       { colLetter: 'I', field: 'ppThucTe', headerName: 'PP đo thực tế', width: '120px', type: 'select', selectOptions: ['bấm giờ', 'nhật ký công việc', 'ước lượng chuyên gia'] },
       { colLetter: 'P', field: 'phutApDung', headerName: 'Phút/SP áp dụng', width: '120px', isFormula: true, formulaHint: '=IF(D>0,D,INDEX(DM_SP!E,...))' },
-      { colLetter: 'Q', field: 'canhBao', headerName: 'Cảnh báo B1', width: '110px', type: 'status', isFormula: true, formulaHint: '=IF(G>0,"ĐẠT","CHƯA ĐẠT")' }
+      { colLetter: 'R', field: 'canhBao', headerName: 'Cảnh báo dữ liệu', width: '160px', type: 'status', isFormula: true, formulaHint: '=IF(AND(S<>"",LEFT(S,12)<>"Đã xác nhận:"),"CHỜ XÁC NHẬN KHÁC CHUẨN",IF(G>0,"ĐẠT","CHƯA ĐẠT"))' },
+      { colLetter: 'S', field: 'giaiTrinhKhacChuan', headerName: 'Giải trình khác chuẩn (Cột S)', width: '260px' }
     ]
   },
   B2_CT: {

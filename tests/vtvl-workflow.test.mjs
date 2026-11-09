@@ -247,6 +247,20 @@ runTest('9. Kiểm tra chuẩn hóa Mã nhiệm vụ ([MÃ_ĐV].NVxx), Mã công
   assert.ok(!pl1Catalog.includes("taskSuffix: 'NV01.CV00'") && !pl1Catalog.includes("taskSuffix: 'NV02.CV00'"), 'TCNS_REAL_TASKS không được tạo công việc cho QL33 và QL43 (dùng PP1)');
   assert.ok(defaults.includes('TCNS.QL33') && defaults.includes('TCNS.QL43'), 'defaults C1 phải có TCNS.QL33 và TCNS.QL43');
   assert.ok(defaults.includes("PP1 – theo cơ cấu"), 'defaults C1 phải ghi rõ QL33/QL43 dùng PP1');
+
+  // Kiểm tra chuẩn hóa trạng thái C1, kỳ A1, giải trình C3, T_TienDo và Validation Rules
+  const metasCore = fs.readFileSync(path.join(root, 'src/components/excel-grid/excel-sheet-metas-core.ts'), 'utf8');
+  assert.ok(metasCore.includes('Tiếp tục sử dụng') && metasCore.includes('Đề nghị bãi bỏ'), 'C1 Cột G phải có dropdown Tiếp tục sử dụng, Cần cập nhật, Đề nghị bổ sung, Đề nghị sửa đổi, Đề nghị bãi bỏ');
+  assert.ok(defaults.includes('01/10/2025–30/9/2026'), 'A1 Cột E phải chuẩn hóa kỳ 01/10/2025–30/9/2026');
+  assert.ok(defaults.includes('Định biên theo PP1; QĐ 2266, PL18 và BMTCV&KNL'), 'C3 Cột K phải có giải trình PP1 chuẩn');
+  assert.ok(defaults.includes('Phòng Tổ chức – Nhân sự (HCM-UTE)'), '14. T_TienDo phải hiển thị Phòng Tổ chức – Nhân sự (HCM-UTE)');
+
+  const formulas = fs.readFileSync(path.join(root, 'src/components/excel-grid/excel-grid-formulas.ts'), 'utf8');
+  assert.ok(formulas.includes('CHỜ XÁC NHẬN KHÁC CHUẨN'), 'B1 Cột S phải kiểm tra cú pháp Đã xác nhận: và cảnh báo CHỜ XÁC NHẬN KHÁC CHUẨN');
+  assert.ok(formulas.includes('THIẾU BIẾN ĐỘNG (NHẬP 0 NẾU KHÔNG ĐỔI)'), 'DU_BAO và D2 phải bắt buộc số nguyên và cảnh báo THIẾU BIẾN ĐỘNG (NHẬP 0 NẾU KHÔNG ĐỔI)');
+
+  const lockHook = fs.readFileSync(path.join(root, 'src/components/excel-grid/useC1AdminLock.ts'), 'utf8');
+  assert.ok(lockHook.includes('0a5de87db3d6c7d52645c1581269a880b1bbc613abc8e4c8e0f51c99753f8909'), 'useC1AdminLock phải bảo vệ C1 bằng mã băm SHA-256 bảo mật');
 });
 
 // 10. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)

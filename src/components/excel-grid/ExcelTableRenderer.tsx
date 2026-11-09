@@ -10,6 +10,7 @@ interface ExcelTableRendererProps {
   dynamicOptionsMap?: Record<string, string[]>;
   lastSaved?: string;
   lastSavedSheet?: string;
+  isC1Unlocked?: boolean;
   onCellChange: (rowId: string, field: string, value: string | number) => void;
   onAddRow: () => void;
   onDeleteRow: (rowId: string) => void;
@@ -24,6 +25,7 @@ export function ExcelTableRenderer({
   dynamicOptionsMap,
   lastSaved,
   lastSavedSheet,
+  isC1Unlocked = false,
   onCellChange,
   onAddRow,
   onDeleteRow,
@@ -32,6 +34,7 @@ export function ExcelTableRenderer({
   canNext = true
 }: ExcelTableRendererProps) {
   const isJustSaved = lastSavedSheet === meta.key && Boolean(lastSaved);
+  const isC1Locked = meta.key === 'C1' && !isC1Unlocked;
 
   return (
     <div className="flex flex-col h-full bg-white border border-[#cbd5e1] rounded-lg shadow-xs overflow-hidden">
@@ -125,7 +128,7 @@ export function ExcelTableRenderer({
                     {/* Data cells */}
                     {meta.columns.map((col) => {
                       const val = row[col.field];
-                      const isComputed = col.isFormula || col.readOnly;
+                      const isComputed = col.isFormula || col.readOnly || isC1Locked;
 
                       if (col.type === 'status') {
                         const isOk = val === 'ĐẠT' || val === 'Hoàn thành';
@@ -208,15 +211,17 @@ export function ExcelTableRenderer({
 
                     {/* Delete row button */}
                     <td className="w-10 py-1 text-center border-r border-[#cbd5e1]">
-                      <button
-                        type="button"
-                        onClick={() => onDeleteRow(row.id)}
-                        aria-label={`Xóa dòng ${rowNum}`}
-                        title="Xóa dòng này"
-                        className="w-6 h-6 inline-flex items-center justify-center rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {!isC1Locked && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteRow(row.id)}
+                          aria-label={`Xóa dòng ${rowNum}`}
+                          title="Xóa dòng này"
+                          className="w-6 h-6 inline-flex items-center justify-center rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -229,14 +234,16 @@ export function ExcelTableRenderer({
       {/* Table bottom footer with Add Row & Save Buttons */}
       <div className="px-4 py-2.5 bg-[#f8fafc] border-t border-[#e2e8f0] flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onAddRow}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#004776] text-white rounded-md hover:bg-[#00385c] cursor-pointer shadow-2xs transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Thêm dòng mới</span>
-          </button>
+          {!isC1Locked && (
+            <button
+              type="button"
+              onClick={onAddRow}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#004776] text-white rounded-md hover:bg-[#00385c] cursor-pointer shadow-2xs transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Thêm dòng mới</span>
+            </button>
+          )}
 
           {/* User requested Save Button before moving sheets */}
           <button

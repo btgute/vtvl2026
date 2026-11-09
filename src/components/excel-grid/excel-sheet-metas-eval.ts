@@ -80,12 +80,12 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     columns: [
       { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'B', field: 'nam', headerName: 'Năm dự báo', width: '100px' },
-      { colLetter: 'C', field: 'bienDong', headerName: 'Biến động (+/- người)', width: '140px', type: 'number' },
+      { colLetter: 'C', field: 'bienDong', headerName: 'Biến động (+/- người, 0 nếu không đổi)', width: '160px', type: 'number' },
       { colLetter: 'D', field: 'noiDungThayDoi', headerName: 'Nội dung thay đổi', width: '260px' },
       { colLetter: 'E', field: 'canCuNguon', headerName: 'Căn cứ nguồn', width: '200px' },
       { colLetter: 'G', field: 'nguoiC3', headerName: 'Người C3 năm cơ sở', width: '130px', isFormula: true, formulaHint: '=INDEX(C3!J,...)' },
       { colLetter: 'H', field: 'nguoiCanBoTriNam', headerName: 'Người cần bố trí trong năm', width: '160px', isFormula: true, formulaHint: '=G+C' },
-      { colLetter: 'I', field: 'kiemTra', headerName: 'Kiểm tra', width: '100px', type: 'status' }
+      { colLetter: 'I', field: 'kiemTra', headerName: 'Kiểm tra, đối chiếu', width: '180px', type: 'status' }
     ]
   },
   D2: {
@@ -96,16 +96,16 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     shortLabel: '10. D2_PhuongAn',
     title: 'Biểu D2_ Phương án (Lập phương án biên chế từng năm 2027–2031)',
     guideDesc: 'Biểu 10 (Bước 7 nghiệp vụ): So sánh số người cần bố trí (Cột C, lấy từ DU_BAO_5_NAM) với số người có thể bố trí (Cột D, đếm từ D1_NhanLuc).',
-    ruleHint: 'Đề nghị điều chỉnh (Cột G) = Cột C - Cột D. Phục vụ Đề án VTVL trình cấp có thẩm quyền phê duyệt.',
+    ruleHint: 'Đề nghị điều chỉnh (Cột G) = Cột C - Cột D. Bắt buộc nhập số nguyên (nhập 0 nếu không đổi).',
     columns: [
       { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'B', field: 'nam', headerName: 'Năm phương án', width: '110px' },
       { colLetter: 'C', field: 'soNguoiCanBoTri', headerName: 'Người cần bố trí trong năm', width: '160px', isFormula: true, formulaHint: '=SUMIFS(DU_BAO!H,...)' },
       { colLetter: 'D', field: 'soNguoiCoTheBoTri', headerName: 'Người có thể bố trí', width: '140px', isFormula: true, formulaHint: '=COUNTIFS(D1!B,A)' },
       { colLetter: 'E', field: 'bienCheGiao', headerName: 'Biên chế được giao', width: '130px', type: 'number' },
-      { colLetter: 'G', field: 'deNghiDieuChinh', headerName: 'Đề nghị điều chỉnh', width: '140px', isFormula: true, formulaHint: '=C-D' },
+      { colLetter: 'G', field: 'deNghiDieuChinh', headerName: 'Đề nghị điều chỉnh (0 nếu không đổi)', width: '160px', type: 'number' },
       { colLetter: 'H', field: 'nguonGiaiTrinh', headerName: 'Nguồn / Giải trình', width: '220px' },
-      { colLetter: 'J', field: 'canhBao', headerName: 'Cảnh báo D2', width: '110px', type: 'status' }
+      { colLetter: 'J', field: 'canhBao', headerName: 'Cảnh báo D2', width: '180px', type: 'status' }
     ]
   },
   K: {

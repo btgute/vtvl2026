@@ -20,11 +20,13 @@ import { PL1_VTVL_CATALOG } from '@/configs/hcmute-pl1-catalog';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
 import { UnitGroupKind } from '@/types/vtvl';
+import { useC1AdminLock } from './useC1AdminLock';
 
 export function useExcelGridState(initialUnitCode = 'TCNS') {
   const [unitCode, setUnitCode] = useState(initialUnitCode);
   const [orderMode, setOrderMode] = useState<SheetOrderMode>('excel');
   const [activeSheet, setActiveSheet] = useState<ExcelSheetKey>('A1');
+  const { isC1Unlocked, unlockC1, lockC1 } = useC1AdminLock();
   const [data, setData] = useState<Record<ExcelSheetKey, GenericGridRow[]>>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -64,6 +66,7 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
   }, []);
 
   const updateCell = useCallback((sheetKey: ExcelSheetKey, rowId: string, field: string, value: string | number) => {
+    if (sheetKey === 'C1' && !isC1Unlocked) return;
     setData((prev) => {
       const sheetRows = prev[sheetKey] || [];
 
@@ -136,6 +139,7 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
   }, [currentUnit.code, currentUnit.nameVi]);
 
   const addRow = useCallback((sheetKey: ExcelSheetKey) => {
+    if (sheetKey === 'C1' && !isC1Unlocked) return;
     setData((prev) => {
       const sheetRows = prev[sheetKey] || [];
       const { newRow, extraC2Row } = buildNewGridRow(sheetKey, prev, currentUnit);
@@ -148,14 +152,15 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
 
       return recalculateGridFormulas({ ...prev, [sheetKey]: [...sheetRows, newRow] }, currentUnit.code, currentUnit.nameVi);
     });
-  }, [currentUnit.code, currentUnit.nameVi]);
+  }, [currentUnit.code, currentUnit.nameVi, isC1Unlocked]);
 
   const deleteRow = useCallback((sheetKey: ExcelSheetKey, rowId: string) => {
+    if (sheetKey === 'C1' && !isC1Unlocked) return;
     setData((prev) => {
       const sheetRows = (prev[sheetKey] || []).filter((r) => r.id !== rowId);
       return recalculateGridFormulas({ ...prev, [sheetKey]: sheetRows }, currentUnit.code, currentUnit.nameVi);
     });
-  }, [currentUnit.code, currentUnit.nameVi]);
+  }, [currentUnit.code, currentUnit.nameVi, isC1Unlocked]);
 
   const saveSheetData = useCallback((sheetKey: ExcelSheetKey) => {
     const timeStr = new Date().toLocaleTimeString('vi-VN');
@@ -218,20 +223,22 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
   }), [data.C1, data.A1, data.A2, data.DM_SP, currentUnit.code]);
 
   const loadFullPl1Catalog = useCallback(() => {
+    if (!isC1Unlocked) return;
     setData((prev) => {
       const fullC1 = buildFullPl1C1Rows(currentUnit.code);
       const fullC2 = buildFullPl1C2Rows(fullC1);
       return recalculateGridFormulas({ ...prev, C1: fullC1, C2: fullC2 }, currentUnit.code, currentUnit.nameVi);
     });
-  }, [currentUnit.code, currentUnit.nameVi]);
+  }, [currentUnit.code, currentUnit.nameVi, isC1Unlocked]);
 
   const loadRecommendedVtvls = useCallback(() => {
+    if (!isC1Unlocked) return;
     setData((prev) => {
       const recC1 = buildRecommendedC1Rows(currentUnit.code, currentUnit.group);
       const recC2 = buildFullPl1C2Rows(recC1);
       return recalculateGridFormulas({ ...prev, C1: recC1, C2: recC2 }, currentUnit.code, currentUnit.nameVi);
     });
-  }, [currentUnit.code, currentUnit.nameVi, currentUnit.group]);
+  }, [currentUnit.code, currentUnit.nameVi, currentUnit.group, isC1Unlocked]);
 
   const exportFullWorkbook = useCallback(async () => {
     setIsExporting(true);
@@ -241,7 +248,7 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
         unitCode: currentUnit.code,
         unitNameVi: currentUnit.nameVi,
         unitNameEn: currentUnit.nameEn,
-        period: '2025–2026',
+        period: '01/10/2025–30/9/2026',
         exportDate: new Date().toISOString().slice(0, 10),
         includeZipPerPosition: false,
         ngachOverrides: {}
@@ -266,6 +273,9 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     lastSavedSheet,
     isExporting,
     dynamicOptionsMap,
+    isC1Unlocked,
+    unlockC1,
+    lockC1,
     handleUnitChange,
     handleLoadTcnsData,
     loadFullPl1Catalog,

@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useExcelGridState } from './excel-grid-state';
 import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
 import { ExcelSheetTabs } from './ExcelSheetTabs';
 import { ExcelTableRenderer } from './ExcelTableRenderer';
+import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import {
   FileSpreadsheet,
@@ -22,6 +23,7 @@ interface ExcelWorkbookViewerProps {
 }
 
 export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookViewerProps) {
+  const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
   const {
     unitCode,
     currentUnit,
@@ -35,6 +37,9 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     lastSavedSheet,
     isExporting,
     dynamicOptionsMap,
+    isC1Unlocked,
+    unlockC1,
+    lockC1,
     handleUnitChange,
     handleLoadTcnsData,
     loadFullPl1Catalog,
@@ -86,7 +91,13 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
               <>
                 <button
                   type="button"
-                  onClick={loadRecommendedVtvls}
+                  onClick={() => {
+                    if (!isC1Unlocked) {
+                      setShowUnlockModal(true);
+                    } else {
+                      loadRecommendedVtvls();
+                    }
+                  }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg cursor-pointer transition-colors"
                   title={`Nạp danh mục VTVL chuẩn theo loại hình ${currentUnit.nameVi}`}
                 >
@@ -95,7 +106,13 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
                 </button>
                 <button
                   type="button"
-                  onClick={loadFullPl1Catalog}
+                  onClick={() => {
+                    if (!isC1Unlocked) {
+                      setShowUnlockModal(true);
+                    } else {
+                      loadFullPl1Catalog();
+                    }
+                  }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg cursor-pointer transition-colors"
                   title="Nạp toàn bộ 56 VTVL chuẩn theo Phụ lục I kèm Quyết định của Hiệu trưởng"
                 >
@@ -178,6 +195,15 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         </div>
       </div>
 
+      {/* C1 Admin protection banner when viewing C1 */}
+      {activeSheet === 'C1' && (
+        <C1AdminStatusBanner
+          isUnlocked={isC1Unlocked}
+          onOpenUnlockModal={() => setShowUnlockModal(true)}
+          onLock={lockC1}
+        />
+      )}
+
       {/* Main Spreadsheet grid view with Save and Next button */}
       <ExcelTableRenderer
         meta={activeMeta}
@@ -185,6 +211,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         dynamicOptionsMap={dynamicOptionsMap}
         lastSaved={lastSaved}
         lastSavedSheet={lastSavedSheet}
+        isC1Unlocked={isC1Unlocked}
         onCellChange={(rowId, field, val) => updateCell(activeSheet, rowId, field, val)}
         onAddRow={() => addRow(activeSheet)}
         onDeleteRow={(rowId) => deleteRow(activeSheet, rowId)}
@@ -204,6 +231,13 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onNext={goToNextSheet}
         canPrev={activeSheetIndex > 0}
         canNext={activeSheetIndex < currentSheetOrder.length - 1}
+      />
+
+      {/* Admin Unlock Modal for Biểu 6. C1_VTVL */}
+      <C1AdminLockModal
+        isOpen={showUnlockModal}
+        onClose={() => setShowUnlockModal(false)}
+        onUnlock={unlockC1}
       />
     </div>
   );

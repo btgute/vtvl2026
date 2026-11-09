@@ -117,7 +117,8 @@ export function appendHd07GuideAndRefSheets(
     ['BIỂU 14. T_TienDo — TỔNG HỢP TIẾN ĐỘ HOÀN THIỆN BỘ BIỂU ĐƠN VỊ'],
     ['Mã đơn vị', 'Tên đơn vị', 'Số nhiệm vụ (A1)', 'Số công việc (A2)', 'Số VTVL (C1)', 'Tổng FTE nhu cầu (C3)', 'Trạng thái rà soát K_KiemTra'],
     [
-      opts.unitCode, opts.unitNameVi,
+      opts.unitCode,
+      opts.unitCode === 'TCNS' ? 'Phòng Tổ chức – Nhân sự (HCM-UTE)' : `${opts.unitNameVi} (HCM-UTE)`,
       fNum(opts.unitCode === 'TCNS' ? 8 : 4, `COUNTA('1. A1_NhiemVu'!$A$3:$A$200)`),
       fNum(totalTasks, `COUNTA('2. A2_CongViec'!$A$3:$A$500)`),
       fNum(positions.length, `COUNTA('6. C1_VTVL'!$A$3:$A$100)`),
