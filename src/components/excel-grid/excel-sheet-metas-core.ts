@@ -38,12 +38,12 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     ruleHint: 'Mã nhiệm vụ chuẩn: [MÃ_ĐV].NV[01..99] (ví dụ: TCNS.NV01). Mỗi nhiệm vụ có một mã riêng, tự động tăng dần khi thêm mới.',
     columns: [
       { colLetter: 'A', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ ([ĐV].NVxx)', width: '150px' },
-      { colLetter: 'B', field: 'tenNhiemVu', headerName: 'Tên nhiệm vụ được giao', width: '320px' },
-      { colLetter: 'C', field: 'coQuan', headerName: 'Cơ quan / Đơn vị thực hiện', width: '200px' },
-      { colLetter: 'D', field: 'canCu', headerName: 'Căn cứ giao nhiệm vụ (QĐ 2266)', width: '220px' },
-      { colLetter: 'E', field: 'ky', headerName: 'Kỳ số liệu', width: '130px' },
-      { colLetter: 'F', field: 'trangThai', headerName: 'Trạng thái', width: '140px', type: 'select', selectOptions: ['Tiếp tục thực hiện', 'Mới tiếp nhận', 'Đã chuyển giao', 'Không còn thực hiện'] },
-      { colLetter: 'G', field: 'nguon', headerName: 'Nguồn dữ liệu / Quyết định', width: '200px' }
+      { colLetter: 'B', field: 'tenNhiemVu', headerName: 'Tên nhiệm vụ được giao', width: '440px' },
+      { colLetter: 'C', field: 'coQuan', headerName: 'Cơ quan / Đơn vị thực hiện', width: '220px' },
+      { colLetter: 'D', field: 'canCu', headerName: 'Căn cứ giao nhiệm vụ (QĐ 2266)', width: '260px' },
+      { colLetter: 'E', field: 'ky', headerName: 'Kỳ số liệu', width: '140px' },
+      { colLetter: 'F', field: 'trangThai', headerName: 'Trạng thái', width: '150px', type: 'select', selectOptions: ['Tiếp tục thực hiện', 'Mới tiếp nhận', 'Đã chuyển giao', 'Không còn thực hiện'] },
+      { colLetter: 'G', field: 'nguon', headerName: 'Nguồn dữ liệu / Quyết định', width: '240px' }
     ]
   },
   A2: {
@@ -59,11 +59,11 @@ export const CORE_EXCEL_SHEET_METAS: Record<
       { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc ([NV].CVxx)', width: '170px' },
       { colLetter: 'B', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ (A1)', width: '140px', type: 'select', dynamicOptionsKey: 'missionList' },
       { colLetter: 'C', field: 'maVtvl', headerName: 'Mã VTVL (từ C1)', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
-      { colLetter: 'D', field: 'tenCongViec', headerName: 'Tên công việc cụ thể', width: '300px' },
-      { colLetter: 'E', field: 'sanPham', headerName: 'Sản phẩm đầu ra', width: '200px' },
+      { colLetter: 'D', field: 'tenCongViec', headerName: 'Tên công việc cụ thể', width: '420px' },
+      { colLetter: 'E', field: 'sanPham', headerName: 'Sản phẩm đầu ra', width: '250px' },
       { colLetter: 'F', field: 'dvt', headerName: 'Đơn vị tính', width: '90px' },
-      { colLetter: 'G', field: 'chatLuong', headerName: 'Yêu cầu chất lượng', width: '220px' },
-      { colLetter: 'H', field: 'canCu', headerName: 'Căn cứ (nguồn tài liệu)', width: '200px' }
+      { colLetter: 'G', field: 'chatLuong', headerName: 'Yêu cầu chất lượng', width: '250px' },
+      { colLetter: 'H', field: 'canCu', headerName: 'Căn cứ (nguồn tài liệu)', width: '240px' }
     ]
   },
   DM_SP: {

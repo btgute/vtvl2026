@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { ExcelSheetMeta, GenericGridRow } from './excel-grid-types';
-import { Plus, Trash2, Info, FunctionSquare, Save, ArrowRight, CheckCircle2, Copy } from 'lucide-react';
+import { ExcelDataCell } from './ExcelDataCell';
+import { Plus, Trash2, Info, Save, ArrowRight, CheckCircle2, Copy } from 'lucide-react';
 
 interface ExcelTableRendererProps {
   meta: ExcelSheetMeta;
@@ -72,14 +73,14 @@ export function ExcelTableRenderer({
                 <th
                   key={col.field}
                   style={{ width: col.width || '140px', minWidth: col.width || '140px' }}
-                  className="py-2 px-2 text-left font-bold border-r border-[#cbd5e1] align-top"
+                  className="py-2 px-2 text-left font-bold border-r border-[#cbd5e1] align-top whitespace-normal"
                   title={col.isFormula ? `Công thức tính: ${col.formulaHint}` : undefined}
                 >
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="truncate">{col.headerName}</span>
+                  <div className="flex items-start justify-between gap-1">
+                    <span className="break-words leading-tight">{col.headerName}</span>
                     {col.isFormula && (
                       <span
-                        className="inline-flex items-center text-[10px] text-blue-700 bg-blue-50 px-1 rounded border border-blue-200"
+                        className="inline-flex items-center text-[10px] text-blue-700 bg-blue-50 px-1 rounded border border-blue-200 mt-0.5 shrink-0"
                         title={col.formulaHint}
                       >
                         =fx
@@ -109,107 +110,36 @@ export function ExcelTableRenderer({
                 return (
                   <tr key={row.id} className="hover:bg-[#f8fafc] transition-colors group">
                     {/* Row header with row number */}
-                    <td className="w-12 py-1.5 text-center font-bold text-[#64748b] bg-[#f1f5f9] border-r border-[#cbd5e1] select-none">
+                    <td className="w-12 py-1.5 text-center font-bold text-[#64748b] bg-[#f1f5f9] border-r border-[#cbd5e1] select-none align-top">
                       {rowNum}
                     </td>
 
-                    {/* Data cells */}
+                    {/* Data cells without any truncation */}
                     {meta.columns.map((col) => {
                       const val = row[col.field];
                       const isComputed = col.isFormula || col.readOnly || isC1Locked;
-
-                      if (col.type === 'status') {
-                        const isOk = val === 'ĐẠT' || val === 'Hoàn thành';
-                        return (
-                          <td key={col.field} className="py-1 px-2 border-r border-[#cbd5e1] text-center">
-                            <span
-                              className={`inline-block px-2 py-0.5 text-[11px] font-bold rounded ${
-                                isOk
-                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                  : 'bg-rose-100 text-rose-800 border border-rose-300'
-                              }`}
-                            >
-                              {String(val ?? 'CHƯA ĐẠT')}
-                            </span>
-                          </td>
-                        );
-                      }
-
-                      if (isComputed) {
-                        return (
-                          <td
-                            key={col.field}
-                            className="py-1 px-2 border-r border-[#cbd5e1] bg-[#f8fafc] font-medium text-[#004776]"
-                            title={col.formulaHint}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="truncate">{val !== undefined ? String(val) : '—'}</span>
-                              {col.formulaHint && (
-                                <FunctionSquare
-                                  className="w-3 h-3 text-[#94a3b8] shrink-0 opacity-40 group-hover:opacity-100"
-                                  aria-hidden="true"
-                                />
-                              )}
-                            </div>
-                          </td>
-                        );
-                      }
-
-                      const dynamicOptions = col.dynamicOptionsKey && dynamicOptionsMap?.[col.dynamicOptionsKey];
-                      const selectOptions = dynamicOptions && dynamicOptions.length > 0
-                        ? dynamicOptions
-                        : (col.selectOptions || []);
                       const cellKey = `${row.id}_${col.field}`;
                       const isTouched = touchedCells?.has(cellKey) ?? false;
-                      const cellStyle = isTouched
-                        ? 'border-emerald-500 bg-emerald-50/80 text-emerald-950 focus:ring-emerald-500'
-                        : 'border-red-400 bg-red-50/70 text-red-950 focus:ring-red-500';
-
-                      if (col.type === 'select' || (dynamicOptions && dynamicOptions.length > 0)) {
-                        return (
-                          <td key={col.field} className="py-0.5 px-1 border-r border-[#cbd5e1]">
-                            <select
-                              value={String(val ?? '')}
-                              onFocus={() => onCellTouch?.(cellKey)}
-                              onChange={(e) => {
-                                onCellTouch?.(cellKey);
-                                onCellChange(row.id, col.field, e.target.value);
-                              }}
-                              className={`w-full h-7 px-1.5 rounded border text-xs font-medium focus:ring-1 ${cellStyle}`}
-                            >
-                              <option value="">-- Chọn --</option>
-                              {selectOptions.map((opt) => (
-                                <option key={opt} value={opt}>
-                                  {opt}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                        );
-                      }
+                      const dynamicOptions = col.dynamicOptionsKey && dynamicOptionsMap?.[col.dynamicOptionsKey];
 
                       return (
-                        <td key={col.field} className="py-0.5 px-1 border-r border-[#cbd5e1]">
-                          <input
-                            type={col.type === 'number' ? 'number' : 'text'}
-                            value={val !== undefined ? String(val) : ''}
-                            onFocus={() => onCellTouch?.(cellKey)}
-                            onChange={(e) => {
-                              onCellTouch?.(cellKey);
-                              onCellChange(
-                                row.id,
-                                col.field,
-                                col.type === 'number' ? Number(e.target.value) : e.target.value
-                              );
-                            }}
-                            className={`w-full h-7 px-1.5 rounded border text-xs font-medium focus:ring-1 ${cellStyle}`}
-                          />
-                        </td>
+                        <ExcelDataCell
+                          key={col.field}
+                          col={col}
+                          val={val}
+                          rowId={row.id}
+                          isComputed={isComputed}
+                          isTouched={isTouched}
+                          cellKey={cellKey}
+                          dynamicOptions={dynamicOptions}
+                          onCellTouch={onCellTouch}
+                          onCellChange={onCellChange}
+                        />
                       );
                     })}
 
                     {/* Action buttons (Tách & Xóa) */}
-                    <td className="w-14 py-1 text-center border-r border-[#cbd5e1]">
+                    <td className="w-14 py-1 text-center border-r border-[#cbd5e1] align-top">
                       <div className="flex items-center justify-center gap-1">
                         {meta.key === 'A1' && (
                           <button
