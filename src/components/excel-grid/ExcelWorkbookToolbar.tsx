@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ExcelSheetKey, ExcelSheetMeta } from './excel-grid-types';
-import { UnitDefinition } from '@/types/vtvl';
+import { HcmuteUnit } from '@/types/vtvl';
 import { OperatorSession } from '@/services/telemetry/operator-session';
 import { ValidationReport } from '@/services/validation/vtvl-validation-types';
 import { QD2266_28_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
@@ -13,7 +13,7 @@ import {
 interface ExcelWorkbookToolbarProps {
   session: OperatorSession | null;
   unitCode: string;
-  currentUnit: UnitDefinition;
+  currentUnit: HcmuteUnit;
   isRestoredSession: boolean;
   activeSheet: ExcelSheetKey;
   activeMeta: ExcelSheetMeta;

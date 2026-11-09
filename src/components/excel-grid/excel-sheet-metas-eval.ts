@@ -1,7 +1,7 @@
 import { ExcelSheetKey, ExcelSheetMeta } from './excel-grid-types';
 
 export const EVAL_EXCEL_SHEET_METAS: Record<
-  'C2' | 'D1' | 'C3' | 'DU_BAO' | 'D2' | 'K' | 'T' | 'S',
+  'C2' | 'C3' | 'D1' | 'D2' | 'DM_SP' | 'DU_BAO' | 'K' | 'T' | 'S',
   ExcelSheetMeta
 > = {
   C2: {
@@ -21,28 +21,6 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
       { colLetter: 'E', field: 'tenNangLuc', headerName: 'Tên năng lực', width: '220px' },
       { colLetter: 'F', field: 'capDoYeuCau', headerName: 'Cấp độ yêu cầu', width: '140px', type: 'select', selectOptions: ['Cấp độ 1', 'Cấp độ 2', 'Cấp độ 3', 'Cấp độ 4', 'Cấp độ 5', 'Đáp ứng năng lực'] },
       { colLetter: 'G', field: 'moTaChiTiet', headerName: 'Mô tả chi tiết', width: '300px' }
-    ]
-  },
-  D1: {
-    key: 'D1',
-    stepNum: 9,
-    sheetNumberPrefix: '9',
-    sheetName: '9. D1_NhanLuc',
-    shortLabel: '9. D1_NhanLuc',
-    title: 'Biểu D1_ Nhân lực (Danh sách nhân sự hiện có chốt ngày 30/9/2026)',
-    guideDesc: 'Biểu 9 (Bước 7 nghiệp vụ): Kê khai danh sách viên chức và người lao động của đơn vị tính đến ngày 30/9/2026 (mỗi nhân sự 1 dòng).',
-    ruleHint: 'Mã VTVL đảm nhận (Cột B) phải khớp với danh mục VTVL đã khai tại Biểu 6. C1_VTVL.',
-    columns: [
-      { colLetter: 'A', field: 'hoTen', headerName: 'Họ và tên nhân sự', width: '220px' },
-      { colLetter: 'B', field: 'maVtvl', headerName: 'Mã VTVL đảm nhận', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
-      { colLetter: 'C', field: 'ngaySinh', headerName: 'Ngày sinh', width: '110px' },
-      { colLetter: 'D', field: 'gioiTinh', headerName: 'Giới tính', width: '90px', type: 'select', selectOptions: ['Nam', 'Nữ'] },
-      { colLetter: 'E', field: 'trinhDo', headerName: 'Trình độ đào tạo', width: '130px', type: 'select', selectOptions: ['Tiến sĩ', 'Thạc sĩ', 'Đại học', 'Cao đẳng', 'Trung cấp'] },
-      { colLetter: 'F', field: 'ngachVienChuc', headerName: 'Ngạch viên chức', width: '140px' },
-      { colLetter: 'G', field: 'maSoNgach', headerName: 'Mã số ngạch', width: '110px' },
-      { colLetter: 'H', field: 'heSoLuong', headerName: 'Hệ số lương', width: '100px', type: 'number' },
-      { colLetter: 'I', field: 'loaiHopDong', headerName: 'Loại hợp đồng', width: '150px', type: 'select', selectOptions: ['Viên chức không thời hạn', 'Viên chức có thời hạn', 'Hợp đồng NĐ 111'] },
-      { colLetter: 'J', field: 'ghiChu', headerName: 'Ghi chú', width: '180px' }
     ]
   },
   C3: {
@@ -68,24 +46,26 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
       { colLetter: 'M', field: 'canhBao', headerName: 'Cảnh báo C3', width: '100px', type: 'status' }
     ]
   },
-  DU_BAO: {
-    key: 'DU_BAO',
-    stepNum: 12,
-    sheetNumberPrefix: 'DU_BAO',
-    sheetName: 'DU_BAO_5_NAM',
-    shortLabel: 'DU_BAO_5_NAM',
-    title: 'Biểu DU_BAO_5_NAM — Dự báo thay đổi khối lượng công việc 2027–2031',
-    guideDesc: 'Biểu DU_BAO_5_NAM: Dự báo biến động nhu cầu nhân lực từng năm giai đoạn 2027–2031 so với năm cơ sở (C3).',
-    ruleHint: 'Mỗi thay đổi tăng/giảm (+/- người) phải có căn cứ rõ ràng và được lãnh đạo xác nhận.',
+  D1: {
+    key: 'D1',
+    stepNum: 9,
+    sheetNumberPrefix: '9',
+    sheetName: '9. D1_NhanLuc',
+    shortLabel: '9. D1_NhanLuc',
+    title: 'Biểu D1_ Nhân lực (Danh sách nhân sự hiện có chốt ngày 30/9/2026)',
+    guideDesc: 'Biểu 9 (Bước 7 nghiệp vụ): Kê khai danh sách viên chức và người lao động của đơn vị tính đến ngày 30/9/2026 (mỗi nhân sự 1 dòng).',
+    ruleHint: 'Mã VTVL đảm nhận (Cột B) phải khớp với danh mục VTVL đã khai tại Biểu 6. C1_VTVL.',
     columns: [
-      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
-      { colLetter: 'B', field: 'nam', headerName: 'Năm dự báo', width: '100px' },
-      { colLetter: 'C', field: 'bienDong', headerName: 'Biến động (+/- người, 0 nếu không đổi)', width: '160px', type: 'number' },
-      { colLetter: 'D', field: 'noiDungThayDoi', headerName: 'Nội dung thay đổi', width: '260px' },
-      { colLetter: 'E', field: 'canCuNguon', headerName: 'Căn cứ nguồn', width: '200px' },
-      { colLetter: 'G', field: 'nguoiC3', headerName: 'Người C3 năm cơ sở', width: '130px', isFormula: true, formulaHint: '=INDEX(C3!J,...)' },
-      { colLetter: 'H', field: 'nguoiCanBoTriNam', headerName: 'Người cần bố trí trong năm', width: '160px', isFormula: true, formulaHint: '=G+C' },
-      { colLetter: 'I', field: 'kiemTra', headerName: 'Kiểm tra, đối chiếu', width: '180px', type: 'status' }
+      { colLetter: 'A', field: 'hoTen', headerName: 'Họ và tên nhân sự', width: '220px' },
+      { colLetter: 'B', field: 'maVtvl', headerName: 'Mã VTVL đảm nhận', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
+      { colLetter: 'C', field: 'ngaySinh', headerName: 'Ngày sinh', width: '110px' },
+      { colLetter: 'D', field: 'gioiTinh', headerName: 'Giới tính', width: '90px', type: 'select', selectOptions: ['Nam', 'Nữ'] },
+      { colLetter: 'E', field: 'trinhDo', headerName: 'Trình độ đào tạo', width: '130px', type: 'select', selectOptions: ['Tiến sĩ', 'Thạc sĩ', 'Đại học', 'Cao đẳng', 'Trung cấp'] },
+      { colLetter: 'F', field: 'ngachVienChuc', headerName: 'Ngạch viên chức', width: '140px' },
+      { colLetter: 'G', field: 'maSoNgach', headerName: 'Mã số ngạch', width: '110px' },
+      { colLetter: 'H', field: 'heSoLuong', headerName: 'Hệ số lương', width: '100px', type: 'number' },
+      { colLetter: 'I', field: 'loaiHopDong', headerName: 'Loại hợp đồng', width: '150px', type: 'select', selectOptions: ['Viên chức không thời hạn', 'Viên chức có thời hạn', 'Hợp đồng NĐ 111'] },
+      { colLetter: 'J', field: 'ghiChu', headerName: 'Ghi chú', width: '180px' }
     ]
   },
   D2: {
@@ -108,6 +88,46 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
       { colLetter: 'J', field: 'canhBao', headerName: 'Cảnh báo D2', width: '180px', type: 'status' }
     ]
   },
+  DM_SP: {
+    key: 'DM_SP',
+    stepNum: 11,
+    sheetNumberPrefix: '11',
+    sheetName: '11. DM_SAN_PHAM',
+    shortLabel: '11. DM_SAN_PHAM',
+    title: 'Biểu 11. DM_SAN_PHAM — Danh mục 06 nhóm sản phẩm chuẩn và định mức',
+    guideDesc: 'Biểu 11: Tra cứu sản phẩm chuẩn phân nhóm I–VI và thời gian định mức (phút/SP) được HCM-UTE xác nhận.',
+    ruleHint: 'Nếu sử dụng mã sản phẩm chuẩn thì B1_KhoiLuong sẽ tự động tra cứu định mức chuẩn.',
+    columns: [
+      { colLetter: 'A', field: 'maSpChuan', headerName: 'Mã SP chuẩn', width: '120px' },
+      { colLetter: 'B', field: 'tenSp', headerName: 'Tên / Loại sản phẩm', width: '280px' },
+      { colLetter: 'C', field: 'linhVuc', headerName: 'Khối / Ngành / Lĩnh vực', width: '180px' },
+      { colLetter: 'D', field: 'nhom', headerName: 'Nhóm I–VI', width: '90px' },
+      { colLetter: 'E', field: 'phutChuan', headerName: 'Phút/SP chuẩn', width: '110px' },
+      { colLetter: 'F', field: 'vanBan', headerName: 'Văn bản / Nguồn xác nhận', width: '220px' },
+      { colLetter: 'G', field: 'trangThai', headerName: 'Trạng thái chuẩn', width: '130px', type: 'select', selectOptions: ['Đã xác nhận', 'Đang thẩm định'] },
+      { colLetter: 'H', field: 'coQuan', headerName: 'Cơ quan xác nhận', width: '160px' }
+    ]
+  },
+  DU_BAO: {
+    key: 'DU_BAO',
+    stepNum: 12,
+    sheetNumberPrefix: 'DU_BAO',
+    sheetName: 'DU_BAO_5_NAM',
+    shortLabel: 'DU_BAO_5_NAM',
+    title: 'Biểu DU_BAO_5_NAM — Dự báo thay đổi khối lượng công việc 2027–2031',
+    guideDesc: 'Biểu DU_BAO_5_NAM: Dự báo biến động nhu cầu nhân lực từng năm giai đoạn 2027–2031 so với năm cơ sở (C3).',
+    ruleHint: 'Mỗi thay đổi tăng/giảm (+/- người) phải có căn cứ rõ ràng và được lãnh đạo xác nhận.',
+    columns: [
+      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
+      { colLetter: 'B', field: 'nam', headerName: 'Năm dự báo', width: '100px' },
+      { colLetter: 'C', field: 'bienDong', headerName: 'Biến động (+/- người, 0 nếu không đổi)', width: '160px', type: 'number' },
+      { colLetter: 'D', field: 'noiDungThayDoi', headerName: 'Nội dung thay đổi', width: '260px' },
+      { colLetter: 'E', field: 'canCuNguon', headerName: 'Căn cứ nguồn', width: '200px' },
+      { colLetter: 'G', field: 'nguoiC3', headerName: 'Người C3 năm cơ sở', width: '130px', isFormula: true, formulaHint: '=INDEX(C3!J,...)' },
+      { colLetter: 'H', field: 'nguoiCanBoTriNam', headerName: 'Người cần bố trí trong năm', width: '160px', isFormula: true, formulaHint: '=G+C' },
+      { colLetter: 'I', field: 'kiemTra', headerName: 'Kiểm tra, đối chiếu', width: '180px', type: 'status' }
+    ]
+  },
   K: {
     key: 'K',
     stepNum: 13,
@@ -118,14 +138,14 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Bảng kiểm soát chéo 6 chỉ tiêu tự động giữa các sheet: A2 ↔ A1, B1 ↔ C1, B1 cảnh báo, B2_CT ↔ B1, D1 ↔ C1, C3 ↔ D2.',
     ruleHint: 'Hồ sơ chỉ đủ điều kiện nộp thẩm định khi Số dòng lỗi = 0 trên toàn bộ 6 chỉ tiêu.',
     columns: [
-      { colLetter: 'A', field: 'stt', headerName: 'STT', width: '60px' },
-      { colLetter: 'B', field: 'nhomBieu', headerName: 'Nhóm biểu kiểm tra', width: '130px' },
-      { colLetter: 'C', field: 'chiTieu', headerName: 'Chỉ tiêu kiểm soát chéo', width: '320px' },
-      { colLetter: 'D', field: 'bangNguon', headerName: 'Bảng nguồn', width: '140px' },
-      { colLetter: 'E', field: 'bangDich', headerName: 'Bảng đích', width: '140px' },
-      { colLetter: 'F', field: 'soDongLoi', headerName: 'Số dòng lỗi', width: '100px', isFormula: true },
-      { colLetter: 'G', field: 'nguongChoPhep', headerName: 'Ngưỡng cho phép', width: '120px' },
-      { colLetter: 'H', field: 'ketLuan', headerName: 'Kết luận tự động', width: '130px', type: 'status' }
+      { colLetter: 'A', field: 'stt', headerName: 'STT', width: '60px', type: 'number' },
+      { colLetter: 'B', field: 'nhomBieu', headerName: 'Nhóm biểu đối chiếu', width: '140px' },
+      { colLetter: 'C', field: 'chiTieu', headerName: 'Chỉ tiêu kiểm tra chéo', width: '320px' },
+      { colLetter: 'D', field: 'bangNguon', headerName: 'Bảng nguồn', width: '160px' },
+      { colLetter: 'E', field: 'bangDich', headerName: 'Bảng đích', width: '160px' },
+      { colLetter: 'F', field: 'soDongLoi', headerName: 'Số dòng lỗi', width: '100px', type: 'number', isFormula: true },
+      { colLetter: 'G', field: 'nguongChoPhep', headerName: 'Ngưỡng cho phép', width: '130px' },
+      { colLetter: 'H', field: 'ketLuan', headerName: 'Kết luận', width: '110px', type: 'status', isFormula: true }
     ]
   },
   T: {
@@ -134,17 +154,17 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     sheetNumberPrefix: '14',
     sheetName: '14. T_TienDo',
     shortLabel: '14. T_TienDo',
-    title: 'Biểu 14. T_TienDo — Tổng hợp tiến độ hoàn thiện bộ biểu đơn vị',
-    guideDesc: 'Tổng hợp số lượng nhiệm vụ A1, công việc A2, vị trí VTVL C1 và tổng FTE nhu cầu C3 của đơn vị.',
-    ruleHint: 'Theo dõi tiến độ nộp và thẩm định hồ sơ theo thời gian thực.',
+    title: 'Biểu 14. T_TienDo — Theo dõi tiến độ kê khai và thẩm định',
+    guideDesc: 'Biểu 14: Nhật ký xác nhận tiến độ kê khai qua từng bước theo đúng lịch trình triển khai của Trường.',
+    ruleHint: 'Cập nhật trạng thái từng bước: Đang thực hiện / Hoàn thành / Chờ thẩm định.',
     columns: [
-      { colLetter: 'A', field: 'maDonVi', headerName: 'Mã đơn vị', width: '110px' },
-      { colLetter: 'B', field: 'tenDonVi', headerName: 'Tên đơn vị', width: '260px' },
-      { colLetter: 'C', field: 'soNhiemVu', headerName: 'Số nhiệm vụ (A1)', width: '130px', isFormula: true },
-      { colLetter: 'D', field: 'soCongViec', headerName: 'Số công việc (A2)', width: '130px', isFormula: true },
-      { colLetter: 'E', field: 'soVtvl', headerName: 'Số VTVL (C1)', width: '110px', isFormula: true },
-      { colLetter: 'F', field: 'tongFte', headerName: 'Tổng FTE nhu cầu (C3)', width: '150px', isFormula: true },
-      { colLetter: 'G', field: 'trangThai', headerName: 'Trạng thái rà soát K_KiemTra', width: '220px' }
+      { colLetter: 'A', field: 'buoc', headerName: 'Bước thực hiện', width: '220px' },
+      { colLetter: 'B', field: 'bieuApDung', headerName: 'Biểu áp dụng', width: '180px' },
+      { colLetter: 'C', field: 'nguoiThucHien', headerName: 'Người thực hiện', width: '180px' },
+      { colLetter: 'D', field: 'ngayBatDau', headerName: 'Ngày bắt đầu', width: '120px' },
+      { colLetter: 'E', field: 'ngayHoanThanh', headerName: 'Ngày hoàn thành', width: '130px' },
+      { colLetter: 'F', field: 'trangThai', headerName: 'Trạng thái tiến độ', width: '150px', type: 'select', selectOptions: ['Chưa bắt đầu', 'Đang thực hiện', 'Hoàn thành', 'Chờ phê duyệt'] },
+      { colLetter: 'G', field: 'ghiChu', headerName: 'Ghi chú', width: '200px' }
     ]
   },
   S: {
@@ -153,21 +173,15 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     sheetNumberPrefix: '15',
     sheetName: '15. S_NhatKy',
     shortLabel: '15. S_NhatKy',
-    title: 'Biểu 15. S_NhatKy — Nhật ký phiên bản và lịch sử cập nhật dữ liệu đơn vị',
-    guideDesc: 'Ghi vết mọi thay đổi số liệu, lịch sử nạp phiếu và xác nhận phiên bản hồ sơ theo từng đợt.',
-    ruleHint: 'Bắt buộc ghi rõ người xác nhận (Email & Chức vụ) và ngày cập nhật.',
+    title: 'Biểu 15. S_NhatKy — Lịch sử chỉnh sửa và thẩm định dữ liệu',
+    guideDesc: 'Biểu 15: Tự động ghi lại nhật ký mọi thao tác thêm, sửa, xóa hoặc thẩm định trên toàn bộ 15 trang tính.',
+    ruleHint: 'Bảo đảm tính toàn vẹn và minh bạch của hồ sơ VTVL đơn vị.',
     columns: [
-      { colLetter: 'A', field: 'ky', headerName: 'Kỳ', width: '130px' },
-      { colLetter: 'B', field: 'bieu', headerName: 'Biểu', width: '130px' },
-      { colLetter: 'C', field: 'ma', headerName: 'Mã', width: '120px' },
-      { colLetter: 'D', field: 'truong', headerName: 'Trường thay đổi', width: '150px' },
-      { colLetter: 'E', field: 'giaTriCu', headerName: 'Giá trị cũ', width: '200px' },
-      { colLetter: 'F', field: 'giaTriMoi', headerName: 'Giá trị mới', width: '200px' },
-      { colLetter: 'G', field: 'nguon', headerName: 'Nguồn', width: '160px' },
-      { colLetter: 'H', field: 'nguoiXacNhan', headerName: 'Người xác nhận', width: '180px' },
-      { colLetter: 'I', field: 'ngay', headerName: 'Ngày', width: '110px' },
-      { colLetter: 'J', field: 'phienBan', headerName: 'Phiên bản', width: '90px' }
+      { colLetter: 'A', field: 'thoiGian', headerName: 'Thời gian', width: '160px' },
+      { colLetter: 'B', field: 'nguoiThaoTac', headerName: 'Người thao tác', width: '160px' },
+      { colLetter: 'C', field: 'bieuThayDoi', headerName: 'Biểu thay đổi', width: '160px' },
+      { colLetter: 'D', field: 'noiDungThayDoi', headerName: 'Nội dung thay đổi', width: '340px' },
+      { colLetter: 'E', field: 'canCuThayDoi', headerName: 'Căn cứ thay đổi', width: '200px' }
     ]
   }
 };
-

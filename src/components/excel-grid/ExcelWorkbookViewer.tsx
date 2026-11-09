@@ -127,13 +127,16 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         />
       </div>
 
-      {/* Main Workspace: 8-step Workflow Sidebar + 15-Sheet Excel Grid */}
+      {/* Main Workspace: 8-step Workflow Sidebar (always expanded) + 15-Sheet Excel Grid */}
       <div className="flex flex-col lg:flex-row gap-3 items-start w-full">
-        <WorkflowSidebar
-          activeStep={getStepFromSheet(activeSheet)}
-          onSelectStep={(s) => setActiveSheet(getSheetFromStep(s))}
-          unitCode={unitCode}
-        />
+        <div className="w-full lg:w-72 shrink-0">
+          <WorkflowSidebar
+            activeStep={getStepFromSheet(activeSheet)}
+            onSelectStep={(s) => setActiveSheet(getSheetFromStep(s))}
+            unitCode={unitCode}
+            alwaysExpanded={true}
+          />
+        </div>
 
         <div className="flex-1 min-w-0 w-full flex flex-col gap-3">
           {/* C1 Admin protection banner when viewing C1 */}

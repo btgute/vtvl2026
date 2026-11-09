@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Check, PanelLeftClose, PanelLeftOpen, FileSpreadsheet, Building2, Layers, Timer, GitMerge, ShieldCheck, RefreshCw, UserCheck, Info, AlertTriangle, X } from 'lucide-react';
-import { VTVL_MILESTONES } from '@/configs/milestones';
 import { getActiveUnitDefinition, getActiveUnitSession } from '@/services/telemetry/activity-log';
 
 export interface InfoTipProps { title?: string; children: React.ReactNode; align?: 'left' | 'right'; }
@@ -26,21 +25,16 @@ export function InfoTip({ title, children, align = 'left' }: InfoTipProps) {
   );
 }
 
-export interface StepSubTask { id: string; label: string; }
-export interface SidebarStepItem { num: number; shortTitle: string; sheets: string; title: string; href: string; subTasks: StepSubTask[]; }
+import {
+  VTVL_MILESTONES,
+  SIDEBAR_EIGHT_STEPS,
+  SIDEBAR_FIVE_STEPS,
+  SidebarStepItem,
+  StepSubTask
+} from '@/configs/milestones';
 
-export const SIDEBAR_EIGHT_STEPS: SidebarStepItem[] = [
-  { num: 1, shortTitle: 'Rà soát chức năng, nhiệm vụ', sheets: 'Biểu 1. A1_NhiemVu', title: 'Bước 1 — Rà soát chức năng, nhiệm vụ (A1)', href: '/tao-tep?step=1', subTasks: [{ id: 'task-1-unit', label: 'Chọn đơn vị & nhiệm vụ A1' }, { id: 'task-1-actor', label: 'Khai báo người thực hiện' }] },
-  { num: 2, shortTitle: 'Xác định công việc & sản phẩm', sheets: 'Biểu 2. A2 · 11. DM_SP', title: 'Bước 2 — Công việc, công đoạn & sản phẩm (A2)', href: '/tao-tep?step=2', subTasks: [{ id: 'task-1-add', label: 'Phân rã công việc & sản phẩm chuẩn I–VI' }] },
-  { num: 3, shortTitle: 'Số lượng SP & thời gian thực hiện', sheets: 'Biểu 3. B1_KhoiLuong', title: 'Bước 3 — Số lượng SP & thời gian thực hiện (B1)', href: '/bam-gio?step=3', subTasks: [{ id: 'task-3-vtvl', label: 'Chọn VTVL & công việc B1' }, { id: 'task-3-timer', label: 'Bấm giờ đo thực tế / nhập sản lượng' }] },
-  { num: 4, shortTitle: 'Tác động CĐS, tự chủ, thuê dịch vụ', sheets: 'Biểu 4. B2_CT → 5. B2', title: 'Bước 4 — Thay đổi do CĐS, tự chủ, thuê DV (B2_CT → B2)', href: '/bam-gio?step=4', subTasks: [{ id: 'task-3-export', label: 'Kê khai công đoạn số hóa & xuất phiếu B1–B2' }] },
-  { num: 5, shortTitle: 'Danh mục VTVL, mô tả & năng lực', sheets: 'Biểu 6. C1 · 7. C2', title: 'Bước 5 — Danh mục VTVL, bản mô tả & năng lực (C1, C2)', href: '/tao-tep?step=5', subTasks: [{ id: 'task-1-name', label: 'Tên VTVL cụ thể, Bậc 1–5 & Quỹ giờ PP2' }] },
-  { num: 6, shortTitle: 'Xác định số người cần thiết (FTE)', sheets: 'Biểu 8. C3_NhuCau', title: 'Bước 6 — Xác định số người cần thiết PP1/PP2/PP3 (C3)', href: '/tao-tep?step=6', subTasks: [{ id: 'task-2-export', label: 'Tính nhu cầu C3 & Xuất bộ 10 biểu gốc (v1)' }] },
-  { num: 7, shortTitle: 'Đối chiếu nhân lực & phương án biên chế', sheets: 'Biểu 9. D1 · 10. D2 · DU_BAO', title: 'Bước 7 — Đối chiếu nhân lực D1 & phương án biên chế D2', href: '/tao-tep?step=7', subTasks: [{ id: 'task-4-forms', label: 'Gộp phiếu khảo sát & lập phương án 2027–2031 (v2)' }] },
-  { num: 8, shortTitle: 'Kiểm tra, xác nhận & gửi kết quả', sheets: 'Biểu 13. K · 14. T · 15. S', title: 'Bước 8 — Kiểm tra 10 biểu, xác nhận & gửi kết quả (K–T–S)', href: '/ra-soat', subTasks: [{ id: 'task-5-run', label: 'Kiểm tra chéo 6 chỉ tiêu K_KiemTra' }, { id: 'task-5-export', label: 'Xuất báo cáo thẩm định & Tờ trình' }] }
-];
-
-export const SIDEBAR_FIVE_STEPS = SIDEBAR_EIGHT_STEPS;
+export { SIDEBAR_EIGHT_STEPS, SIDEBAR_FIVE_STEPS };
+export type { SidebarStepItem, StepSubTask };
 
 export function focusTaskTarget(taskId: string) {
   if (typeof window === 'undefined') return;
@@ -56,9 +50,17 @@ export function focusTaskTarget(taskId: string) {
   }, 80);
 }
 
-interface WorkflowSidebarProps { activeStep?: number; onSelectStep?: (step: number) => void; unitCode?: string; errorStep?: number | null; }
+interface WorkflowSidebarProps {
+  activeStep?: number;
+  onSelectStep?: (step: number) => void;
+  unitCode?: string;
+  errorStep?: number | null;
+  alwaysExpanded?: boolean;
+}
 
-export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep }: WorkflowSidebarProps) {
+export function WorkflowSidebar({
+  activeStep, onSelectStep, unitCode, errorStep, alwaysExpanded = false
+}: WorkflowSidebarProps) {
   const pathname = usePathname();
   const [activeUnit, setActiveUnit] = useState(() => getActiveUnitDefinition(unitCode));
   const [actorInfo, setActorInfo] = useState(() => ({
@@ -203,8 +205,10 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
     </ol>
   );
 
+  const isCollapsed = desktopCollapsed && !alwaysExpanded;
+
   return (
-    <aside aria-label="Quy trình 08 bước HD 07" data-collapsed={desktopCollapsed ? 'true' : 'false'} className="workflow-sidebar w-full lg:w-auto surface-secondary rounded-xl lg:rounded-2xl border border-[var(--border-subtle)] lg:sticky lg:top-20 select-none">
+    <aside aria-label="Quy trình 08 bước HD 07" data-collapsed={isCollapsed ? 'true' : 'false'} className="workflow-sidebar w-full lg:w-auto surface-secondary rounded-xl lg:rounded-2xl border border-[var(--border-subtle)] lg:sticky lg:top-20 select-none">
       {/* MOBILE BAR + BOTTOM SHEET DRAWER */}
       <div className="lg:hidden px-3.5 py-2.5 flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1 space-y-1">
@@ -235,7 +239,7 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
 
       {/* DESKTOP SIDEBAR: Mở rộng hoặc Navigation Rail (76px) */}
       <div className="hidden lg:block">
-        {desktopCollapsed ? (
+        {isCollapsed ? (
           <div className="flex flex-col items-center py-3.5 w-full">
             <button type="button" onClick={() => setDesktopCollapsed(false)} aria-label="Mở rộng thanh tiến trình" title="Mở rộng thanh tiến trình" className="w-9 h-9 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-xl border border-[var(--primary)]/50 bg-[var(--sheet)] hover:bg-[var(--surface-tint)] text-[var(--primary)] shadow-2xs cursor-pointer transition-colors mb-3">
               <PanelLeftOpen className="w-4 h-4" />
@@ -254,9 +258,11 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
                     </div>
                   ))}
                 </InfoTip>
-                <button type="button" onClick={() => setDesktopCollapsed(true)} aria-label="Thu gọn thanh tiến trình" title="Thu gọn chỉ còn số bước 1–8" className="w-9 h-9 min-h-[38px] min-w-[38px] inline-flex items-center justify-center rounded-xl hover:bg-[var(--background)] text-[var(--primary)] cursor-pointer">
-                  <PanelLeftClose className="w-4 h-4" />
-                </button>
+                {!alwaysExpanded && (
+                  <button type="button" onClick={() => setDesktopCollapsed(true)} aria-label="Thu gọn thanh tiến trình" title="Thu gọn chỉ còn số bước 1–8" className="w-9 h-9 min-h-[38px] min-w-[38px] inline-flex items-center justify-center rounded-xl hover:bg-[var(--background)] text-[var(--primary)] cursor-pointer">
+                    <PanelLeftClose className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
 
