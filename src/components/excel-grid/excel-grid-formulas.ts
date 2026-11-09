@@ -68,21 +68,22 @@ export function recalculateGridFormulas(
     const sumB1 = updatedB1.filter((b) => b.maVtvl === vCode).reduce((acc, b) => acc + (Number(b.gioTong) || 0), 0);
     const sumB2 = updatedB2.filter((b) => b.maVtvl === vCode).reduce((acc, b) => acc + (Number(b.gioGiam) || 0), 0);
     const netHours = Math.max(0, Math.round(sumB1 + sumB2));
-    const isQl = vCode.startsWith('QL');
+    const isQl = vCode.includes('QL') || vCode.includes('LD') || String(c.canCuQuyGio).includes('PP1') || existing?.phuongPhap === 'PP1';
     const fteCalc = Math.round((netHours / stdHours) * 100) / 100;
-    const people = isQl ? 1 : Math.max(1, Math.ceil(fteCalc));
+    const qlPeople = existing?.nguoiPp1 ? Number(existing.nguoiPp1) : (vCode.includes('QL43') || vCode.includes('PTP') || vCode.includes('PTK') ? 2 : 1);
+    const people = isQl ? qlPeople : Math.max(1, Math.ceil(fteCalc));
     return {
       id: existing?.id || `c3-sync-${idx + 1}`,
       maVtvl: vCode,
-      phuongPhap: existing?.phuongPhap || (isQl ? 'PP1' : 'PP2'),
-      gioB1: Math.round(sumB1),
-      gioB2: Math.round(sumB2),
-      gioRong: netHours,
+      phuongPhap: isQl ? 'PP1' : (existing?.phuongPhap || 'PP2'),
+      gioB1: isQl ? '' : Math.round(sumB1),
+      gioB2: isQl ? 0 : Math.round(sumB2),
+      gioRong: isQl ? '' : netHours,
       gioPp2: stdHours,
-      nguoiQuyDoi: fteCalc,
-      nguoiPp1: isQl ? 1 : 0,
+      nguoiQuyDoi: isQl ? '' : fteCalc,
+      nguoiPp1: isQl ? qlPeople : 0,
       nguoiCanBoTri: people,
-      nguonGiaiTrinh: existing?.nguonGiaiTrinh || 'Khối lượng B1 chia quỹ giờ chuẩn',
+      nguonGiaiTrinh: existing?.nguonGiaiTrinh || (isQl ? 'PP1 theo cơ cấu chức danh lãnh đạo (NĐ 232/2026/NĐ-CP & QĐ 2266)' : 'Khối lượng B1 chia quỹ giờ chuẩn'),
       canhBao: 'ĐẠT'
     };
   });

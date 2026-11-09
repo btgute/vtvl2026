@@ -75,3 +75,4 @@ export function getNextTaskCode(
   }
   return formatTaskCode(missionCode, maxNum + 1);
 }
+

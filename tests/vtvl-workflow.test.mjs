@@ -241,6 +241,12 @@ runTest('9. Kiểm tra chuẩn hóa Mã nhiệm vụ ([MÃ_ĐV].NVxx), Mã công
   const coreSheets = fs.readFileSync(path.join(root, 'src/services/excel-split/hd07-core-sheets.ts'), 'utf8');
   assert.ok(coreSheets.includes('${opts.unitCode}.${m.missionSuffix}'), 'hd07-core-sheets phải sinh mã nhiệm vụ có dấu chấm');
   assert.ok(coreSheets.includes('${mCode}.CV'), 'hd07-core-sheets phải sinh mã công việc kế thừa mã nhiệm vụ');
+
+  // Kiểm tra cấu trúc 10 sheet có số, QL33/QL43 dùng PP1 không có việc ở A2/B1
+  const pl1Catalog = fs.readFileSync(path.join(root, 'src/configs/hcmute-pl1-catalog.ts'), 'utf8');
+  assert.ok(!pl1Catalog.includes("taskSuffix: 'NV01.CV00'") && !pl1Catalog.includes("taskSuffix: 'NV02.CV00'"), 'TCNS_REAL_TASKS không được tạo công việc cho QL33 và QL43 (dùng PP1)');
+  assert.ok(defaults.includes('TCNS.QL33') && defaults.includes('TCNS.QL43'), 'defaults C1 phải có TCNS.QL33 và TCNS.QL43');
+  assert.ok(defaults.includes("PP1 – theo cơ cấu"), 'defaults C1 phải ghi rõ QL33/QL43 dùng PP1');
 });
 
 // 10. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)

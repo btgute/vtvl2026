@@ -22,13 +22,12 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
   // 1. C1_VTVL
   const c1Rows: GenericGridRow[] = isTcns
     ? [
-        { id: 'c1-1', maVtvl: 'QL10', tenVtvl: 'Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-2', maVtvl: 'QL20', tenVtvl: 'Phó Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-3', maVtvl: 'CM63', tenVtvl: 'Chuyên viên Tổ chức cán bộ và VTVL', loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-4', maVtvl: 'CM64', tenVtvl: 'Chuyên viên Tuyển dụng, Đào tạo và Bồi dưỡng', loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-5', maVtvl: 'CM65', tenVtvl: 'Chuyên viên Chế độ chính sách, Tiền lương và BHXH', loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-6', maVtvl: 'CM66', tenVtvl: 'Chuyên viên Đánh giá cán bộ, Thi đua và Khen thưởng', loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-7', maVtvl: 'HT26', tenVtvl: 'Nhân viên Văn thư, Lưu trữ hồ sơ cán bộ', loaiNhanLuc: 'Hợp đồng lao động', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' }
+        { id: 'c1-1', maVtvl: 'TCNS.HT45', tenVtvl: 'Tổ chức cán bộ, thi đua khen thưởng', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-2', maVtvl: 'TCNS.HT47', tenVtvl: 'Tiếp công dân, giải quyết khiếu nại, tố cáo', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-3', maVtvl: 'TCNS.HT48', tenVtvl: 'Phòng, chống tham nhũng, tiêu cực, lãng phí', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-4', maVtvl: 'TCNS.HT49', tenVtvl: 'Hành chính – Tổng hợp', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-5', maVtvl: 'TCNS.QL33', tenVtvl: 'Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'PP1 – theo cơ cấu và chức danh quản lý', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
+        { id: 'c1-6', maVtvl: 'TCNS.QL43', tenVtvl: 'Phó Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'PP1 – theo cơ cấu và chức danh quản lý', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' }
       ]
     : [
         { id: 'c1-1', maVtvl: 'QL10', tenVtvl: `Trưởng đơn vị (${unitDef.nameVi})`, loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
@@ -172,21 +171,22 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
     const sumB2 = b2Rows.filter((b) => b.maVtvl === vCode).reduce((acc, b) => acc + (Number(b.gioGiam) || 0), 0);
     const netHours = Math.max(0, sumB1 + sumB2);
     const stdHours = Number(c.gioChuanPp2) || 1904;
-    const isQl = vCode.startsWith('QL');
+    const isQl = vCode.includes('QL') || vCode.includes('LD') || String(c.canCuQuyGio).includes('PP1');
     const fteCalc = Math.round((netHours / stdHours) * 100) / 100;
-    const requiredPeople = isQl ? 1 : Math.max(1, Math.ceil(fteCalc));
+    const qlPeople = vCode.includes('QL43') || vCode.includes('PTP') || vCode.includes('PTK') ? 2 : 1;
+    const requiredPeople = isQl ? qlPeople : Math.max(1, Math.ceil(fteCalc));
     return {
       id: `c3-${idx + 1}`,
       maVtvl: vCode,
       phuongPhap: isQl ? 'PP1' : 'PP2',
-      gioB1: Math.round(sumB1),
-      gioB2: Math.round(sumB2),
-      gioRong: Math.round(netHours),
+      gioB1: isQl ? '' : Math.round(sumB1),
+      gioB2: isQl ? 0 : Math.round(sumB2),
+      gioRong: isQl ? '' : Math.round(netHours),
       gioPp2: stdHours,
-      nguoiQuyDoi: fteCalc,
-      nguoiPp1: isQl ? 1 : 0,
+      nguoiQuyDoi: isQl ? '' : fteCalc,
+      nguoiPp1: isQl ? qlPeople : 0,
       nguoiCanBoTri: requiredPeople,
-      nguonGiaiTrinh: 'Khối lượng B1 thực tế kỳ 2025–2026 chia 1.904h',
+      nguonGiaiTrinh: isQl ? 'PP1 theo cơ cấu chức danh lãnh đạo (NĐ 232/2026/NĐ-CP & QĐ 2266)' : 'Khối lượng B1 thực tế kỳ 2025–2026 chia 1.904h',
       canhBao: 'ĐẠT'
     };
   });
