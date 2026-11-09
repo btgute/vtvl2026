@@ -24,7 +24,7 @@ export interface ExcelColumnDef {
   isFormula?: boolean;
   formulaHint?: string;
   selectOptions?: string[];
-  dynamicOptionsKey?: 'vtvlList' | 'missionList' | 'taskList' | 'productList';
+  dynamicOptionsKey?: 'vtvlList' | 'missionList' | 'taskList' | 'productList' | 'pl1VtvlList';
   readOnly?: boolean;
 }
 

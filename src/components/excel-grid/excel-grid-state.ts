@@ -8,7 +8,15 @@ import {
 } from './excel-grid-types';
 import { buildDefaultGridWorkbook } from './excel-grid-defaults';
 import { recalculateGridFormulas } from './excel-grid-formulas';
-import { getNextMissionCode, getNextTaskCode, escapeRegExp } from './excel-grid-code-helpers';
+import { getNextMissionCode, getNextTaskCode, buildNewGridRow } from './excel-grid-code-helpers';
+import {
+  findPl1Item,
+  getPl1CareerLevel,
+  buildFullPl1C1Rows,
+  buildFullPl1C2Rows,
+  buildRecommendedC1Rows
+} from '@/configs/hcmute-pl1-builder';
+import { PL1_VTVL_CATALOG } from '@/configs/hcmute-pl1-catalog';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
 import { UnitGroupKind } from '@/types/vtvl';
@@ -91,6 +99,37 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
         return recalculateGridFormulas({ ...prev, A2: updatedRows }, currentUnit.code, currentUnit.nameVi);
       }
 
+      // 3. Khi đổi mã VTVL ở C1 -> tra cứu tên chuẩn từ Phụ lục I và đồng bộ sang C2
+      if (sheetKey === 'C1' && field === 'maVtvl') {
+        const newVtvl = String(value);
+        const pl1Item = findPl1Item(newVtvl);
+        const isQl = pl1Item?.pl1Code.startsWith('QL') ?? newVtvl.includes('QL');
+        const oldRow = sheetRows.find((r) => r.id === rowId);
+        const oldVtvl = String(oldRow?.maVtvl || '');
+        const updatedC1 = sheetRows.map((row) =>
+          row.id === rowId
+            ? {
+                ...row,
+                maVtvl: newVtvl,
+                tenVtvl: pl1Item ? (pl1Item.titleOrRole || pl1Item.positionName) : row.tenVtvl,
+                canCuQuyGio: isQl ? 'PP1 – theo cơ cấu và chức danh quản lý' : 'Mức chung 1.904 giờ – quy định về thời giờ làm việc'
+              }
+            : row
+        );
+        const existingC2 = prev.C2 || [];
+        const updatedC2 = existingC2.map((c2) =>
+          String(c2.maVtvl) === oldVtvl
+            ? {
+                ...c2,
+                maVtvl: newVtvl,
+                tenVtvl: pl1Item ? (pl1Item.titleOrRole || pl1Item.positionName) : c2.tenVtvl,
+                bacNgheNghiep: getPl1CareerLevel(newVtvl)
+              }
+            : c2
+        );
+        return recalculateGridFormulas({ ...prev, C1: updatedC1, C2: updatedC2 }, currentUnit.code, currentUnit.nameVi);
+      }
+
       const updatedRows = sheetRows.map((row) => (row.id === rowId ? { ...row, [field]: value } : row));
       return recalculateGridFormulas({ ...prev, [sheetKey]: updatedRows }, currentUnit.code, currentUnit.nameVi);
     });
@@ -99,55 +138,12 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
   const addRow = useCallback((sheetKey: ExcelSheetKey) => {
     setData((prev) => {
       const sheetRows = prev[sheetKey] || [];
-      const newId = `${sheetKey.toLowerCase()}-${Date.now().toString(36)}`;
-      let newRow: GenericGridRow = { id: newId };
+      const { newRow, extraC2Row } = buildNewGridRow(sheetKey, prev, currentUnit);
 
-      if (sheetKey === 'A1') {
-        const nextCode = getNextMissionCode(sheetRows, currentUnit.code);
-        newRow = {
-          id: newId,
-          maNhiemVu: nextCode,
-          tenNhiemVu: `Nhiệm vụ mới (${nextCode})`,
-          coQuan: currentUnit.nameVi,
-          canCu: 'QĐ 2266/QĐ-ĐHCNKT',
-          ky: '2025–2026',
-          trangThai: 'Tiếp tục thực hiện',
-          nguon: 'QĐ 2266'
-        };
-      } else if (sheetKey === 'A2') {
-        const existingA2 = prev.A2 || [];
-        const lastRow = existingA2[existingA2.length - 1];
-        const targetMission = (lastRow?.maNhiemVu as string) || (prev.A1 && (prev.A1[0]?.maNhiemVu as string)) || `${currentUnit.code}.NV01`;
-        const nextTaskCode = getNextTaskCode(existingA2, targetMission);
-        const defaultVtvl = (lastRow?.maVtvl as string) || (prev.C1 && (prev.C1[0]?.maVtvl as string)) || 'CM63';
-        newRow = {
-          id: newId,
-          maCongViec: nextTaskCode,
-          maNhiemVu: targetMission,
-          maVtvl: defaultVtvl,
-          tenCongViec: `Công việc mới (${nextTaskCode})`,
-          sanPham: 'Sản phẩm hoàn thành',
-          dvt: 'Hồ sơ / Báo cáo',
-          chatLuong: 'Đạt chuẩn quy định',
-          canCu: 'QĐ 2266 & Mô tả công việc'
-        };
-      } else if (sheetKey === 'C1') {
-        const existingC1 = prev.C1 || [];
-        const nextVtvl = `CM${63 + existingC1.length}`;
-        newRow = {
-          id: newId,
-          maVtvl: nextVtvl,
-          tenVtvl: `Vị trí việc làm chuyên môn ${existingC1.length + 1}`,
-          loaiNhanLuc: 'Viên chức',
-          quyetDinh: 'QĐ 2266 / NĐ 232',
-          gioChuanPp2: 1904,
-          canCuQuyGio: '40h/tuần',
-          trangThai: 'tiếp tục sử dụng',
-          gioRieng: 0,
-          xacNhanGioRieng: 'Không',
-          cheDoLamViec: 'Phổ biến (40 giờ/tuần)',
-          kiemTra: 'ĐẠT'
-        };
+      if (sheetKey === 'C1') {
+        const nextC1 = [...sheetRows, newRow];
+        const nextC2 = extraC2Row ? [...(prev.C2 || []), extraC2Row] : prev.C2;
+        return recalculateGridFormulas({ ...prev, C1: nextC1, C2: nextC2 }, currentUnit.code, currentUnit.nameVi);
       }
 
       return recalculateGridFormulas({ ...prev, [sheetKey]: [...sheetRows, newRow] }, currentUnit.code, currentUnit.nameVi);
@@ -217,8 +213,25 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     vtvlList: Array.from(new Set((data.C1 || []).map((r) => String(r.maVtvl || '')).filter(Boolean))),
     missionList: Array.from(new Set((data.A1 || []).map((r) => String(r.maNhiemVu || '')).filter(Boolean))),
     taskList: Array.from(new Set((data.A2 || []).map((r) => String(r.maCongViec || '')).filter(Boolean))),
-    productList: Array.from(new Set((data.DM_SP || []).map((r) => String(r.maSpChuan || '')).filter(Boolean)))
-  }), [data.C1, data.A1, data.A2, data.DM_SP]);
+    productList: Array.from(new Set((data.DM_SP || []).map((r) => String(r.maSpChuan || '')).filter(Boolean))),
+    pl1VtvlList: PL1_VTVL_CATALOG.map((item) => `${currentUnit.code}.${item.pl1Code}`)
+  }), [data.C1, data.A1, data.A2, data.DM_SP, currentUnit.code]);
+
+  const loadFullPl1Catalog = useCallback(() => {
+    setData((prev) => {
+      const fullC1 = buildFullPl1C1Rows(currentUnit.code);
+      const fullC2 = buildFullPl1C2Rows(fullC1);
+      return recalculateGridFormulas({ ...prev, C1: fullC1, C2: fullC2 }, currentUnit.code, currentUnit.nameVi);
+    });
+  }, [currentUnit.code, currentUnit.nameVi]);
+
+  const loadRecommendedVtvls = useCallback(() => {
+    setData((prev) => {
+      const recC1 = buildRecommendedC1Rows(currentUnit.code, currentUnit.group);
+      const recC2 = buildFullPl1C2Rows(recC1);
+      return recalculateGridFormulas({ ...prev, C1: recC1, C2: recC2 }, currentUnit.code, currentUnit.nameVi);
+    });
+  }, [currentUnit.code, currentUnit.nameVi, currentUnit.group]);
 
   const exportFullWorkbook = useCallback(async () => {
     setIsExporting(true);
@@ -255,6 +268,8 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     dynamicOptionsMap,
     handleUnitChange,
     handleLoadTcnsData,
+    loadFullPl1Catalog,
+    loadRecommendedVtvls,
     setActiveSheet,
     updateCell,
     addRow,

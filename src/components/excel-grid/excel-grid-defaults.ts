@@ -1,6 +1,7 @@
 import { ExcelSheetKey, GenericGridRow } from './excel-grid-types';
 import { cleanMissionSuffix } from './excel-grid-code-helpers';
 import { PL1_VTVL_CATALOG, TCNS_REAL_MISSIONS, TCNS_REAL_TASKS, TCNS_C2_PROFILES } from '@/configs/hcmute-pl1-catalog';
+import { buildRecommendedC1Rows, createC2RowFromPl1 } from '@/configs/hcmute-pl1-builder';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { TASK_TEMPLATES_BY_GROUP } from '@/configs/hcmute-quotas';
 import { UnitGroupKind } from '@/types/vtvl';
@@ -19,7 +20,7 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
   const isTcns = unitCode === 'TCNS';
   const group = unitDef.group as UnitGroupKind;
 
-  // 1. C1_VTVL
+  // 1. C1_VTVL — Nạp danh mục VTVL chuẩn theo Phụ lục I và loại hình đơn vị
   const c1Rows: GenericGridRow[] = isTcns
     ? [
         { id: 'c1-1', maVtvl: 'TCNS.HT45', tenVtvl: 'Tổ chức cán bộ, thi đua khen thưởng', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'Mức chung 1.904 giờ – quy định về thời giờ làm việc', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
@@ -29,13 +30,7 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
         { id: 'c1-5', maVtvl: 'TCNS.QL33', tenVtvl: 'Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'PP1 – theo cơ cấu và chức danh quản lý', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
         { id: 'c1-6', maVtvl: 'TCNS.QL43', tenVtvl: 'Phó Trưởng phòng Tổ chức - Nhân sự', loaiNhanLuc: 'Viên chức', quyetDinh: 'Chờ quyết định', gioChuanPp2: 1904, canCuQuyGio: 'PP1 – theo cơ cấu và chức danh quản lý', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' }
       ]
-    : [
-        { id: 'c1-1', maVtvl: 'QL10', tenVtvl: `Trưởng đơn vị (${unitDef.nameVi})`, loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-2', maVtvl: 'QL20', tenVtvl: `Phó Trưởng đơn vị (${unitDef.nameVi})`, loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-3', maVtvl: 'CM63', tenVtvl: `Chuyên viên nghiệp vụ chính ${unitDef.nameVi}`, loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-4', maVtvl: 'CM64', tenVtvl: `Chuyên viên tổng hợp ${unitDef.nameVi}`, loaiNhanLuc: 'Viên chức', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' },
-        { id: 'c1-5', maVtvl: 'HT26', tenVtvl: `Nhân viên hỗ trợ, văn thư ${unitDef.nameVi}`, loaiNhanLuc: 'Hợp đồng lao động', quyetDinh: 'QĐ 2266 / NĐ 232', gioChuanPp2: 1904, canCuQuyGio: '40h/tuần', trangThai: 'tiếp tục sử dụng', gioRieng: 0, xacNhanGioRieng: 'Không', cheDoLamViec: 'Phổ biến (40 giờ/tuần)', kiemTra: 'ĐẠT' }
-      ];
+    : buildRecommendedC1Rows(unitCode, group);
 
   // 2. A1_NhiemVu
   const a1Rows: GenericGridRow[] = isTcns
@@ -129,24 +124,22 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
     };
   });
 
-  // 8. C2_NangLuc
+  // 8. C2_NangLuc — Đồng bộ năng lực và Bậc nghề nghiệp sử dụng chuẩn Phụ lục I
   const c2Rows: GenericGridRow[] = c1Rows.map((c, idx) => {
-    const prof = TCNS_C2_PROFILES[String(c.maVtvl)] || {
-      responsibility: 'Thực hiện nhiệm vụ theo quy chế và chỉ đạo của cấp trên.',
-      general: 'Chấp hành nghiêm kỷ cương, năng lực số cơ bản, giao tiếp công vụ.',
-      professional: 'Nắm vững chuyên môn, quy trình và văn bản quy phạm liên quan.',
-      leadership: String(c.maVtvl).startsWith('QL') ? 'Lãnh đạo, quản lý và tổ chức điều hành đơn vị.' : 'Không áp dụng.'
-    };
-    return {
-      id: `c2-${idx + 1}`,
-      maVtvl: c.maVtvl,
-      tenVtvl: c.tenVtvl,
-      bacNgheNghiep: String(c.maVtvl).startsWith('QL') ? 'Bậc 4 (Chuyên viên chính)' : String(c.maVtvl).startsWith('HT') ? 'Bậc 1 (Nhân viên)' : 'Bậc 3 (Chuyên viên)',
-      nhomNangLuc: 'Năng lực chuyên môn',
-      tenNangLuc: prof.responsibility.slice(0, 45) + '...',
-      capDoYeuCau: String(c.maVtvl).startsWith('QL') ? 'Cấp độ 4' : 'Cấp độ 3',
-      moTaChiTiet: `${prof.general} | ${prof.professional}`
-    };
+    const prof = TCNS_C2_PROFILES[String(c.maVtvl)];
+    if (prof) {
+      return {
+        id: `c2-${idx + 1}`,
+        maVtvl: c.maVtvl,
+        tenVtvl: c.tenVtvl,
+        bacNgheNghiep: String(c.maVtvl).includes('QL') ? 'Không áp dụng bậc riêng' : 'Bậc 3 (Chuyên viên)',
+        nhomNangLuc: 'Năng lực chuyên môn',
+        tenNangLuc: prof.responsibility.slice(0, 45) + '...',
+        capDoYeuCau: String(c.maVtvl).includes('QL') ? 'Cấp độ 4' : 'Cấp độ 3',
+        moTaChiTiet: `${prof.general} | ${prof.professional}`
+      };
+    }
+    return createC2RowFromPl1(c, idx);
   });
 
   // 9. D1_NhanLuc

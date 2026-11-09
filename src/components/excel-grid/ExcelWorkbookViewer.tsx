@@ -37,6 +37,8 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     dynamicOptionsMap,
     handleUnitChange,
     handleLoadTcnsData,
+    loadFullPl1Catalog,
+    loadRecommendedVtvls,
     setActiveSheet,
     updateCell,
     addRow,
@@ -80,6 +82,29 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
           {/* Quick actions: Load TCNS template, Check, Export Excel */}
           <div className="flex flex-wrap items-center gap-2">
+            {activeSheet === 'C1' && (
+              <>
+                <button
+                  type="button"
+                  onClick={loadRecommendedVtvls}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg cursor-pointer transition-colors"
+                  title={`Nạp danh mục VTVL chuẩn theo loại hình ${currentUnit.nameVi}`}
+                >
+                  <Building2 className="w-3.5 h-3.5 text-[#004776]" />
+                  <span>Nạp VTVL chuẩn {currentUnit.code}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={loadFullPl1Catalog}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg cursor-pointer transition-colors"
+                  title="Nạp toàn bộ 56 VTVL chuẩn theo Phụ lục I kèm Quyết định của Hiệu trưởng"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Nạp trọn bộ 56 VTVL (Phụ lục I)</span>
+                </button>
+              </>
+            )}
+
             <button
               type="button"
               onClick={handleLoadTcnsData}
@@ -131,10 +156,16 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
         {/* Status bar: Order workflow hint and auto-save */}
         <div className="mt-2.5 pt-2 border-t border-[#e2e8f0] flex flex-wrap items-center justify-between gap-2 text-xs text-[#64748b]">
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-[#004776]">Trình tự nghiệp vụ Excel:</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="font-semibold text-[#004776]">
+              {orderMode === 'excel'
+                ? 'Thứ tự sheet chuẩn tệp Excel (Văn bản 04):'
+                : 'Trình tự kỹ thuật phụ thuộc dữ liệu (12 bước Mục II):'}
+            </span>
             <span className="text-[#334155]">
-              Chọn ĐV → 6. C1 (Mã VTVL) → 1. A1 (Nhiệm vụ 2266) → 2. A2 (Công việc & Mã) → 11. DM_SP → 3. B1 (Khối lượng) → 4. B2_CT → 5. B2 → 7. C2 → 9. D1 → 8. C3 (FTE) → DU_BAO → 10. D2 → 13. K (Kiểm tra)
+              {orderMode === 'excel'
+                ? '1. A1 → 2. A2 → 3. B1 → 4. B2_CT → 5. B2 → 6. C1 → 7. C2 → 8. C3 → 9. D1 → 10. D2 → 11. DM_SP → DU_BAO → 13. K → 14. T → 15. S'
+                : '11. DM_SP (B.2) → 6. C1 (B.3) → 1. A1 (B.4) → 2. A2 (B.5) → 3. B1 (B.6) → 4. B2_CT (B.7) → 5. B2 → 7. C2 (B.8) → 9. D1 (B.9) → 8. C3 (B.10) → DU_BAO (B.11) → 10. D2 (B.12)'}
             </span>
           </div>
 

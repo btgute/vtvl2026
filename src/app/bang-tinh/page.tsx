@@ -27,7 +27,7 @@ function BangTinhContent() {
             Hệ thống Bảng tính Vị trí việc làm trực quan — HCM-UTE
           </h1>
           <p className="text-xs text-[#64748b]">
-            Thao tác trực tiếp trên 15 sheet nghiệp vụ: Chọn đơn vị → 6. C1_VTVL → 1. A1_NhiemVu → 2. A2_CongViec → 11. DM_SAN_PHAM → 3. B1_KhoiLuong → 4. B2_CT → 5. B2 → 7. C2 → 9. D1 → 8. C3 → DU_BAO → 10. D2 → 13. K_KiemTra.
+            Thao tác trực tiếp trên 15 sheet nghiệp vụ: Chọn đơn vị và chuyển đổi linh hoạt giữa <strong>Thứ tự chuẩn tệp Excel (1. A1 → 15. S)</strong> và <strong>Trình tự kỹ thuật 12 bước</strong> theo Hướng dẫn số 07-HD/BTCTW.
           </p>
         </div>
 

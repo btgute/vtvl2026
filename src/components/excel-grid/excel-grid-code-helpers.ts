@@ -76,3 +76,60 @@ export function getNextTaskCode(
   return formatTaskCode(missionCode, maxNum + 1);
 }
 
+/**
+ * Sinh dòng mới tự động cho các bảng tính A1, A2, C1 từ danh mục Phụ lục I
+ */
+export function buildNewGridRow(
+  sheetKey: string,
+  prevData: Record<string, GenericGridRow[]>,
+  currentUnit: { code: string; nameVi: string }
+): { newRow: GenericGridRow; extraC2Row?: GenericGridRow } {
+  const sheetRows = prevData[sheetKey] || [];
+  const newId = `${sheetKey.toLowerCase()}-${Date.now().toString(36)}`;
+
+  if (sheetKey === 'A1') {
+    const nextCode = getNextMissionCode(sheetRows, currentUnit.code);
+    return {
+      newRow: {
+        id: newId,
+        maNhiemVu: nextCode,
+        tenNhiemVu: `Nhiệm vụ mới (${nextCode})`,
+        coQuan: currentUnit.nameVi,
+        canCu: 'QĐ 2266/QĐ-ĐHCNKT',
+        ky: '2025–2026',
+        trangThai: 'Tiếp tục thực hiện',
+        nguon: 'QĐ 2266'
+      }
+    };
+  }
+
+  if (sheetKey === 'A2') {
+    const existingA2 = prevData.A2 || [];
+    const lastRow = existingA2[existingA2.length - 1];
+    const targetMission =
+      (lastRow?.maNhiemVu as string) ||
+      (prevData.A1 && (prevData.A1[0]?.maNhiemVu as string)) ||
+      `${currentUnit.code}.NV01`;
+    const nextTaskCode = getNextTaskCode(existingA2, targetMission);
+    const defaultVtvl =
+      (lastRow?.maVtvl as string) ||
+      (prevData.C1 && (prevData.C1[0]?.maVtvl as string)) ||
+      `${currentUnit.code}.CM63`;
+    return {
+      newRow: {
+        id: newId,
+        maCongViec: nextTaskCode,
+        maNhiemVu: targetMission,
+        maVtvl: defaultVtvl,
+        tenCongViec: `Công việc mới (${nextTaskCode})`,
+        sanPham: 'Sản phẩm hoàn thành',
+        dvt: 'Hồ sơ / Báo cáo',
+        chatLuong: 'Đạt chuẩn quy định',
+        canCu: 'QĐ 2266 & Mô tả công việc'
+      }
+    };
+  }
+
+  return { newRow: { id: newId } };
+}
+

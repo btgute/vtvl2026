@@ -14,7 +14,7 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Biểu 6 (Bước 5 nghiệp vụ): Khai danh mục VTVL của đơn vị, chọn chế độ làm việc và xác định quỹ giờ chuẩn PP2 (1.904h hoặc 1.760h).',
     ruleHint: 'Áp dụng mã Phụ lục I (QL10–QL60, CM63–CM113, HT26–HT62) theo quy định HCM-UTE.',
     columns: [
-      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px' },
+      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL (Phụ lục I)', width: '160px', type: 'select', dynamicOptionsKey: 'pl1VtvlList' },
       { colLetter: 'B', field: 'tenVtvl', headerName: 'Tên VTVL cụ thể tại đơn vị', width: '260px' },
       { colLetter: 'C', field: 'loaiNhanLuc', headerName: 'Loại nhân lực', width: '110px', type: 'select', selectOptions: ['Viên chức', 'Hợp đồng lao động', 'Cán bộ'] },
       { colLetter: 'D', field: 'quyetDinh', headerName: 'Quyết định / Căn cứ VTVL', width: '200px' },
