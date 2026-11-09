@@ -1,5 +1,11 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { ExcelSheetKey, GenericGridRow, WORKFLOW_SHEET_ORDER } from './excel-grid-types';
+import {
+  ExcelSheetKey,
+  GenericGridRow,
+  SheetOrderMode,
+  EXCEL_NATURAL_SHEET_ORDER,
+  TECHNICAL_DEPENDENCY_ORDER
+} from './excel-grid-types';
 import { buildDefaultGridWorkbook } from './excel-grid-defaults';
 import { recalculateGridFormulas } from './excel-grid-formulas';
 import { getNextMissionCode, getNextTaskCode, escapeRegExp } from './excel-grid-code-helpers';
@@ -9,7 +15,8 @@ import { UnitGroupKind } from '@/types/vtvl';
 
 export function useExcelGridState(initialUnitCode = 'TCNS') {
   const [unitCode, setUnitCode] = useState(initialUnitCode);
-  const [activeSheet, setActiveSheet] = useState<ExcelSheetKey>('C1');
+  const [orderMode, setOrderMode] = useState<SheetOrderMode>('excel');
+  const [activeSheet, setActiveSheet] = useState<ExcelSheetKey>('A1');
   const [data, setData] = useState<Record<ExcelSheetKey, GenericGridRow[]>>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -35,14 +42,14 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
       } catch { /* ignore */ }
     }
     setData(fresh);
-    setActiveSheet('C1');
+    setActiveSheet('A1');
   }, []);
 
   const handleLoadTcnsData = useCallback(() => {
     setUnitCode('TCNS');
     const tcnsData = buildDefaultGridWorkbook('TCNS');
     setData(tcnsData);
-    setActiveSheet('C1');
+    setActiveSheet('A1');
     if (typeof window !== 'undefined') {
       localStorage.setItem('hcmute_vtvl_grid_TCNS', JSON.stringify(tcnsData));
     }
@@ -184,18 +191,22 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     return timeStr;
   }, [currentUnit.code, currentUnit.nameVi]);
 
-  const activeSheetIndex = WORKFLOW_SHEET_ORDER.indexOf(activeSheet);
+  const currentSheetOrder = useMemo(() => {
+    return orderMode === 'technical' ? TECHNICAL_DEPENDENCY_ORDER : EXCEL_NATURAL_SHEET_ORDER;
+  }, [orderMode]);
+
+  const activeSheetIndex = currentSheetOrder.indexOf(activeSheet);
   const goToNextSheet = useCallback(() => {
-    if (activeSheetIndex < WORKFLOW_SHEET_ORDER.length - 1) {
-      setActiveSheet(WORKFLOW_SHEET_ORDER[activeSheetIndex + 1]);
+    if (activeSheetIndex < currentSheetOrder.length - 1) {
+      setActiveSheet(currentSheetOrder[activeSheetIndex + 1]);
     }
-  }, [activeSheetIndex]);
+  }, [activeSheetIndex, currentSheetOrder]);
 
   const goToPrevSheet = useCallback(() => {
     if (activeSheetIndex > 0) {
-      setActiveSheet(WORKFLOW_SHEET_ORDER[activeSheetIndex - 1]);
+      setActiveSheet(currentSheetOrder[activeSheetIndex - 1]);
     }
-  }, [activeSheetIndex]);
+  }, [activeSheetIndex, currentSheetOrder]);
 
   const saveAndGoNext = useCallback(() => {
     saveSheetData(activeSheet);
@@ -232,6 +243,9 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
   return {
     unitCode,
     currentUnit,
+    orderMode,
+    setOrderMode,
+    currentSheetOrder,
     activeSheet,
     activeSheetIndex,
     data,

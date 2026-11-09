@@ -6,12 +6,12 @@ export const CORE_EXCEL_SHEET_METAS: Record<
 > = {
   C1: {
     key: 'C1',
-    stepNum: 1,
+    stepNum: 6,
     sheetNumberPrefix: '6',
     sheetName: '6. C1_VTVL',
     shortLabel: '6. C1_VTVL',
     title: 'Biểu C1_ Vị trí việc làm (Khai danh mục VTVL & Quỹ giờ chuẩn PP2)',
-    guideDesc: 'Bước 1 trong trình tự Excel: Khai danh mục VTVL của đơn vị, chọn chế độ làm việc và xác định quỹ giờ chuẩn PP2 (1.904h hoặc 1.760h).',
+    guideDesc: 'Biểu 6 (Bước 5 nghiệp vụ): Khai danh mục VTVL của đơn vị, chọn chế độ làm việc và xác định quỹ giờ chuẩn PP2 (1.904h hoặc 1.760h).',
     ruleHint: 'Áp dụng mã Phụ lục I (QL10–QL60, CM63–CM113, HT26–HT62) theo quy định HCM-UTE.',
     columns: [
       { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px' },
@@ -29,12 +29,12 @@ export const CORE_EXCEL_SHEET_METAS: Record<
   },
   A1: {
     key: 'A1',
-    stepNum: 2,
+    stepNum: 1,
     sheetNumberPrefix: '1',
     sheetName: '1. A1_NhiemVu',
     shortLabel: '1. A1_NhiemVu',
     title: 'Biểu A1_ Nhiệm vụ (Rà soát nhiệm vụ theo Quyết định 2266/QĐ-ĐHCNKT)',
-    guideDesc: 'Bước 2: Rà soát chức năng, nhiệm vụ được giao theo QĐ chức năng nhiệm vụ (QĐ 2266, Phụ lục 18) và phân loại tiếp tục thực hiện.',
+    guideDesc: 'Biểu 1 (Bước 1 nghiệp vụ): Rà soát chức năng, nhiệm vụ được giao theo QĐ chức năng nhiệm vụ (QĐ 2266, Phụ lục 18) và phân loại tiếp tục thực hiện.',
     ruleHint: 'Mã nhiệm vụ chuẩn: [MÃ_ĐV].NV[01..99] (ví dụ: TCNS.NV01). Mỗi nhiệm vụ có một mã riêng, tự động tăng dần khi thêm mới.',
     columns: [
       { colLetter: 'A', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ ([ĐV].NVxx)', width: '150px' },
@@ -48,12 +48,12 @@ export const CORE_EXCEL_SHEET_METAS: Record<
   },
   A2: {
     key: 'A2',
-    stepNum: 3,
+    stepNum: 2,
     sheetNumberPrefix: '2',
     sheetName: '2. A2_CongViec',
     shortLabel: '2. A2_CongViec',
     title: 'Biểu A2_ Công việc (Phân rã công việc gắn Mã nhiệm vụ & Mã VTVL)',
-    guideDesc: 'Bước 3: Phân rã nhiệm vụ thành từng công việc, xác định sản phẩm đầu ra, đơn vị tính, chất lượng và gán trực tiếp Mã VTVL chịu trách nhiệm.',
+    guideDesc: 'Biểu 2 (Bước 2 nghiệp vụ): Phân rã nhiệm vụ thành từng công việc, xác định sản phẩm đầu ra, đơn vị tính, chất lượng và gán trực tiếp Mã VTVL chịu trách nhiệm.',
     ruleHint: 'Mã công việc chuẩn: [Mã nhiệm vụ].CV[01..99] (ví dụ: TCNS.NV01.CV01). Tự động kế thừa mã nhiệm vụ và tăng dần theo từng nhiệm vụ.',
     columns: [
       { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc ([NV].CVxx)', width: '170px' },
@@ -68,12 +68,12 @@ export const CORE_EXCEL_SHEET_METAS: Record<
   },
   DM_SP: {
     key: 'DM_SP',
-    stepNum: 4,
+    stepNum: 11,
     sheetNumberPrefix: '11',
     sheetName: '11. DM_SAN_PHAM',
     shortLabel: '11. DM_SAN_PHAM',
     title: 'Biểu 11. DM_SAN_PHAM — Danh mục 06 nhóm sản phẩm chuẩn và định mức',
-    guideDesc: 'Bước 4: Tra cứu sản phẩm chuẩn phân nhóm I–VI và thời gian định mức (phút/SP) được HCM-UTE xác nhận.',
+    guideDesc: 'Biểu 11: Tra cứu sản phẩm chuẩn phân nhóm I–VI và thời gian định mức (phút/SP) được HCM-UTE xác nhận.',
     ruleHint: 'Nếu sử dụng mã sản phẩm chuẩn thì B1_KhoiLuong sẽ tự động tra cứu định mức chuẩn.',
     columns: [
       { colLetter: 'A', field: 'maSpChuan', headerName: 'Mã SP chuẩn', width: '120px' },
@@ -88,12 +88,12 @@ export const CORE_EXCEL_SHEET_METAS: Record<
   },
   B1: {
     key: 'B1',
-    stepNum: 5,
+    stepNum: 3,
     sheetNumberPrefix: '3',
     sheetName: '3. B1_KhoiLuong',
     shortLabel: '3. B1_KhoiLuong',
     title: 'Biểu B1_ Khối lượng (Khối lượng sản phẩm & thời gian thực tế kỳ 2025–2026)',
-    guideDesc: 'Bước 5: Kê khai sản lượng thực tế trong 12 tháng (Cột C), số phút đo thực tế (Cột D), công thức tự tính Giờ SP và Giờ tổng.',
+    guideDesc: 'Biểu 3 (Bước 3 nghiệp vụ): Kê khai sản lượng thực tế trong 12 tháng (Cột C), số phút đo thực tế (Cột D), công thức tự tính Giờ SP và Giờ tổng.',
     ruleHint: 'Mã VTVL (Cột B) tự lấy từ A2; Giờ SP (Cột F) = Cột C × Cột P / 60; Giờ tổng (Cột G) = F + E.',
     columns: [
       { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '160px', type: 'select', dynamicOptionsKey: 'taskList' },
@@ -111,12 +111,12 @@ export const CORE_EXCEL_SHEET_METAS: Record<
   },
   B2_CT: {
     key: 'B2_CT',
-    stepNum: 6,
+    stepNum: 4,
     sheetNumberPrefix: '4',
     sheetName: '4. B2_CT_TacDong',
     shortLabel: '4. B2_CT_TacDong',
     title: 'Biểu B2_CT_ Chi tiết tác động (Chuyển đổi số, tự chủ, thuê dịch vụ)',
-    guideDesc: 'Bước 6: Kê khai các công đoạn được số hóa (hệ thống S-Link, ERP...), ứng dụng AI hoặc chuyển giao giúp tăng năng suất/giảm thời gian.',
+    guideDesc: 'Biểu 4 (Bước 4 nghiệp vụ): Kê khai các công đoạn được số hóa (hệ thống S-Link, ERP...), ứng dụng AI hoặc chuyển giao giúp tăng năng suất/giảm thời gian.',
     ruleHint: 'Giờ biến động (Cột F) âm khi giảm thời gian nhờ CĐS, dương khi phát sinh nhiệm vụ mới.',
     columns: [
       { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '160px', type: 'select', dynamicOptionsKey: 'taskList' },
@@ -130,12 +130,12 @@ export const CORE_EXCEL_SHEET_METAS: Record<
   },
   B2: {
     key: 'B2',
-    stepNum: 7,
+    stepNum: 5,
     sheetNumberPrefix: '5',
     sheetName: '5. B2_ThayDoi',
     shortLabel: '5. B2_ThayDoi',
     title: 'Biểu B2_ Thay đổi (Tổng hợp giờ tăng/giảm tự động từ Biểu 4. B2_CT)',
-    guideDesc: 'Bước 7: Bảng tổng hợp tự động giờ tăng/giảm bằng công thức SUMIFS từ Biểu 4. B2_CT theo từng Mã công việc và Mã VTVL.',
+    guideDesc: 'Biểu 5: Bảng tổng hợp tự động giờ tăng/giảm bằng công thức SUMIFS từ Biểu 4. B2_CT theo từng Mã công việc và Mã VTVL.',
     ruleHint: 'Giờ tổng sau tác động (Cột F) = Giờ B1 (Cột C) + Giờ biến động (Cột D) + Giờ mới (Cột E).',
     columns: [
       { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '150px' },

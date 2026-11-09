@@ -6,12 +6,12 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
 > = {
   C2: {
     key: 'C2',
-    stepNum: 8,
+    stepNum: 7,
     sheetNumberPrefix: '7',
     sheetName: '7. C2_NangLuc',
     shortLabel: '7. C2_NangLuc',
     title: 'Biểu C2_ Năng lực (Bản mô tả vị trí việc làm & Khung năng lực Bậc 1–5)',
-    guideDesc: 'Bước 8: Khung năng lực chuẩn theo Nghị định 232/2026/NĐ-CP và Thông tư 31/2026/TT-BGDĐT phân bổ Bậc 1–5 cho từng VTVL.',
+    guideDesc: 'Biểu 7 (Bước 5 nghiệp vụ): Khung năng lực chuẩn theo Nghị định 232/2026/NĐ-CP và Thông tư 31/2026/TT-BGDĐT phân bổ Bậc 1–5 cho từng VTVL.',
     ruleHint: 'Cột C quy định Bậc nghề nghiệp (Bậc 1 đến Bậc 5) gắn ngạch viên chức tương ứng.',
     columns: [
       { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
@@ -30,7 +30,7 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     sheetName: '9. D1_NhanLuc',
     shortLabel: '9. D1_NhanLuc',
     title: 'Biểu D1_ Nhân lực (Danh sách nhân sự hiện có chốt ngày 30/9/2026)',
-    guideDesc: 'Bước 9: Kê khai danh sách viên chức và người lao động của đơn vị tính đến ngày 30/9/2026 (mỗi nhân sự 1 dòng).',
+    guideDesc: 'Biểu 9 (Bước 7 nghiệp vụ): Kê khai danh sách viên chức và người lao động của đơn vị tính đến ngày 30/9/2026 (mỗi nhân sự 1 dòng).',
     ruleHint: 'Mã VTVL đảm nhận (Cột B) phải khớp với danh mục VTVL đã khai tại Biểu 6. C1_VTVL.',
     columns: [
       { colLetter: 'A', field: 'hoTen', headerName: 'Họ và tên nhân sự', width: '220px' },
@@ -47,12 +47,12 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
   },
   C3: {
     key: 'C3',
-    stepNum: 10,
+    stepNum: 8,
     sheetNumberPrefix: '8',
     sheetName: '8. C3_NhuCau',
     shortLabel: '8. C3_NhuCau',
     title: 'Biểu C3_ Nhu cầu (Xác định số người cần thiết theo phương pháp PP1, PP2)',
-    guideDesc: 'Bước 10: Tự động tổng hợp giờ làm việc từ B1/B2, chia cho Quỹ giờ chuẩn PP2 (C1) để xác định số người FTE (Cột G & Cột J).',
+    guideDesc: 'Biểu 8 (Bước 6 nghiệp vụ): Tự động tổng hợp giờ làm việc từ B1/B2, chia cho Quỹ giờ chuẩn PP2 (C1) để xác định số người FTE (Cột G & Cột J).',
     ruleHint: 'Phương pháp PP1 (1 người quản lý), PP2 (Tổng giờ ròng / 1.904h), làm tròn lên số người cần bố trí (Cột J).',
     columns: [
       { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
@@ -70,12 +70,12 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
   },
   DU_BAO: {
     key: 'DU_BAO',
-    stepNum: 11,
-    sheetNumberPrefix: '',
+    stepNum: 12,
+    sheetNumberPrefix: 'DU_BAO',
     sheetName: 'DU_BAO_5_NAM',
     shortLabel: 'DU_BAO_5_NAM',
     title: 'Biểu DU_BAO_5_NAM — Dự báo thay đổi khối lượng công việc 2027–2031',
-    guideDesc: 'Bước 11: Dự báo biến động nhu cầu nhân lực từng năm giai đoạn 2027–2031 so với năm cơ sở (C3).',
+    guideDesc: 'Biểu DU_BAO_5_NAM: Dự báo biến động nhu cầu nhân lực từng năm giai đoạn 2027–2031 so với năm cơ sở (C3).',
     ruleHint: 'Mỗi thay đổi tăng/giảm (+/- người) phải có căn cứ rõ ràng và được lãnh đạo xác nhận.',
     columns: [
       { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
@@ -90,12 +90,12 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
   },
   D2: {
     key: 'D2',
-    stepNum: 12,
+    stepNum: 10,
     sheetNumberPrefix: '10',
     sheetName: '10. D2_PhuongAn',
     shortLabel: '10. D2_PhuongAn',
     title: 'Biểu D2_ Phương án (Lập phương án biên chế từng năm 2027–2031)',
-    guideDesc: 'Bước 12: So sánh số người cần bố trí (Cột C, lấy từ DU_BAO_5_NAM) với số người có thể bố trí (Cột D, đếm từ D1_NhanLuc).',
+    guideDesc: 'Biểu 10 (Bước 7 nghiệp vụ): So sánh số người cần bố trí (Cột C, lấy từ DU_BAO_5_NAM) với số người có thể bố trí (Cột D, đếm từ D1_NhanLuc).',
     ruleHint: 'Đề nghị điều chỉnh (Cột G) = Cột C - Cột D. Phục vụ Đề án VTVL trình cấp có thẩm quyền phê duyệt.',
     columns: [
       { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },

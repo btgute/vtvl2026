@@ -53,21 +53,53 @@ export interface GridWorkbookState {
   lastSavedAt: string;
 }
 
-export const WORKFLOW_SHEET_ORDER: ExcelSheetKey[] = [
-  'C1',
-  'A1',
-  'A2',
-  'DM_SP',
-  'B1',
-  'B2_CT',
-  'B2',
-  'C2',
-  'D1',
-  'C3',
-  'DU_BAO',
-  'D2',
-  'K',
-  'T',
-  'S'
+export type SheetOrderMode = 'excel' | 'technical';
+
+/**
+ * Thứ tự các sheet tự nhiên theo đúng tệp Excel gốc TCNS_HCMUTE_Bo_bieu_HD07.xlsx
+ * và Trình tự 08 bước nghiệp vụ trong văn bản "04 - Huong dan dien bieu.docx".
+ * Số thứ tự 1..15 trên tab khớp 100% với tiền tố tên sheet (1. A1 -> 15. S).
+ */
+export const EXCEL_NATURAL_SHEET_ORDER: ExcelSheetKey[] = [
+  'A1',     // 1. A1_NhiemVu
+  'A2',     // 2. A2_CongViec
+  'B1',     // 3. B1_KhoiLuong
+  'B2_CT',  // 4. B2_CT_TacDong
+  'B2',     // 5. B2_ThayDoi
+  'C1',     // 6. C1_VTVL
+  'C2',     // 7. C2_NangLuc
+  'C3',     // 8. C3_NhuCau
+  'D1',     // 9. D1_NhanLuc
+  'D2',     // 10. D2_PhuongAn
+  'DM_SP',  // 11. DM_SAN_PHAM
+  'DU_BAO', // DU_BAO_5_NAM
+  'K',      // 13. K_KiemTra
+  'T',      // 14. T_TienDo
+  'S'       // 15. S_NhatKy
 ];
+
+/**
+ * Thứ tự kỹ thuật phụ thuộc dữ liệu (Data Dependency) theo Bảng 12 bước tại Mục II
+ * văn bản "Huong_dan_chuan_nhap_du_lieu_Bo_bieu_VTVL.docx" để công thức tự động chạy đúng:
+ * DM_SP -> C1 -> A1 -> A2 -> B1 -> B2_CT -> B2 -> C2 -> D1 -> C3 -> DU_BAO -> D2.
+ */
+export const TECHNICAL_DEPENDENCY_ORDER: ExcelSheetKey[] = [
+  'DM_SP',  // Bước 2: 11. DM_SAN_PHAM (tra cứu phút chuẩn)
+  'C1',     // Bước 3: 6. C1_VTVL (nguồn tra cứu VTVL)
+  'A1',     // Bước 4: 1. A1_NhiemVu (danh mục nhiệm vụ gốc)
+  'A2',     // Bước 5: 2. A2_CongViec (gắn nhiệm vụ và VTVL)
+  'B1',     // Bước 6: 3. B1_KhoiLuong
+  'B2_CT',  // Bước 7: 4. B2_CT_TacDong
+  'B2',     // Xem: 5. B2_ThayDoi (tự tính)
+  'C2',     // Bước 8: 7. C2_NangLuc
+  'D1',     // Bước 9: 9. D1_NhanLuc
+  'C3',     // Bước 10: 8. C3_NhuCau
+  'DU_BAO', // Bước 11: DU_BAO_5_NAM
+  'D2',     // Bước 12: 10. D2_PhuongAn
+  'K',      // Bổ sung: 13. K_KiemTra
+  'T',      // Bổ sung: 14. T_TienDo
+  'S'       // Bổ sung: 15. S_NhatKy
+];
+
+export const WORKFLOW_SHEET_ORDER: ExcelSheetKey[] = EXCEL_NATURAL_SHEET_ORDER;
 

@@ -25,6 +25,9 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   const {
     unitCode,
     currentUnit,
+    orderMode,
+    setOrderMode,
+    currentSheetOrder,
     activeSheet,
     activeSheetIndex,
     data,
@@ -156,17 +159,20 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onDeleteRow={(rowId) => deleteRow(activeSheet, rowId)}
         onSaveSheet={() => saveSheetData(activeSheet)}
         onSaveAndNext={saveAndGoNext}
-        canNext={activeSheetIndex < 14}
+        canNext={activeSheetIndex < currentSheetOrder.length - 1}
       />
 
       {/* Bottom Excel Sheet Tabs Bar */}
       <ExcelSheetTabs
         activeSheet={activeSheet}
+        sheetOrder={currentSheetOrder}
+        orderMode={orderMode}
+        onToggleOrderMode={setOrderMode}
         onSelectSheet={setActiveSheet}
         onPrev={goToPrevSheet}
         onNext={goToNextSheet}
         canPrev={activeSheetIndex > 0}
-        canNext={activeSheetIndex < 14}
+        canNext={activeSheetIndex < currentSheetOrder.length - 1}
       />
     </div>
   );
