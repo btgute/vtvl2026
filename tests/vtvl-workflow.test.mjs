@@ -263,7 +263,28 @@ runTest('9. Kiểm tra chuẩn hóa Mã nhiệm vụ ([MÃ_ĐV].NVxx), Mã công
   assert.ok(lockHook.includes('0a5de87db3d6c7d52645c1581269a880b1bbc613abc8e4c8e0f51c99753f8909'), 'useC1AdminLock phải bảo vệ C1 bằng mã băm SHA-256 bảo mật');
 });
 
-// 10. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)
+// 10. Kiểm tra Bộ máy kiểm soát chất lượng dữ liệu (Data Quality Checker / vtvl-audit-engine)
+runTest('10. Kiểm tra bộ quy tắc Data Quality Checker và Validation Engine 15 sheet', () => {
+  const valTypes = fs.readFileSync(path.join(root, 'src/services/validation/vtvl-validation-types.ts'), 'utf8');
+  assert.ok(valTypes.includes('ValidationSeverity') && valTypes.includes('ValidationIssue'), 'vtvl-validation-types.ts phải định nghĩa ValidationIssue và ValidationSeverity');
+
+  const coreVal = fs.readFileSync(path.join(root, 'src/services/validation/vtvl-core-validators.ts'), 'utf8');
+  assert.ok(coreVal.includes('validateA1Sheet') && coreVal.includes('validateA2Sheet') && coreVal.includes('validateB1Sheet'), 'vtvl-core-validators.ts phải có validators cho A1, A2, B1');
+  assert.ok(coreVal.includes('R-TT31-40') && coreVal.includes('R-B1-06'), 'Phải có quy tắc R-TT31-40 và R-B1-06');
+
+  const evalVal = fs.readFileSync(path.join(root, 'src/services/validation/vtvl-eval-validators.ts'), 'utf8');
+  assert.ok(evalVal.includes('validateC1Sheet') && evalVal.includes('validateC3Sheet') && evalVal.includes('validateDuBaoSheet'), 'vtvl-eval-validators.ts phải có validators cho C1, C3, DU_BAO, D1, D2');
+  assert.ok(evalVal.includes('R-DB-04') && evalVal.includes('R-C3-03'), 'Phải có quy tắc R-DB-04 và R-C3-03');
+
+  const masterChecker = fs.readFileSync(path.join(root, 'src/services/validation/vtvl-data-quality-checker.ts'), 'utf8');
+  assert.ok(masterChecker.includes('validateWorkbookData'), 'vtvl-data-quality-checker.ts phải xuất hàm validateWorkbookData');
+  assert.ok(masterChecker.includes('scorePercent'), 'Phải tính điểm chất lượng dữ liệu scorePercent');
+
+  const viewer = fs.readFileSync(path.join(root, 'src/components/excel-grid/ExcelWorkbookViewer.tsx'), 'utf8');
+  assert.ok(viewer.includes('DataQualityReportModal') && viewer.includes('validateWorkbookData'), 'ExcelWorkbookViewer phải tích hợp DataQualityReportModal và validateWorkbookData');
+});
+
+// 11. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)
 const checkLocalServer = async () => {
   const routes = ['/', '/tao-tep', '/bang-tinh', '/bam-gio', '/ra-soat', '/huong-dan'];
   try {
@@ -274,10 +295,10 @@ const checkLocalServer = async () => {
         assert.strictEqual(res.status, 200, `Đường dẫn ${r} trả về mã lỗi ${res.status}`);
       }
       passed += 1;
-      console.log('  ✓ [PASS] 10. Kiểm tra máy chủ cục bộ (http://localhost:3360): 6/6 trang trả về HTTP 200 OK');
+      console.log('  ✓ [PASS] 11. Kiểm tra máy chủ cục bộ (http://localhost:3360): 6/6 trang trả về HTTP 200 OK');
     }
   } catch {
-    console.log('  ℹ [SKIP] 10. Máy chủ cục bộ không chạy trong tiến trình hiện tại (đã qua 9/9 bài kiểm thử tĩnh)');
+    console.log('  ℹ [SKIP] 11. Máy chủ cục bộ không chạy trong tiến trình hiện tại (đã qua 10/10 bài kiểm thử tĩnh)');
   }
   console.log('----------------------------------------------------------------');
   console.log(` KẾT QUẢ: ĐẠT ${passed}/${passed} BÀI KIỂM THỬ ĐƠN VỊ (0 LỖI)`);

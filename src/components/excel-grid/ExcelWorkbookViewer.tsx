@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useExcelGridState } from './excel-grid-state';
 import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
 import { ExcelSheetTabs } from './ExcelSheetTabs';
 import { ExcelTableRenderer } from './ExcelTableRenderer';
 import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
+import { DataQualityReportModal } from './DataQualityReportModal';
+import { validateWorkbookData } from '@/services/validation';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import {
   FileSpreadsheet,
@@ -24,6 +26,7 @@ interface ExcelWorkbookViewerProps {
 
 export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookViewerProps) {
   const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
+  const [showQualityModal, setShowQualityModal] = useState<boolean>(false);
   const {
     unitCode,
     currentUnit,
@@ -57,6 +60,10 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
   const activeMeta = EXCEL_SHEET_METAS[activeSheet];
   const activeRows = data[activeSheet] || [];
+
+  const qualityReport = useMemo(() => {
+    return validateWorkbookData(data, unitCode, currentUnit.nameVi);
+  }, [data, unitCode, currentUnit.nameVi]);
 
   return (
     <div className="w-full flex flex-col gap-3">
@@ -152,7 +159,26 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Kiểm tra chéo K_KiemTra</span>
+              <span>Kiểm tra chéo K</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowQualityModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg cursor-pointer transition-colors shadow-2xs"
+              title="Bộ máy kiểm soát chất lượng dữ liệu 15 sheet theo chuẩn Hướng dẫn số 07-HD/BTCTW"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+              <span>Kiểm tra chất lượng (QA)</span>
+              {qualityReport.summary.fixCount > 0 ? (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-600 text-white font-bold">
+                  {qualityReport.summary.fixCount}
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-600 text-white font-bold">
+                  {qualityReport.summary.scorePercent}đ
+                </span>
+              )}
             </button>
 
             <button
@@ -238,6 +264,14 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         isOpen={showUnlockModal}
         onClose={() => setShowUnlockModal(false)}
         onUnlock={unlockC1}
+      />
+
+      {/* Data Quality Checker Modal */}
+      <DataQualityReportModal
+        isOpen={showQualityModal}
+        onClose={() => setShowQualityModal(false)}
+        report={qualityReport}
+        onSelectSheet={setActiveSheet}
       />
     </div>
   );
