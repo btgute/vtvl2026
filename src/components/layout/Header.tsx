@@ -15,11 +15,11 @@ import {
 import { InfoTip } from './MilestonesBar';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Tổng quan', icon: Home },
-  { href: '/tao-tep', label: 'Giai đoạn 1·2·4: Hồ sơ đơn vị', icon: FileSpreadsheet },
-  { href: '/bam-gio', label: 'Giai đoạn 3: Đo định mức', icon: Timer },
-  { href: '/ra-soat', label: 'Giai đoạn 5: Thẩm định', icon: CheckCircle2 },
-  { href: '/huong-dan', label: 'Trợ giúp', icon: BookOpenCheck }
+  { href: '/', label: 'Tổng quan (08 bước)', icon: Home },
+  { href: '/tao-tep', label: 'Bước 1·2·5·6·7: Bộ 10 biểu (A1–D2)', icon: FileSpreadsheet },
+  { href: '/bam-gio', label: 'Bước 3·4: Khối lượng B1 & Tác động B2', icon: Timer },
+  { href: '/ra-soat', label: 'Bước 8: Kiểm tra & Xác nhận (K–T–S)', icon: CheckCircle2 },
+  { href: '/huong-dan', label: 'Phụ lục HD 07', icon: BookOpenCheck }
 ];
 
 export function Header() {

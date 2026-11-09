@@ -13,32 +13,32 @@ export function Footer() {
         <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           <div className="flex flex-col space-y-3">
             <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
-              Trình tự thực hiện nghiệp vụ
+              Quy trình 08 bước · 10 biểu HD 07-HD/BTCTW
             </h3>
             <ul className="flex flex-col space-y-2 text-xs sm:text-sm text-white/85">
               <li>
                 <Link href="/huong-dan" className="hover:text-white hover:underline">
-                  Hướng dẫn toàn trình dành cho đơn vị
+                  Tài liệu gốc &amp; Bộ Phụ lục I–VIII (HD 07-HD/BTCTW)
                 </Link>
               </li>
               <li>
-                <Link href="/tao-tep" className="hover:text-white hover:underline">
-                  Giai đoạn 1–2: Đề xuất VTVL và xuất bộ biểu gốc
+                <Link href="/tao-tep?step=1" className="hover:text-white hover:underline">
+                  Bước 1, 2 &amp; 5: Nhiệm vụ (A1), Công việc (A2) &amp; VTVL (C1, C2)
                 </Link>
               </li>
               <li>
                 <Link href="/bam-gio" className="hover:text-white hover:underline">
-                  Giai đoạn 3: Đo định mức thời gian thực hiện
+                  Bước 3 &amp; 4: Khối lượng, thời gian (B1) &amp; Tác động CĐS (B2_CT → B2)
                 </Link>
               </li>
               <li>
-                <Link href="/tao-tep?step=4" className="hover:text-white hover:underline">
-                  Giai đoạn 4: Gộp phiếu khảo sát và xuất Tờ trình
+                <Link href="/tao-tep?step=2" className="hover:text-white hover:underline">
+                  Bước 6 &amp; 7: Nhu cầu (C3), Nhân lực (D1) &amp; Phương án 2027–2031 (D2)
                 </Link>
               </li>
               <li>
                 <Link href="/ra-soat" className="hover:text-white hover:underline">
-                  Giai đoạn 5: Thẩm định và kiểm tra chéo bộ biểu
+                  Bước 8: Kiểm tra 10 biểu (K_KiemTra), xác nhận &amp; gửi kết quả
                 </Link>
               </li>
             </ul>

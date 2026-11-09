@@ -2,27 +2,12 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import {
-  ArrowRight,
-  Building2,
-  CheckCircle2,
-  History,
-  FileText,
-  BookOpenCheck,
-  Clock,
-  AlertTriangle
-} from 'lucide-react';
+import { ArrowRight, Building2, CheckCircle2, History, FileText, BookOpenCheck, Clock, AlertTriangle } from 'lucide-react';
 import { WorkflowSidebar, SIDEBAR_FIVE_STEPS } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS, UNIT_GROUPS } from '@/configs/hcmute-units';
 import { HD07_12_STEP_ORDER, HD07_CONSTANTS } from '@/configs/hcmute-hd07-catalog';
 import { validateStep1Data } from '@/components/tao-tep/Step1ReviewConfirm';
-import {
-  ActiveUnitSession,
-  ActivityLogEntry,
-  getActiveUnitDefinition,
-  getActiveUnitSession,
-  getActivityLogs
-} from '@/services/telemetry/activity-log';
+import { ActiveUnitSession, ActivityLogEntry, getActiveUnitDefinition, getActiveUnitSession, getActivityLogs } from '@/services/telemetry/activity-log';
 
 export default function HomePage() {
   const [session, setSession] = useState<ActiveUnitSession>(() => getActiveUnitSession());
@@ -51,7 +36,8 @@ export default function HomePage() {
   }, []);
 
   const activeUnit = getActiveUnitDefinition(session.unitCode);
-  const currentStepNum = session.activeStep || 1;
+  const rawStep = session.activeStep || 1;
+  const currentStepNum = rawStep === 2 ? 6 : rawStep === 4 ? 7 : rawStep === 5 ? 8 : rawStep === 1 ? (session.wizardStage === 3 ? 2 : session.wizardStage >= 4 ? 5 : 1) : rawStep;
   const currentStepInfo = SIDEBAR_FIVE_STEPS.find((s) => s.num === currentStepNum) || SIDEBAR_FIVE_STEPS[0];
   const hasOperator = Boolean(session.actorEmail.trim() && session.actorTitle.trim());
 
@@ -61,25 +47,19 @@ export default function HomePage() {
   );
 
   const nextActionText = !hasOperator
-    ? `Khai báo Email công vụ và Chức vụ người thực hiện tại đơn vị ${activeUnit.nameVi} (Chặng 2/5).`
-    : currentStepNum === 1
-      ? `Rà soát danh mục ${session.proposedPositions.length} vị trí việc làm đề xuất (Chặng ${session.wizardStage}/5) và xác nhận để xuất bộ biểu.`
-      : currentStepNum === 2
-        ? `Tải bộ biểu gốc 22 trang tính (.xlsx) và gói phiếu khảo sát (.zip) của ${activeUnit.nameVi}.`
-        : currentStepNum === 3
-          ? `Thực hiện bấm giờ hoặc nhập khung giờ định mức thực tế cho các vị trí tại ${activeUnit.nameVi}.`
-          : currentStepNum === 4
-            ? `Tải lên và gộp các phiếu khảo sát cá nhân vào tệp tổng hợp của ${activeUnit.nameVi}.`
-            : `Kiểm tra chéo 6 chỉ tiêu thẩm định và xuất báo cáo hoàn chỉnh nộp về Phòng Tổ chức - Nhân sự.`;
+    ? `Bước 1 (Biểu A1 & S_NhatKy): Khai báo Email công vụ và Chức vụ người thực hiện tại đơn vị ${activeUnit.nameVi}.`
+    : currentStepNum <= 5 && rawStep === 1
+      ? `Bước ${currentStepNum}/8 (${currentStepInfo.sheets}): Rà soát danh mục ${session.proposedPositions.length} vị trí việc làm đề xuất và xác nhận để xuất bộ 10 biểu gốc (A1–D2).`
+      : currentStepNum === 6
+        ? `Bước 6/8 (Biểu 8. C3_NhuCau): Tải bộ 10 biểu gốc (.xlsx) và gói phiếu khảo sát (.zip) của ${activeUnit.nameVi}.`
+        : currentStepNum === 3 || currentStepNum === 4
+          ? `Bước 3 & 4/8 (Biểu 3. B1 & 4. B2_CT): Bấm giờ đo thời gian thực tế và kê khai tác động CĐS tại ${activeUnit.nameVi}.`
+          : currentStepNum === 7
+            ? `Bước 7/8 (Biểu 9. D1 & 10. D2): Gộp phiếu khảo sát cá nhân và lập phương án biên chế 2027–2031 của ${activeUnit.nameVi}.`
+            : `Bước 8/8 (Biểu 13. K_KiemTra): Kiểm tra chéo 10 biểu (A1–D2) và xuất báo cáo gửi Phòng Tổ chức - Nhân sự.`;
 
-  const continueHref =
-    currentStepNum === 3
-      ? '/bam-gio'
-      : currentStepNum === 5
-        ? '/ra-soat'
-        : `/tao-tep?step=${currentStepNum}`;
-
-  const progressPercent = Math.min(100, Math.round(((currentStepNum - 1) * 20) + (session.wizardStage * 4)));
+  const continueHref = currentStepInfo.href;
+  const progressPercent = Math.min(100, Math.round((currentStepNum / 8) * 100));
 
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6 space-y-6">
@@ -91,13 +71,13 @@ export default function HomePage() {
           <section className="surface-canvas rounded-2xl p-5 sm:p-7 flex flex-col gap-6">
             <div className="space-y-1.5 border-b border-[var(--border-subtle)] pb-4">
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--primary)]">
-                Hệ thống Vị trí việc làm — HCM-UTE
+                Hệ thống Vị trí việc làm — HCM-UTE (Hướng dẫn số 07-HD/BTCTW)
               </span>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--foreground)]">
-                Lập đề án vị trí việc làm của đơn vị
+                Quy trình 08 bước &amp; 10 biểu nghiệp vụ (A1–D2) lập đề án Vị trí việc làm
               </h1>
               <p className="text-sm text-[var(--ink-muted)]">
-                Thực hiện quy trình 08 bước, 10 biểu nghiệp vụ (A1–D2) theo Hướng dẫn số 07-HD/BTCTW qua 5 giai đoạn trên phần mềm.
+                Thực hiện đầy đủ 08 bước nghiệp vụ trên 10 biểu chuẩn (1. A1_NhiemVu → 10. D2_PhuongAn) kèm bảng kiểm tra tự động K_KiemTra.
               </p>
             </div>
 
@@ -152,14 +132,14 @@ export default function HomePage() {
                   </span>
                 </div>
                 <div className="text-base font-bold text-[var(--primary)]">
-                  Giai đoạn {currentStepNum}/5 — {currentStepInfo.shortTitle}
+                  Bước {currentStepNum}/8 — {currentStepInfo.shortTitle} ({currentStepInfo.sheets})
                 </div>
                 <div className="w-full h-2 rounded-full bg-[var(--muted)] overflow-hidden" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
                   <div className="h-full bg-[var(--primary)] rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--ink-muted)]">
                   <span>
-                    Đang đề xuất <strong>{session.proposedPositions.length} vị trí việc làm</strong> · Chặng {session.wizardStage}/5
+                    Đang đề xuất <strong>{session.proposedPositions.length} vị trí việc làm</strong> · Quy trình 08 bước HD 07
                   </span>
                   {validationErrors.length > 0 ? (
                     <span className="inline-flex items-center gap-1 font-semibold text-[var(--warn)]">
@@ -167,10 +147,56 @@ export default function HomePage() {
                       <span>{validationErrors.length} mục cần bổ sung</span>
                     </span>
                   ) : (
-                    <span className="font-semibold text-[var(--ok)]">Đủ điều kiện Giai đoạn 1</span>
+                    <span className="font-semibold text-[var(--ok)]">Đủ điều kiện xuất 10 biểu gốc</span>
                   )}
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Lộ trình 08 bước & 10 biểu nghiệp vụ (A1–D2) theo Hướng dẫn số 07-HD/BTCTW */}
+          <section className="surface-canvas rounded-2xl p-5 sm:p-6 space-y-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-2.5">
+              <div className="flex items-center gap-2">
+                <BookOpenCheck className="w-4 h-4 text-[var(--primary)]" />
+                <h2 className="text-sm sm:text-base font-bold text-[var(--foreground)]">
+                  Quy trình 08 bước &amp; 10 biểu nghiệp vụ (1. A1_NhiemVu → 10. D2_PhuongAn)
+                </h2>
+              </div>
+              <Link href="/huong-dan" className="text-xs font-bold text-[var(--primary)] hover:underline">
+                Xem Phụ lục I–VIII &amp; tải biểu mẫu gốc →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {SIDEBAR_FIVE_STEPS.map((st) => {
+                const isCur = st.num === currentStepNum;
+                return (
+                  <Link
+                    key={st.num}
+                    href={st.href}
+                    className={`rounded-xl border p-3.5 flex flex-col justify-between gap-2 transition-colors ${
+                      isCur
+                        ? 'border-[var(--primary)] bg-[var(--surface-tint)]'
+                        : 'border-[var(--border-subtle)] bg-[var(--surface-secondary)] hover:border-[var(--primary)]'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className={`w-6 h-6 rounded-full text-xs font-extrabold inline-flex items-center justify-center ${isCur ? 'bg-[var(--primary)] text-white' : 'bg-[var(--sheet)] text-[var(--primary)] border border-[var(--border)]'}`}>
+                          {st.num}
+                        </span>
+                        <span className="text-[11px] font-mono font-bold text-[var(--primary)] truncate">{st.sheets}</span>
+                      </div>
+                      <div className="text-xs sm:text-sm font-bold text-[var(--foreground)] leading-snug pt-0.5">
+                        Bước {st.num} — {st.shortTitle}
+                      </div>
+                    </div>
+                    <div className="text-[11px] text-[var(--ink-muted)] truncate">
+                      {st.subTasks[0]?.label}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 

@@ -164,13 +164,13 @@ export default function BamGioPage() {
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
               <div className="flex items-center">
                 <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2.5 shrink-0">3</span>
-                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Giai đoạn 3/5 — Đo định mức thời gian</h1>
-                <InfoTip title="Hướng dẫn đo định mức (Biểu 3. B1_KhoiLuong)">
-                  <p>Hệ thống tự động giữ nguyên đơn vị <strong>[{unit.code}] {unit.nameVi}</strong> cùng các Tên VTVL cụ thể và Bậc nghề nghiệp đã đặt ở Giai đoạn 1.</p>
-                  <p>Mỗi bản ghi bấm giờ được lưu trực tiếp vào phiên làm việc và tự động chuyển thành phiếu khảo sát tại <strong>Giai đoạn 4 (Gộp phiếu)</strong>.</p>
+                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 3 &amp; 4 (trên 08 bước HD 07) — Khối lượng, Thời gian thực hiện (B1) &amp; Tác động CĐS, tự chủ (B2_CT → B2)</h1>
+                <InfoTip title="Hướng dẫn Bước 3 (Biểu 3. B1_KhoiLuong) & Bước 4 (Biểu 4. B2_CT_TacDong)">
+                  <p>Hệ thống tự động giữ nguyên đơn vị <strong>[{unit.code}] {unit.nameVi}</strong> cùng các Tên VTVL cụ thể và Bậc nghề nghiệp đã đặt ở Bước 1, 2 &amp; 5.</p>
+                  <p>Mỗi bản ghi bấm giờ được lưu trực tiếp vào phiên làm việc và tự động chuyển thành phiếu khảo sát tại <strong>Bước 7 (Đối chiếu D1, Gộp phiếu &amp; Phương án D2)</strong>.</p>
                 </InfoTip>
               </div>
-              <Link href="/tao-tep?step=1" className="text-xs font-semibold text-[var(--primary)] hover:underline">Đổi đơn vị tại Giai đoạn 1</Link>
+              <Link href="/tao-tep?step=1" className="text-xs font-semibold text-[var(--primary)] hover:underline">Đổi đơn vị tại Bước 1</Link>
             </div>
 
             {statusBanner && <div role="status" aria-live="polite" className="rounded-xl border border-[var(--ok)]/40 bg-[var(--ok-soft)] px-3.5 py-2.5 text-xs sm:text-sm font-bold text-[var(--ok)]">✓ {statusBanner}</div>}
@@ -268,10 +268,10 @@ export default function BamGioPage() {
                 </div>
               )}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)]">
-                <span className="text-xs text-[var(--ink-muted)]">ⓘ Mỗi bản ghi được tự động đóng gói thành phiếu khảo sát liên thông sang Giai đoạn 4.</span>
+                <span className="text-xs text-[var(--ink-muted)]">ⓘ Mỗi bản ghi được tự động đóng gói thành phiếu khảo sát B1–B2 liên thông sang Bước 7.</span>
                 <div className="flex flex-wrap items-center gap-2">
                   <button id="task-3-export" type="button" onClick={handleExport} className="inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-[var(--primary)] font-bold text-xs sm:text-sm cursor-pointer"><Download className="w-4 h-4 shrink-0" /><span>Xuất phiếu định mức [{unit.code}] (.xlsx)</span></button>
-                  <Link href="/tao-tep?step=4" className="btn-touch inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold shadow-2xs"><span>Xuất kết quả &amp; sang Giai đoạn 4</span><ArrowRight className="w-4 h-4" /></Link>
+                  <Link href="/tao-tep?step=4" className="btn-touch inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold shadow-2xs"><span>Xuất kết quả &amp; sang Bước 7 (Gộp phiếu)</span><ArrowRight className="w-4 h-4" /></Link>
                 </div>
               </div>
             </div>

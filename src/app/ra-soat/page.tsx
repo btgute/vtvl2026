@@ -105,14 +105,14 @@ export default function RaSoatPage() {
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6">
       <div className="flex flex-col lg:flex-row gap-5 items-start">
-        <WorkflowSidebar activeStep={5} unitCode={activeUnit.code} />
+        <WorkflowSidebar activeStep={8} unitCode={activeUnit.code} />
 
         <div className="flex-1 w-full space-y-5 min-w-0">
           <div onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop} className={`surface-canvas rounded-2xl p-5 sm:p-7 space-y-5 transition-colors ${dragOver ? 'ring-2 ring-[var(--primary)]' : ''}`}>
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3.5">
               <div className="flex items-center">
-                <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-sm flex items-center justify-center mr-2.5 shrink-0">5</span>
-                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Giai đoạn 5/5 — Thẩm định hồ sơ</h1>
+                <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-sm flex items-center justify-center mr-2.5 shrink-0">8</span>
+                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 8/8 (HD 07) — Kiểm tra 10 biểu (K_KiemTra), xác nhận &amp; gửi kết quả</h1>
                 <InfoTip title="Tự tính lại từ các cột nhập liệu & 5 thẻ kết quả">
                   <p>Công cụ tự đọc các cột nhập liệu từ một hoặc nhiều tệp .xlsx để tự tính lại Giờ B1, đối chiếu Người quy đổi PP2 — Người C3 — Nhân sự D1, và xuất tệp Excel kết quả gồm cả trang <strong>Chua_du_can_cu</strong> và <strong>Gop_y_bieu_mau</strong>.</p>
                 </InfoTip>

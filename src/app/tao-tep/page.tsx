@@ -65,8 +65,10 @@ export default function TaoTepPage() {
   };
   useEffect(() => {
     applySessionToState(getActiveUnitSession());
-    const sp = new URLSearchParams(window.location.search).get('step');
-    setActiveStep(sp === '2' || window.location.hash === '#buoc-3' ? 2 : sp === '4' || window.location.hash === '#buoc-4' ? 4 : 1);
+    const params = new URLSearchParams(window.location.search);
+    const sp = params.get('step'); const stg = Number(params.get('stage'));
+    setActiveStep(sp === '2' || sp === '6' || window.location.hash === '#buoc-3' ? 2 : sp === '4' || sp === '7' || window.location.hash === '#buoc-4' ? 4 : 1);
+    if (stg >= 1 && stg <= 5) setWizardStage(stg as 1 | 2 | 3 | 4 | 5);
     const onStorage = (e: StorageEvent) => { if (e.key === 'hcmute_vtvl_active_unit_session_v2') applySessionToState(getActiveUnitSession()); };
     window.addEventListener('storage', onStorage);
     const bc = 'BroadcastChannel' in window ? new BroadcastChannel('hcmute_vtvl_realtime') : null;
@@ -183,20 +185,24 @@ export default function TaoTepPage() {
     const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); pushToast('success', `Đang tải xuống: ${filename}`);
   };
 
+  const sidebarStep = activeStep === 2 ? 6 : activeStep === 4 ? 7 : wizardStage === 3 ? 2 : wizardStage >= 4 ? 5 : 1;
+  const handleSelectSidebarStep = (s: number) => {
+    if (s === 1 || s === 2 || s === 5) { setActiveStep(1); handleStageChange(s === 1 ? 1 : s === 2 ? 3 : 4, true); }
+    else if (s === 6 || s === 20) { setActiveStep(2); persistState({ activeStep: 2 }); }
+    else if (s === 7 || s === 40) { setActiveStep(4); persistState({ activeStep: 4 }); }
+  };
+
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 pt-5 page-with-sticky-bar">
       <ToastRegion toasts={toasts} onDismiss={(id) => setToasts((p) => p.filter((t) => t.id !== id))} />
       <div className="flex flex-col lg:flex-row gap-5 items-start">
-        <WorkflowSidebar activeStep={activeStep} errorStep={validationErrors.length > 0 && activeStep > 1 ? 1 : null} onSelectStep={(s) => { setActiveStep(s); persistState({ activeStep: s }); }} unitCode={currentUnit.code} />
+        <WorkflowSidebar activeStep={sidebarStep} errorStep={validationErrors.length > 0 && activeStep > 1 ? 1 : null} onSelectStep={handleSelectSidebarStep} unitCode={currentUnit.code} />
 
         <div className="flex-1 w-full space-y-6 min-w-0">
           {activeStep === 1 && (
             <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6 sm:space-y-7">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">1</span>
-                  <div><h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Giai đoạn 1/5 — Đề xuất vị trí việc làm</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code})</p></div>
-                </div>
+                <div className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">{sidebarStep}</span><div><h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 1, 2 &amp; 5 (trên 08 bước HD 07) — Nhiệm vụ (A1), Công việc (A2) &amp; Danh mục VTVL, Năng lực (C1, C2)</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code}) · Bộ 10 biểu nghiệp vụ chuẩn Hướng dẫn số 07-HD/BTCTW</p></div></div>
                 <div className="flex flex-wrap items-center gap-2">
                   {undoSnapshot && <button type="button" onClick={handleUndoSnapshot} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--primary)]/40 bg-[var(--surface-tint)] text-xs sm:text-sm font-bold text-[var(--primary)] cursor-pointer"><Undo2 className="w-4 h-4" /><span>Phục hồi phiên bản trước</span></button>}
                   <button type="button" onClick={() => setConfirmAction({ type: 'reset' })} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--fix)] text-xs sm:text-sm font-semibold text-[var(--foreground)] cursor-pointer"><RotateCcw className="w-4 h-4 text-[var(--fix)]" /><span>Khôi phục mặc định</span></button>
@@ -251,29 +257,29 @@ export default function TaoTepPage() {
             <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">2</span>
-                  <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Giai đoạn 2/5 — Xuất bộ biểu gốc</h1>
+                  <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">6</span>
+                  <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 6/8 (HD 07) — Xác định nhu cầu nhân lực (C3) &amp; Xuất bộ 10 biểu gốc (A1–D2)</h1>
                 </div>
-                <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Giai đoạn 1</span></button>
+                <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Bước 1–5</span></button>
               </div>
               <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} hasGenerated={Boolean(result && !stale)} onCopied={(fn) => pushToast('success', `Đã sao chép tên tệp: ${fn}`)} />
               <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input id="task-2-zip" type="checkbox" checked={includeZip} onChange={(e) => setIncludeZip(e.target.checked)} className="w-5 h-5 mt-0.5 accent-[var(--primary)] shrink-0" />
-                  <span className="space-y-0.5"><span className="block text-sm font-bold text-[var(--foreground)]">Kèm gói phiếu riêng từng vị trí</span><span className="block text-xs text-[var(--ink-muted)]">Xuất thêm 1 tệp .zip, trong đó mỗi vị trí có 1 bộ phiếu riêng (không có D1) để tránh tính trùng kiêm nhiệm cho {positions.length} vị trí của <strong>[{currentUnit.code}]</strong>.</span></span>
+                  <span className="space-y-0.5"><span className="block text-sm font-bold text-[var(--foreground)]">Kèm gói phiếu khảo sát B1–B2 riêng từng vị trí (.zip)</span><span className="block text-xs text-[var(--ink-muted)]">Xuất thêm 1 tệp .zip, trong đó mỗi vị trí có 1 bộ phiếu riêng (không có D1) để tránh tính trùng kiêm nhiệm cho {positions.length} vị trí của <strong>[{currentUnit.code}]</strong>.</span></span>
                 </label>
                 <button id="task-2-export" type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white font-bold text-sm shrink-0 cursor-pointer shadow-2xs"><FileSpreadsheet className="w-4 h-4" /><span>{result && !stale ? 'Tạo lại 4 tệp' : `Khởi tạo 4 tệp ${currentUnit.code}`}</span></button>
               </div>
               {result && <SplitResultBanner result={result} onDownload={triggerDownload} />}
               <RegenFormsFromUnitBox exportDate={customDate} includeZip={includeZip} onDownload={triggerDownload} />
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border-subtle)]">
-                <Link href="/bam-gio" className="btn-touch inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold text-[var(--foreground)]"><Timer className="w-4 h-4 text-[var(--primary)]" /><span>Sang Giai đoạn 3: Đo định mức</span></Link>
-                <button type="button" onClick={() => setActiveStep(4)} className="inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold cursor-pointer"><span>Sang Giai đoạn 4: Gộp phiếu</span><ArrowRight className="w-4 h-4" /></button>
+                <Link href="/bam-gio" className="btn-touch inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold text-[var(--foreground)]"><Timer className="w-4 h-4 text-[var(--primary)]" /><span>Sang Bước 3 &amp; 4: Đo thời gian B1 &amp; Tác động B2</span></Link>
+                <button type="button" onClick={() => setActiveStep(4)} className="inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold cursor-pointer"><span>Sang Bước 7: Đối chiếu D1 &amp; Phương án D2</span><ArrowRight className="w-4 h-4" /></button>
               </div>
             </section>
           )}
           {activeStep === 4 && (
-            <div className="space-y-4"><MergeStepSection unit={currentUnit} /><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => setActiveStep(2)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Giai đoạn 2</span></button><Link href="/ra-soat" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white text-sm font-bold shadow-2xs"><span>Sang Giai đoạn 5: Thẩm định hồ sơ</span><ArrowRight className="w-4 h-4" /></Link></div></div>
+            <div className="space-y-4"><MergeStepSection unit={currentUnit} /><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => setActiveStep(2)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Bước 6 (Xuất bộ biểu gốc)</span></button><Link href="/ra-soat" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white text-sm font-bold shadow-2xs"><span>Sang Bước 8: Kiểm tra 10 biểu &amp; Gửi kết quả</span><ArrowRight className="w-4 h-4" /></Link></div></div>
           )}
           <details className="surface-secondary rounded-xl overflow-hidden">
             <summary className="cursor-pointer px-5 min-h-[52px] text-sm font-bold text-[var(--foreground)] flex items-center justify-between"><span className="inline-flex items-center gap-2"><BookOpenCheck className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Tra cứu Khung 38 vị trí việc làm HCM-UTE &amp; Tải dự thảo Tờ trình [{currentUnit.code}]</span></span><span className="text-xs font-semibold text-[var(--primary)] shrink-0">Mở / Đóng</span></summary>

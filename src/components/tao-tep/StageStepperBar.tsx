@@ -74,11 +74,11 @@ export function computeStageStatuses(
   };
 
   const labels: { num: 1 | 2 | 3 | 4 | 5; shortLabel: string; fullTitle: string }[] = [
-    { num: 1, shortLabel: 'Chọn đơn vị', fullTitle: 'Chặng 1/5: Chọn khối đơn vị và đơn vị lập đề án' },
-    { num: 2, shortLabel: 'Người thực hiện', fullTitle: 'Chặng 2/5: Khai báo thông tin người thực hiện' },
-    { num: 3, shortLabel: 'Chọn VTVL', fullTitle: 'Chặng 3/5: Chọn vị trí việc làm từ khung trường' },
-    { num: 4, shortLabel: 'Chi tiết', fullTitle: 'Chặng 4/5: Kê khai chi tiết vị trí việc làm và nhân sự' },
-    { num: 5, shortLabel: 'Xác nhận', fullTitle: 'Chặng 5/5: Kiểm tra và xác nhận xuất bộ biểu' }
+    { num: 1, shortLabel: 'Bước 1: Nhiệm vụ (A1)', fullTitle: 'Bước 1 (HD 07) — Chọn đơn vị & Rà soát danh mục nhiệm vụ (Biểu 1. A1_NhiemVu)' },
+    { num: 2, shortLabel: 'Người thực hiện (S)', fullTitle: 'Bước 1 (HD 07) — Khai báo thông tin người thực hiện & lưu vết (Biểu 15. S_NhatKy)' },
+    { num: 3, shortLabel: 'Bước 2: Công việc (A2)', fullTitle: 'Bước 2 (HD 07) — Xác định công việc, sản phẩm (Biểu 2. A2_CongViec & 11. DM_SAN_PHAM)' },
+    { num: 4, shortLabel: 'Bước 5: VTVL & Năng lực (C1, C2)', fullTitle: 'Bước 5 (HD 07) — Đối chiếu danh mục VTVL, bản mô tả, năng lực (Biểu 6. C1, 7. C2) & nhân lực (9. D1)' },
+    { num: 5, shortLabel: 'Bước 6: Nhu cầu (C3) & Xuất biểu', fullTitle: 'Bước 6 (HD 07) — Xác định số người cần thiết (Biểu 8. C3_NhuCau) & Xuất bộ 10 biểu gốc (A1–D2)' }
   ];
 
   return labels.map((item) => {
