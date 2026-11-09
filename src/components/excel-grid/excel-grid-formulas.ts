@@ -138,7 +138,7 @@ export function recalculateGridFormulas(
   const validVtvl = new Set(c1Positions.map((c) => String(c.maVtvl)));
   const validTasks = new Set(existingA2.map((t) => String(t.maCongViec)));
 
-  const k1Errors = existingA2.filter((t) => !validMissions.has(String(t.maNhiemVu))).length;
+  const k1Errors = existingA2.filter((t) => !validMissions.has(String(t.maNhiemVu)) || !String(t.maCongViec).startsWith(String(t.maNhiemVu))).length;
   const k2Errors = updatedB1.filter((b) => !validVtvl.has(String(b.maVtvl))).length;
   const k3Errors = updatedB1.filter((b) => Number(b.gioTong) <= 0).length;
   const k4Errors = (next.B2_CT || []).filter((c) => !validTasks.has(String(c.maCongViec))).length;
@@ -149,7 +149,7 @@ export function recalculateGridFormulas(
   }).length;
 
   next.K = [
-    { id: 'k-1', stt: 1, nhomBieu: 'A2 ↔ A1', chiTieu: 'Mọi công việc A2 phải thuộc mã nhiệm vụ hợp lệ tại A1', bangNguon: '2. A2_CongViec', bangDich: '1. A1_NhiemVu', soDongLoi: k1Errors, nguongChoPhep: '0', ketLuan: k1Errors === 0 ? 'ĐẠT' : 'LỖI' },
+    { id: 'k-1', stt: 1, nhomBieu: 'A2 ↔ A1', chiTieu: 'Mã công việc A2 phải kế thừa đúng Mã nhiệm vụ A1 ([Mã NV].CVxx)', bangNguon: '2. A2_CongViec', bangDich: '1. A1_NhiemVu', soDongLoi: k1Errors, nguongChoPhep: '0', ketLuan: k1Errors === 0 ? 'ĐẠT' : 'LỖI' },
     { id: 'k-2', stt: 2, nhomBieu: 'B1 ↔ C1', chiTieu: 'Mã VTVL tại B1 phải tồn tại và kích hoạt tại C1', bangNguon: '3. B1_KhoiLuong', bangDich: '6. C1_VTVL', soDongLoi: k2Errors, nguongChoPhep: '0', ketLuan: k2Errors === 0 ? 'ĐẠT' : 'LỖI' },
     { id: 'k-3', stt: 3, nhomBieu: 'B1 Cảnh báo', chiTieu: 'Khối lượng và thời gian làm việc phải lớn hơn 0', bangNguon: '3. B1_KhoiLuong', bangDich: 'Nội bộ B1', soDongLoi: k3Errors, nguongChoPhep: '0', ketLuan: k3Errors === 0 ? 'ĐẠT' : 'LỖI' },
     { id: 'k-4', stt: 4, nhomBieu: 'B2_CT ↔ B1', chiTieu: 'Mã công việc tác động phải khớp công việc đã khai tại B1', bangNguon: '4. B2_CT_TacDong', bangDich: '3. B1_KhoiLuong', soDongLoi: k4Errors, nguongChoPhep: '0', ketLuan: k4Errors === 0 ? 'ĐẠT' : 'LỖI' },
@@ -172,3 +172,4 @@ export function recalculateGridFormulas(
 
   return next;
 }
+

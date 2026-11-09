@@ -35,9 +35,9 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     shortLabel: '1. A1_NhiemVu',
     title: 'Biểu A1_ Nhiệm vụ (Rà soát nhiệm vụ theo Quyết định 2266/QĐ-ĐHCNKT)',
     guideDesc: 'Bước 2: Rà soát chức năng, nhiệm vụ được giao theo QĐ chức năng nhiệm vụ (QĐ 2266, Phụ lục 18) và phân loại tiếp tục thực hiện.',
-    ruleHint: 'Mỗi nhiệm vụ có một mã riêng [MÃ_ĐV]-NV[xx], không nhập lại các nhiệm vụ đã kết thúc.',
+    ruleHint: 'Mã nhiệm vụ chuẩn: [MÃ_ĐV].NV[01..99] (ví dụ: TCNS.NV01). Mỗi nhiệm vụ có một mã riêng, tự động tăng dần khi thêm mới.',
     columns: [
-      { colLetter: 'A', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ', width: '130px' },
+      { colLetter: 'A', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ ([ĐV].NVxx)', width: '150px' },
       { colLetter: 'B', field: 'tenNhiemVu', headerName: 'Tên nhiệm vụ được giao', width: '320px' },
       { colLetter: 'C', field: 'coQuan', headerName: 'Cơ quan / Đơn vị thực hiện', width: '200px' },
       { colLetter: 'D', field: 'canCu', headerName: 'Căn cứ giao nhiệm vụ (QĐ 2266)', width: '220px' },
@@ -54,9 +54,9 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     shortLabel: '2. A2_CongViec',
     title: 'Biểu A2_ Công việc (Phân rã công việc gắn Mã nhiệm vụ & Mã VTVL)',
     guideDesc: 'Bước 3: Phân rã nhiệm vụ thành từng công việc, xác định sản phẩm đầu ra, đơn vị tính, chất lượng và gán trực tiếp Mã VTVL chịu trách nhiệm.',
-    ruleHint: 'Mỗi công việc có mã chuẩn [MÃ_ĐV]-[MÃ_NV]-CV[xx], gắn đúng Mã VTVL đã khai tại Biểu 6. C1_VTVL.',
+    ruleHint: 'Mã công việc chuẩn: [Mã nhiệm vụ].CV[01..99] (ví dụ: TCNS.NV01.CV01). Tự động kế thừa mã nhiệm vụ và tăng dần theo từng nhiệm vụ.',
     columns: [
-      { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '150px' },
+      { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc ([NV].CVxx)', width: '170px' },
       { colLetter: 'B', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ (A1)', width: '140px', type: 'select', dynamicOptionsKey: 'missionList' },
       { colLetter: 'C', field: 'maVtvl', headerName: 'Mã VTVL (từ C1)', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'D', field: 'tenCongViec', headerName: 'Tên công việc cụ thể', width: '300px' },

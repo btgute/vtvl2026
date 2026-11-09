@@ -6,6 +6,7 @@ import {
 } from '@/configs/hcmute-hd07-catalog';
 import { TCNS_C2_PROFILES, TCNS_REAL_MISSIONS } from '@/configs/hcmute-pl1-catalog';
 import { JobTaskTemplate, NgachItem, SplitResultSummary, UnitSplitOptions } from '@/types/vtvl';
+import { buildHd07StaffSheets } from './hd07-staff-sheets';
 
 const fNum = (v: number, f: string): XLSX.CellObject => ({ t: 'n', v, f });
 const fStr = (v: string, f: string): XLSX.CellObject => ({ t: 's', v, f });
@@ -32,17 +33,29 @@ export function buildHd07CoreSheets(
     [`Biểu A1_ Nhiệm vụ (${opts.unitCode} — ${opts.unitNameVi})`, '', '', '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã nhiệm vụ', 'Tên nhiệm vụ', 'Cơ quan', 'Căn cứ', 'Kỳ', 'Trạng thái', 'Nguồn'],
     ...missions.map((m) => [
-      `${opts.unitCode}-${m.missionSuffix}`, m.missionName, opts.unitNameVi, m.legalBasis, opts.period, m.status, m.source
+      `${opts.unitCode}.${m.missionSuffix}`, m.missionName, opts.unitNameVi, m.legalBasis, opts.period, m.status, m.source
     ])
   ]);
   XLSX.utils.book_append_sheet(wb, wsA1, '1. A1_NhiemVu');
+
+  // Chuẩn hóa mã công việc: [Mã nhiệm vụ].CV{01..99}
+  const taskCounters: Record<string, number> = {};
+  const processedTemplates = templates.map((t) => {
+    const rawSuffix = (t.missionSuffix || 'NV01').replace(/^.*NV/, 'NV');
+    const mCode = `${opts.unitCode}.${rawSuffix}`;
+    taskCounters[mCode] = (taskCounters[mCode] || 0) + 1;
+    const taskSeq = String(taskCounters[mCode]).padStart(2, '0');
+    const taskCode = `${mCode}.CV${taskSeq}`;
+    const vCode = `${opts.unitCode}-${t.vtvlSuffix}`;
+    return { ...t, computedTaskCode: taskCode, computedMissionCode: mCode, computedVtvlCode: vCode };
+  });
 
   // 2. A2_CongViec (8 cột A–H — Bước 2 HD 07)
   const wsA2 = XLSX.utils.aoa_to_sheet([
     [`Biểu A2_ Công việc (${opts.unitCode})`, '', '', '→ Hướng dẫn điền: HD_DIEN_BIEU'],
     ['Mã công việc', 'Mã nhiệm vụ', 'Mã VTVL', 'Tên công việc', 'Sản phẩm', 'Đơn vị tính', 'Chất lượng', 'Căn cứ (nguồn)'],
-    ...templates.map((t) => [
-      `${opts.unitCode}-${t.taskSuffix}`, `${opts.unitCode}-${t.missionSuffix}`, `${opts.unitCode}-${t.vtvlSuffix}`,
+    ...processedTemplates.map((t) => [
+      t.computedTaskCode, t.computedMissionCode, t.computedVtvlCode,
       t.taskName, t.productName, t.unitName, t.qualityRequirement, t.legalBasisHint
     ])
   ]);
@@ -55,13 +68,13 @@ export function buildHd07CoreSheets(
     'Mã SP trong danh mục', 'Nhóm (tự tra)', 'Phút/SP chuẩn (tự tra)', 'Xác nhận chuẩn (tự tra)',
     'Phút/SP dùng để tính', 'Nguồn thời gian dùng tính', 'Cảnh báo dữ liệu', 'Giải trình khác chuẩn'
   ];
-  const b1Rows = templates.map((t) => {
+  const b1Rows = processedTemplates.map((t) => {
     const stdSp = STANDARD_PRODUCTS_CATALOG.find((sp) => sp.productCode === t.productCode);
     const stdMin = stdSp ? stdSp.standardMinutes : t.defaultMinutesPerProduct;
     const spHours = Number(((t.defaultQtyPerYear * t.defaultMinutesPerProduct) / 60).toFixed(2));
     const totalHours = Number((spHours + t.extraRelatedHoursYear).toFixed(2));
     return [
-      `${opts.unitCode}-${t.taskSuffix}`, `${opts.unitCode}-${t.vtvlSuffix}`, t.defaultQtyPerYear,
+      t.computedTaskCode, t.computedVtvlCode, t.defaultQtyPerYear,
       t.defaultMinutesPerProduct, t.extraRelatedHoursYear, spHours, totalHours,
       isTcns ? t.sourceHint : `${t.sourceHint} (gợi ý – chưa đo)`,
       isTcns ? 'Phút-người đề xuất theo công đoạn (QĐ 2266, PL18)' : 'Định mức gợi ý ban đầu (chờ nạp phiếu đo thực tế)',
@@ -99,15 +112,14 @@ export function buildHd07CoreSheets(
     'Giờ giảm trực tiếp', 'Giờ việc mới', 'Nguồn/bằng chứng', 'Kỳ', 'Cơ sở B1', 'Trạng thái',
     'Giờ giảm hợp lệ', 'Giờ tăng hợp lệ', 'Kiểm tra', 'Kinh phí trước', 'Kinh phí sau', 'Đối chiếu trùng/phạm vi (cán bộ xác nhận)'
   ];
-  const b2CtRows = templates.filter((t) => t.digitalImpactStage).map((t, idx) => {
+  const b2CtRows = processedTemplates.filter((t) => t.digitalImpactStage).map((t, idx) => {
     const r = idx + 3;
     const before = t.digitalMinutesBefore || t.defaultMinutesPerProduct;
     const after = t.digitalMinutesAfter || t.defaultMinutesPerProduct;
     const reducedHours = Number((((before - after) * t.defaultQtyPerYear) / 60).toFixed(1));
-    const vCode = `${opts.unitCode}-${t.vtvlSuffix}`;
     return [
-      `${opts.unitCode}-${t.taskSuffix}`,
-      fStr(vCode, `IF(A${r}="","",IFERROR(INDEX('2. A2_CongViec'!$C$3:$C$500,MATCH(A${r},'2. A2_CongViec'!$A$3:$A$500,0)),""))`),
+      t.computedTaskCode,
+      fStr(t.computedVtvlCode, `IF(A${r}="","",IFERROR(INDEX('2. A2_CongViec'!$C$3:$C$500,MATCH(A${r},'2. A2_CongViec'!$A$3:$A$500,0)),""))`),
       'Số hóa', t.digitalImpactStage || 'Số hóa quy trình nghiệp vụ', t.defaultQtyPerYear, before, after,
       fNum(reducedHours, `IF(OR(A${r}="",F${r}<G${r}),"",E${r}*(F${r}-G${r})/60)`), 0,
       'Hệ thống phần mềm quản trị nội bộ & UTEx LMS HCM-UTE', opts.period,
@@ -125,15 +137,14 @@ export function buildHd07CoreSheets(
   XLSX.utils.book_append_sheet(wb, wsB2Ct, '4. B2_CT_TacDong');
 
   // 5. B2_ThayDoi (9 cột A–I — Tự động tổng hợp SUMIFS từ B2_CT_TacDong)
-  const b2SummaryRows = templates.map((t, idx) => {
+  const b2SummaryRows = processedTemplates.map((t, idx) => {
     const r = idx + 3;
     const before = t.digitalMinutesBefore || t.defaultMinutesPerProduct;
     const after = t.digitalMinutesAfter || t.defaultMinutesPerProduct;
     const reduced = t.digitalImpactStage ? Number((((before - after) * t.defaultQtyPerYear) / 60).toFixed(1)) : 0;
-    const vCode = `${opts.unitCode}-${t.vtvlSuffix}`;
     return [
-      `${opts.unitCode}-${t.taskSuffix}`,
-      fStr(vCode, `IF(A${r}="","",IFERROR(INDEX('2. A2_CongViec'!$C$3:$C$500,MATCH(A${r},'2. A2_CongViec'!$A$3:$A$500,0)),""))`),
+      t.computedTaskCode,
+      fStr(t.computedVtvlCode, `IF(A${r}="","",IFERROR(INDEX('2. A2_CongViec'!$C$3:$C$500,MATCH(A${r},'2. A2_CongViec'!$A$3:$A$500,0)),""))`),
       fNum(reduced, `IF(A${r}="","",SUMIFS('4. B2_CT_TacDong'!$N$3:$N$202,'4. B2_CT_TacDong'!$A$3:$A$202,A${r},'4. B2_CT_TacDong'!$C$3:$C$202,"Số hóa")+SUMIFS('4. B2_CT_TacDong'!$N$3:$N$202,'4. B2_CT_TacDong'!$A$3:$A$202,A${r},'4. B2_CT_TacDong'!$C$3:$C$202,"Cải tiến quy trình"))`),
       fNum(0, `IF(A${r}="","",SUMIF('4. B2_CT_TacDong'!$A$3:$A$202,A${r},'4. B2_CT_TacDong'!$N$3:$N$202)-C${r})`),
       fNum(0, `IF(A${r}="","",SUMIF('4. B2_CT_TacDong'!$A$3:$A$202,A${r},'4. B2_CT_TacDong'!$O$3:$O$202))`),
@@ -227,72 +238,9 @@ export function buildHd07CoreSheets(
   ]);
   XLSX.utils.book_append_sheet(wb, wsC3, '8. C3_NhuCau');
 
-  // 9. D1_NhanLuc (11 cột A–K — Bước 7 HD 07)
-  const d1Rows: (string | number | XLSX.CellObject)[][] = [];
-  let staffSeq = 1;
-  const pushD1Row = (vtvlCode: string, pType: string, stdH: number, codeNote: string, regime: string) => {
-    const r = d1Rows.length + 3;
-    d1Rows.push([
-      `${opts.unitCode}-NL${String(staffSeq).padStart(3, '0')}`, vtvlCode, pType,
-      fNum(stdH, `IF(B${r}="","",IF(ISNUMBER(K${r}),K${r},IFERROR(INDEX('6. C1_VTVL'!$E$3:$E$100,MATCH(B${r},'6. C1_VTVL'!$A$3:$A$100,0)),1904)))`),
-      stdH, 0, opts.unitNameVi,
-      `Danh sách nhân sự chốt ngày ${HD07_CONSTANTS.STAFF_CUTOFF_DATE} (${codeNote})`,
-      'Đã kiểm chứng',
-      fStr('Đạt', `IF(A${r}="","",IF(E${r}+F${r}>D${r},"Vượt quỹ giờ","Đạt"))`),
-      regime === 'Đặc thù' ? stdH : ''
-    ]);
-    staffSeq++;
-  };
-  if (opts.proposedPositions && opts.proposedPositions.length > 0) {
-    opts.proposedPositions.forEach((pos) => {
-      const cleanSuffix = pos.vtvlSuffix.replace(new RegExp(`^${opts.unitCode}[-.]`), '');
-      const vtvlCode = `${opts.unitCode}-${cleanSuffix}`;
-      for (let k = 0; k < Math.min(pos.staffCount, 15); k++) {
-        pushD1Row(vtvlCode, 'Viên chức', pos.standardHoursYear, pos.ngachCode, pos.workingRegime);
-      }
-    });
-  } else {
-    ngachList.forEach((n) => {
-      const count = opts.ngachOverrides[n.code] ?? n.defaultCount;
-      const matchingPos = positionBreakdown.find((p) => p.ngachCode === n.code) || positionBreakdown[0];
-      for (let k = 0; k < Math.min(count, 15); k++) {
-        pushD1Row(matchingPos.vtvlCode, n.personnelType, n.standardHoursPerYear, n.code, n.workingRegime);
-      }
-    });
-  }
-  const wsD1 = XLSX.utils.aoa_to_sheet([
-    [`Biểu D1_ Nhân lực (${opts.unitCode})`, '', '', '→ Hướng dẫn điền: HD_DIEN_BIEU'],
-    ['Mã nguồn lực', 'Mã VTVL', 'Loại nhân lực', 'Giờ quy đổi/năm (tự lấy)', 'Giờ dành cho VTVL', 'Giờ việc khác', 'Nơi tính BC', 'Nguồn', 'Trạng thái', 'Cảnh báo', 'Giờ riêng theo chế độ'],
-    ...d1Rows
-  ]);
-  XLSX.utils.book_append_sheet(wb, wsD1, '9. D1_NhanLuc');
-
-  // 10. D2_PhuongAn (14 cột A–N — Bước 7 HD 07, liên kết DU_BAO_5_NAM, D1_NhanLuc, C3_NhuCau)
-  const d2Rows: (string | number | XLSX.CellObject)[][] = [];
-  positionBreakdown.forEach((p) => {
-    const currentAssigned = Math.max(1, Math.round(p.recommendedFte));
-    const pp2Ratio = Number((p.netHoursYear / p.standardHoursYear).toFixed(2));
-    HD07_CONSTANTS.FORECAST_YEARS.forEach((yr) => {
-      const r = d2Rows.length + 3;
-      d2Rows.push([
-        p.vtvlCode, yr,
-        fNum(p.recommendedFte, `IF(A${r}="","",SUMIFS(DU_BAO_5_NAM!$H$3:$H$500,DU_BAO_5_NAM!$A$3:$A$500,A${r},DU_BAO_5_NAM!$B$3:$B$500,B${r}))`),
-        fNum(currentAssigned, `COUNTIFS('9. D1_NhanLuc'!$B$3:$B$500,A${r})`),
-        currentAssigned, 0,
-        fNum(Number((p.recommendedFte - currentAssigned).toFixed(2)), `C${r}-D${r}`),
-        `Phương án biên chế năm ${yr} theo đề án VTVL ${opts.unitCode}`, 'Đã hoàn thành ở đơn vị', 'ĐẠT',
-        fNum(pp2Ratio, `IFERROR(INDEX('8. C3_NhuCau'!$G$3:$G$100,MATCH(A${r},'8. C3_NhuCau'!$A$3:$A$100,0)),0)`),
-        fNum(p.recommendedFte, `IFERROR(INDEX('8. C3_NhuCau'!$J$3:$J$100,MATCH(A${r},'8. C3_NhuCau'!$A$3:$A$100,0)),0)`),
-        'ĐỐI CHIẾU XONG', `Đề án VTVL ${opts.unitCode} năm 2026`
-      ]);
-    });
-  });
-  const wsD2 = XLSX.utils.aoa_to_sheet([
-    [`Biểu D2_ Phương án (${opts.unitCode})`, '', '', '→ Hướng dẫn điền: HD_DIEN_BIEU'],
-    ['Mã VTVL', 'Năm', 'Số người cần bố trí trong năm phương án', 'Số người có thể bố trí (cùng đơn vị tính)', 'Biên chế được giao theo đúng cấp', 'Điều chuyển/bố trí lại', 'Đề nghị điều chỉnh', 'Nguồn/giải trình', 'Trạng thái', 'Cảnh báo', 'PP2: người quy đổi (tham khảo)', 'Người cần bố trí C3 năm cơ sở (tham khảo)', 'Kiểm soát cơ sở đối chiếu', 'Văn bản thẩm định/quyết định (số, ngày, cơ quan)'],
-    ...d2Rows
-  ]);
-  XLSX.utils.book_append_sheet(wb, wsD2, '10. D2_PhuongAn');
+  // 9. D1_NhanLuc & 10. D2_PhuongAn
+  const { wsD1 } = buildHd07StaffSheets(wb, opts, ngachList, positionBreakdown);
 
   return { b1Header, b1Rows, wsB1, wsB2Ct, wsD1 };
 }
+

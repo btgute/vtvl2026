@@ -1,4 +1,5 @@
 import { ExcelSheetKey, GenericGridRow } from './excel-grid-types';
+import { cleanMissionSuffix } from './excel-grid-code-helpers';
 import { PL1_VTVL_CATALOG, TCNS_REAL_MISSIONS, TCNS_REAL_TASKS, TCNS_C2_PROFILES } from '@/configs/hcmute-pl1-catalog';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { TASK_TEMPLATES_BY_GROUP } from '@/configs/hcmute-quotas';
@@ -41,7 +42,7 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
   const a1Rows: GenericGridRow[] = isTcns
     ? TCNS_REAL_MISSIONS.map((m, idx) => ({
         id: `a1-${idx + 1}`,
-        maNhiemVu: `${unitCode}-${m.missionSuffix}`,
+        maNhiemVu: `${unitCode}.${m.missionSuffix}`,
         tenNhiemVu: m.missionName,
         coQuan: unitDef.nameVi,
         canCu: m.legalBasis || 'QĐ 2266/QĐ-ĐHCNKT',
@@ -50,19 +51,24 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
         nguon: m.source || 'QĐ 2266 & Đề án đơn vị'
       }))
     : [
-        { id: 'a1-1', maNhiemVu: `${unitCode}-NV01`, tenNhiemVu: `Quản lý, điều hành và tổ chức chuyên môn tại ${unitDef.nameVi}`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
-        { id: 'a1-2', maNhiemVu: `${unitCode}-NV02`, tenNhiemVu: `Thực hiện nghiệp vụ chuyên ngành và tham mưu phát triển đơn vị`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
-        { id: 'a1-3', maNhiemVu: `${unitCode}-NV03`, tenNhiemVu: `Quản lý hồ sơ, phục vụ người học và cán bộ viên chức`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' }
+        { id: 'a1-1', maNhiemVu: `${unitCode}.NV01`, tenNhiemVu: `Quản lý, điều hành và tổ chức chuyên môn tại ${unitDef.nameVi}`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
+        { id: 'a1-2', maNhiemVu: `${unitCode}.NV02`, tenNhiemVu: `Thực hiện nghiệp vụ chuyên ngành và tham mưu phát triển đơn vị`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' },
+        { id: 'a1-3', maNhiemVu: `${unitCode}.NV03`, tenNhiemVu: `Quản lý hồ sơ, phục vụ người học và cán bộ viên chức`, coQuan: unitDef.nameVi, canCu: 'QĐ 2266/QĐ-ĐHCNKT', ky: '2025–2026', trangThai: 'Tiếp tục thực hiện', nguon: 'QĐ 2266' }
       ];
 
   // 3. A2_CongViec
   const taskSource = isTcns ? TCNS_REAL_TASKS : (TASK_TEMPLATES_BY_GROUP[group] || TASK_TEMPLATES_BY_GROUP['khoa-vien']);
+  const missionTaskCounters: Record<string, number> = {};
   const a2Rows: GenericGridRow[] = taskSource.map((t, idx) => {
-    const mCode = `${unitCode}-${t.missionSuffix || a1Rows[idx % a1Rows.length].maNhiemVu}`;
+    const rawSuffix = cleanMissionSuffix(t.missionSuffix || (a1Rows[idx % a1Rows.length]?.maNhiemVu as string) || 'NV01');
+    const mCode = `${unitCode}.${rawSuffix}`;
+    missionTaskCounters[mCode] = (missionTaskCounters[mCode] || 0) + 1;
+    const taskSeq = String(missionTaskCounters[mCode]).padStart(2, '0');
+    const taskCode = `${mCode}.CV${taskSeq}`;
     const vtvl = t.vtvlSuffix ? (t.vtvlSuffix.startsWith('QL') || t.vtvlSuffix.startsWith('CM') || t.vtvlSuffix.startsWith('HT') ? t.vtvlSuffix : (c1Rows[idx % c1Rows.length]?.maVtvl as string)) : (c1Rows[idx % c1Rows.length]?.maVtvl as string) || 'CM63';
     return {
       id: `a2-${idx + 1}`,
-      maCongViec: `${unitCode}-${t.missionSuffix || 'NV01'}-${t.taskSuffix || `CV0${idx + 1}`}`,
+      maCongViec: taskCode,
       maNhiemVu: mCode,
       maVtvl: vtvl,
       tenCongViec: t.taskName,

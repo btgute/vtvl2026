@@ -217,9 +217,35 @@ runTest('8. Kiểm tra hệ thống phản hồi tương tác & trạng thái bi
   assert.ok(stepperBar.includes('Xem các chặng') && stepperBar.includes('sticky-action-bar'), 'StageStepperBar phải có nút Xem các chặng trên mobile và StickyActionBar dùng .sticky-action-bar');
 });
 
-// 9. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)
+// 9. Kiểm tra Chuẩn hóa Mã nhiệm vụ ([MÃ_ĐV].NVxx), Mã công việc ([Mã NV].CVxx) và Tự động tăng dần
+runTest('9. Kiểm tra chuẩn hóa Mã nhiệm vụ ([MÃ_ĐV].NVxx), Mã công việc ([Mã NV].CVxx) và tự động tăng dần', async () => {
+  const helpersPath = path.join(root, 'src/components/excel-grid/excel-grid-code-helpers.ts');
+  assert.ok(fs.existsSync(helpersPath), 'Phải có tệp excel-grid-code-helpers.ts');
+  const helpersContent = fs.readFileSync(helpersPath, 'utf8');
+  assert.ok(helpersContent.includes('formatMissionCode') && helpersContent.includes('formatTaskCode'), 'helpers phải có formatMissionCode và formatTaskCode');
+  assert.ok(helpersContent.includes('getNextMissionCode') && helpersContent.includes('getNextTaskCode'), 'helpers phải có getNextMissionCode và getNextTaskCode');
+
+  // Kiểm tra quy tắc mã trong QUY_TAC_MA và ERD
+  const quyTacMa = fs.readFileSync(path.join(root, 'src/services/excel-split/hd07-sheets-builder.ts'), 'utf8');
+  assert.ok(quyTacMa.includes('[MÃ_ĐV].NV[01..99]') && quyTacMa.includes('[MÃ_NV].CV[01..99]'), 'QUY_TAC_MA phải chuẩn hóa [MÃ_ĐV].NV[01..99] và [MÃ_NV].CV[01..99]');
+
+  const erdTables = fs.readFileSync(path.join(root, 'src/configs/hcmute-erd-tables.ts'), 'utf8');
+  assert.ok(erdTables.includes('[MA_DV].NV01..99') && erdTables.includes('[MA_NV].CV01..99'), 'hcmute-erd-tables.ts phải có mô tả khóa mã [MA_DV].NV01..99 và [MA_NV].CV01..99');
+
+  // Kiểm tra defaults sinh mã có dấu chấm kế thừa
+  const defaults = fs.readFileSync(path.join(root, 'src/components/excel-grid/excel-grid-defaults.ts'), 'utf8');
+  assert.ok(defaults.includes('${unitCode}.${m.missionSuffix}') || defaults.includes('${unitCode}.NV01'), 'defaults phải dùng dấu chấm [unitCode].NVxx');
+  assert.ok(defaults.includes('${mCode}.CV'), 'defaults phải dùng mã công việc dạng ${mCode}.CVxx');
+
+  // Kiểm tra liên thông mã trong hd07-core-sheets.ts
+  const coreSheets = fs.readFileSync(path.join(root, 'src/services/excel-split/hd07-core-sheets.ts'), 'utf8');
+  assert.ok(coreSheets.includes('${opts.unitCode}.${m.missionSuffix}'), 'hd07-core-sheets phải sinh mã nhiệm vụ có dấu chấm');
+  assert.ok(coreSheets.includes('${mCode}.CV'), 'hd07-core-sheets phải sinh mã công việc kế thừa mã nhiệm vụ');
+});
+
+// 10. Kiểm tra phản hồi HTTP 200 OK trên máy chủ cục bộ (nếu đang chạy)
 const checkLocalServer = async () => {
-  const routes = ['/', '/tao-tep', '/bam-gio', '/ra-soat', '/huong-dan'];
+  const routes = ['/', '/tao-tep', '/bang-tinh', '/bam-gio', '/ra-soat', '/huong-dan'];
   try {
     const ping = await fetch('http://localhost:3360/');
     if (ping.ok) {
@@ -228,10 +254,10 @@ const checkLocalServer = async () => {
         assert.strictEqual(res.status, 200, `Đường dẫn ${r} trả về mã lỗi ${res.status}`);
       }
       passed += 1;
-      console.log('  ✓ [PASS] 9. Kiểm tra máy chủ cục bộ (http://localhost:3360): 5/5 trang trả về HTTP 200 OK');
+      console.log('  ✓ [PASS] 10. Kiểm tra máy chủ cục bộ (http://localhost:3360): 6/6 trang trả về HTTP 200 OK');
     }
   } catch {
-    console.log('  ℹ [SKIP] 9. Máy chủ cục bộ không chạy trong tiến trình hiện tại (đã qua 8/8 bài kiểm thử tĩnh)');
+    console.log('  ℹ [SKIP] 10. Máy chủ cục bộ không chạy trong tiến trình hiện tại (đã qua 9/9 bài kiểm thử tĩnh)');
   }
   console.log('----------------------------------------------------------------');
   console.log(` KẾT QUẢ: ĐẠT ${passed}/${passed} BÀI KIỂM THỬ ĐƠN VỊ (0 LỖI)`);
