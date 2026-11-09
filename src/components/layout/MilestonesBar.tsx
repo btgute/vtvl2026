@@ -30,13 +30,13 @@ export interface StepSubTask { id: string; label: string; }
 export interface SidebarStepItem { num: number; shortTitle: string; sheets: string; title: string; href: string; subTasks: StepSubTask[]; }
 
 export const SIDEBAR_EIGHT_STEPS: SidebarStepItem[] = [
-  { num: 1, shortTitle: 'Rà soát chức năng, nhiệm vụ', sheets: 'Biểu 1. A1_NhiemVu', title: 'Bước 1 — Rà soát chức năng, nhiệm vụ (A1)', href: '/tao-tep?step=1&stage=1', subTasks: [{ id: 'task-1-unit', label: 'Chọn đơn vị & nhiệm vụ A1' }, { id: 'task-1-actor', label: 'Khai báo người thực hiện' }] },
-  { num: 2, shortTitle: 'Xác định công việc & sản phẩm', sheets: 'Biểu 2. A2 · 11. DM_SP', title: 'Bước 2 — Công việc, công đoạn & sản phẩm (A2)', href: '/tao-tep?step=1&stage=3', subTasks: [{ id: 'task-1-add', label: 'Phân rã công việc & sản phẩm chuẩn I–VI' }] },
-  { num: 3, shortTitle: 'Số lượng SP & thời gian thực hiện', sheets: 'Biểu 3. B1_KhoiLuong', title: 'Bước 3 — Số lượng SP & thời gian thực hiện (B1)', href: '/bam-gio', subTasks: [{ id: 'task-3-vtvl', label: 'Chọn VTVL & công việc B1' }, { id: 'task-3-timer', label: 'Bấm giờ đo thực tế / nhập sản lượng' }] },
+  { num: 1, shortTitle: 'Rà soát chức năng, nhiệm vụ', sheets: 'Biểu 1. A1_NhiemVu', title: 'Bước 1 — Rà soát chức năng, nhiệm vụ (A1)', href: '/tao-tep?step=1', subTasks: [{ id: 'task-1-unit', label: 'Chọn đơn vị & nhiệm vụ A1' }, { id: 'task-1-actor', label: 'Khai báo người thực hiện' }] },
+  { num: 2, shortTitle: 'Xác định công việc & sản phẩm', sheets: 'Biểu 2. A2 · 11. DM_SP', title: 'Bước 2 — Công việc, công đoạn & sản phẩm (A2)', href: '/tao-tep?step=2', subTasks: [{ id: 'task-1-add', label: 'Phân rã công việc & sản phẩm chuẩn I–VI' }] },
+  { num: 3, shortTitle: 'Số lượng SP & thời gian thực hiện', sheets: 'Biểu 3. B1_KhoiLuong', title: 'Bước 3 — Số lượng SP & thời gian thực hiện (B1)', href: '/bam-gio?step=3', subTasks: [{ id: 'task-3-vtvl', label: 'Chọn VTVL & công việc B1' }, { id: 'task-3-timer', label: 'Bấm giờ đo thực tế / nhập sản lượng' }] },
   { num: 4, shortTitle: 'Tác động CĐS, tự chủ, thuê dịch vụ', sheets: 'Biểu 4. B2_CT → 5. B2', title: 'Bước 4 — Thay đổi do CĐS, tự chủ, thuê DV (B2_CT → B2)', href: '/bam-gio?step=4', subTasks: [{ id: 'task-3-export', label: 'Kê khai công đoạn số hóa & xuất phiếu B1–B2' }] },
-  { num: 5, shortTitle: 'Danh mục VTVL, mô tả & năng lực', sheets: 'Biểu 6. C1 · 7. C2', title: 'Bước 5 — Danh mục VTVL, bản mô tả & năng lực (C1, C2)', href: '/tao-tep?step=1&stage=4', subTasks: [{ id: 'task-1-name', label: 'Tên VTVL cụ thể, Bậc 1–5 & Quỹ giờ PP2' }] },
-  { num: 6, shortTitle: 'Xác định số người cần thiết (FTE)', sheets: 'Biểu 8. C3_NhuCau', title: 'Bước 6 — Xác định số người cần thiết PP1/PP2/PP3 (C3)', href: '/tao-tep?step=2', subTasks: [{ id: 'task-2-export', label: 'Tính nhu cầu C3 & Xuất bộ 10 biểu gốc (v1)' }] },
-  { num: 7, shortTitle: 'Đối chiếu nhân lực & phương án biên chế', sheets: 'Biểu 9. D1 · 10. D2', title: 'Bước 7 — Đối chiếu nhân lực D1 & phương án biên chế D2', href: '/tao-tep?step=4', subTasks: [{ id: 'task-4-forms', label: 'Gộp phiếu khảo sát & lập phương án 2027–2031 (v2)' }] },
+  { num: 5, shortTitle: 'Danh mục VTVL, mô tả & năng lực', sheets: 'Biểu 6. C1 · 7. C2', title: 'Bước 5 — Danh mục VTVL, bản mô tả & năng lực (C1, C2)', href: '/tao-tep?step=5', subTasks: [{ id: 'task-1-name', label: 'Tên VTVL cụ thể, Bậc 1–5 & Quỹ giờ PP2' }] },
+  { num: 6, shortTitle: 'Xác định số người cần thiết (FTE)', sheets: 'Biểu 8. C3_NhuCau', title: 'Bước 6 — Xác định số người cần thiết PP1/PP2/PP3 (C3)', href: '/tao-tep?step=6', subTasks: [{ id: 'task-2-export', label: 'Tính nhu cầu C3 & Xuất bộ 10 biểu gốc (v1)' }] },
+  { num: 7, shortTitle: 'Đối chiếu nhân lực & phương án biên chế', sheets: 'Biểu 9. D1 · 10. D2', title: 'Bước 7 — Đối chiếu nhân lực D1 & phương án biên chế D2', href: '/tao-tep?step=7', subTasks: [{ id: 'task-4-forms', label: 'Gộp phiếu khảo sát & lập phương án 2027–2031 (v2)' }] },
   { num: 8, shortTitle: 'Kiểm tra, xác nhận & gửi kết quả', sheets: 'Biểu 13. K · 14. T · 15. S', title: 'Bước 8 — Kiểm tra 10 biểu, xác nhận & gửi kết quả (K–T–S)', href: '/ra-soat', subTasks: [{ id: 'task-5-run', label: 'Kiểm tra chéo 6 chỉ tiêu K_KiemTra' }, { id: 'task-5-export', label: 'Xuất báo cáo thẩm định & Tờ trình' }] }
 ];
 
@@ -92,13 +92,12 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
   useEffect(() => { if (drawerOpen) closeBtnRef.current?.focus(); }, [drawerOpen]);
   const closeDrawer = () => { setDrawerOpen(false); setTimeout(() => triggerBtnRef.current?.focus(), 40); };
 
-  const mappedStep = activeStep === 2 ? 6 : activeStep === 4 ? 7 : activeStep === 5 ? 8 : activeStep === 1 ? (actorInfo.wizardStage === 3 ? 2 : actorInfo.wizardStage >= 4 ? 5 : 1) : activeStep;
-  const currentStep = mappedStep ?? (pathname === '/bam-gio' ? 3 : pathname === '/ra-soat' ? 8 : 1);
+  const currentStep = activeStep ?? (pathname === '/bam-gio' ? 3 : pathname === '/ra-soat' ? 8 : 1);
   const activeStepObj = SIDEBAR_EIGHT_STEPS.find((s) => s.num === currentStep) || SIDEBAR_EIGHT_STEPS[0];
   const hasStep1Done = Boolean(actorInfo.email && actorInfo.title && actorInfo.posCount > 0);
   const stageDoneFlags = [
     hasStep1Done,
-    Boolean(actorInfo.posCount > 0 && (actorInfo.wizardStage >= 3 || currentStep > 2)),
+    Boolean(actorInfo.posCount > 0 && (actorInfo.wizardStage >= 2 || currentStep > 2)),
     Boolean(actorInfo.timerCount > 0 || currentStep > 3),
     Boolean(actorInfo.timerCount > 0 || actorInfo.mergedVer || currentStep > 4),
     Boolean(hasStep1Done && (actorInfo.wizardStage >= 4 || Boolean(actorInfo.exportedFile))),
@@ -124,7 +123,12 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
         const isDone = !isCurrent && stageDoneFlags[s.num - 1];
         const hasError = errorStep === s.num || (s.num === 8 && (actorInfo.auditFixCount ?? 0) > 0);
         const needsSupplement = !isCurrent && !isDone && !hasError && s.num === 1 && (!actorInfo.email || !actorInfo.title);
-        const handleInternal = onSelectStep && (s.num === 1 || s.num === 2 || s.num === 5 || s.num === 6 || s.num === 7);
+        const handleInternal = Boolean(
+          onSelectStep && (
+            (pathname === '/tao-tep' && (s.num === 1 || s.num === 2 || s.num === 5 || s.num === 6 || s.num === 7)) ||
+            (pathname === '/bam-gio' && (s.num === 3 || s.num === 4))
+          )
+        );
         const isLast = idx === SIDEBAR_EIGHT_STEPS.length - 1;
         const statusText = hasError
           ? (s.num === 8 && actorInfo.auditFixCount ? `${actorInfo.auditFixCount} mục phải sửa` : 'Có lỗi')
@@ -162,7 +166,7 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
           return (
             <li key={s.num} className="flex flex-col items-center w-full">
               {handleInternal ? (
-                <button type="button" aria-label={`${s.title} (${statusText})`} aria-current={isCurrent ? 'step' : undefined} onClick={() => onSelectStep(s.num)} className="w-full cursor-pointer focus:outline-none">{railNode}</button>
+                <button type="button" aria-label={`${s.title} (${statusText})`} aria-current={isCurrent ? 'step' : undefined} onClick={() => onSelectStep?.(s.num)} className="w-full cursor-pointer focus:outline-none">{railNode}</button>
               ) : (
                 <Link href={s.href} aria-label={`${s.title} (${statusText})`} aria-current={isCurrent ? 'step' : undefined} className="w-full block focus:outline-none">{railNode}</Link>
               )}
@@ -188,7 +192,7 @@ export function WorkflowSidebar({ activeStep, onSelectStep, unitCode, errorStep 
         return (
           <li key={s.num}>
             {handleInternal ? (
-              <button type="button" aria-current={isCurrent ? 'step' : undefined} onClick={() => { onSelectStep(s.num); if (inMobileDrawer) closeDrawer(); }} className="w-full text-left cursor-pointer">{expandedRow}</button>
+              <button type="button" aria-current={isCurrent ? 'step' : undefined} onClick={() => { onSelectStep?.(s.num); if (inMobileDrawer) closeDrawer(); }} className="w-full text-left cursor-pointer">{expandedRow}</button>
             ) : (
               <Link href={s.href} aria-current={isCurrent ? 'step' : undefined} onClick={() => { if (inMobileDrawer) closeDrawer(); }} className="block">{expandedRow}</Link>
             )}

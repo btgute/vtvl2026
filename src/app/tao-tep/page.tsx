@@ -53,8 +53,7 @@ export default function TaoTepPage() {
   const stageHeadingRef = useRef<HTMLHeadingElement>(null);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pushToast = (kindType: ToastNotice['kind'], message: string, onRetry?: () => void) => {
-    const id = `toast-${Date.now()}`;
-    setToasts((prev) => [...prev.filter((t) => t.message !== message), { id, kind: kindType, message, onRetry }]);
+    const id = `toast-${Date.now()}`; setToasts((prev) => [...prev.filter((t) => t.message !== message), { id, kind: kindType, message, onRetry }]);
     if (kindType !== 'error') setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3200);
   };
   const applySessionToState = (saved: ReturnType<typeof getActiveUnitSession>) => {
@@ -65,30 +64,34 @@ export default function TaoTepPage() {
   };
   useEffect(() => {
     applySessionToState(getActiveUnitSession());
-    const params = new URLSearchParams(window.location.search);
-    const sp = params.get('step'); const stg = Number(params.get('stage'));
-    setActiveStep(sp === '2' || sp === '6' || window.location.hash === '#buoc-3' ? 2 : sp === '4' || sp === '7' || window.location.hash === '#buoc-4' ? 4 : 1);
-    if (stg >= 1 && stg <= 5) setWizardStage(stg as 1 | 2 | 3 | 4 | 5);
+    const syncFromUrl = () => {
+      const params = new URLSearchParams(window.location.search); const sp = params.get('step'); const stg = Number(params.get('stage'));
+      if (sp === '1') { setActiveStep(1); setWizardStage(1); }
+      else if (sp === '2') { setActiveStep(1); setWizardStage(2); }
+      else if (sp === '5') { setActiveStep(1); setWizardStage(3); }
+      else if (sp === '6' || window.location.hash === '#buoc-3') { setActiveStep(1); setWizardStage(4); }
+      else if (sp === '7' || sp === '4' || window.location.hash === '#buoc-4') { setActiveStep(1); setWizardStage(5); }
+      else if (stg >= 1 && stg <= 5) { setActiveStep(1); setWizardStage(stg as 1 | 2 | 3 | 4 | 5); }
+    };
+    syncFromUrl(); window.addEventListener('popstate', syncFromUrl);
     const onStorage = (e: StorageEvent) => { if (e.key === 'hcmute_vtvl_active_unit_session_v2') applySessionToState(getActiveUnitSession()); };
     window.addEventListener('storage', onStorage);
     const bc = 'BroadcastChannel' in window ? new BroadcastChannel('hcmute_vtvl_realtime') : null;
     if (bc) bc.onmessage = () => applySessionToState(getActiveUnitSession());
-    return () => { window.removeEventListener('storage', onStorage); bc?.close(); };
+    return () => { window.removeEventListener('popstate', syncFromUrl); window.removeEventListener('storage', onStorage); bc?.close(); };
   }, []);
   useEffect(() => {
     const onFocusTask = (e: Event) => {
       const detail = (e as CustomEvent<{ step: number; taskId: string }>).detail;
       if (detail?.step === 1) {
-        setActiveStep(1); const map: Record<string, 1 | 2 | 3 | 4 | 5> = { 'task-1-unit': 1, 'task-1-actor': 2, 'task-1-add': 3, 'task-1-name': 4, 'task-1-staff': 5 };
+        setActiveStep(1); const map: Record<string, 1 | 2 | 3 | 4 | 5> = { 'task-1-unit': 1, 'task-1-actor': 1, 'task-1-add': 2, 'task-1-name': 3, 'task-1-staff': 4 };
         if (map[detail.taskId]) handleStageChange(map[detail.taskId], false);
       }
     };
     window.addEventListener('vtvl-focus-task', onFocusTask); return () => window.removeEventListener('vtvl-focus-task', onFocusTask);
   }, []);
-
   const unitsOfGroup = useMemo(() => HCMUTE_UNITS.filter((u) => u.group === kind), [kind]);
   const currentUnit = useMemo(() => unitsOfGroup.find((u) => u.code === selectedUnitCode) || unitsOfGroup[0] || HCMUTE_UNITS[0], [unitsOfGroup, selectedUnitCode]);
-
   const persistState = (patch: Parameters<typeof saveActiveUnitSession>[0], fieldKey?: string) => {
     try {
       setSaveLifecycle('saving'); if (fieldKey) setFieldStates((p) => ({ ...p, [fieldKey]: 'saving' }));
@@ -117,8 +120,9 @@ export default function TaoTepPage() {
     setNgachAllocations(nextNgach); syncPositions(nextPos, u.code, u.group); persistState({ ngachAllocations: nextNgach }, 'unit');
   };
   const handleStageChange = (st: 1 | 2 | 3 | 4 | 5, focusHeading = true) => {
-    setWizardStage(st); setVisitedStages((prev) => Array.from(new Set([...prev, st]))); persistState({ activeStep: 1, wizardStage: st });
-    if (focusHeading && typeof window !== 'undefined') { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => stageHeadingRef.current?.focus(), 80); }
+    setActiveStep(1); setWizardStage(st); setVisitedStages((prev) => Array.from(new Set([...prev, st]))); persistState({ activeStep: 1, wizardStage: st });
+    const stepParam = st === 1 ? 1 : st === 2 ? 2 : st === 3 ? 5 : st === 4 ? 6 : 7;
+    if (typeof window !== 'undefined') { window.history.replaceState(null, '', `/tao-tep?step=${stepParam}`); if (focusHeading) { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => stageHeadingRef.current?.focus(), 80); } }
   };
   const handleAddMultiplePositions = (fwIds: string[]) => {
     syncPositions([...positions, ...fwIds.map((fwId, idx) => buildProposedPositionFromFramework(fwId, currentUnit.nameVi, kind, positions.length + idx + 1))], currentUnit.code, kind, positions);
@@ -146,8 +150,8 @@ export default function TaoTepPage() {
   const validationErrors = useMemo(() => validateStep1Data(currentUnit, actorEmail, actorTitle, positions), [currentUnit, actorEmail, actorTitle, positions]);
   const stageStatuses = useMemo(() => computeStageStatuses(wizardStage, currentUnit.code, actorEmail, actorTitle, positions, validationErrors, visitedStages), [wizardStage, currentUnit.code, actorEmail, actorTitle, positions, validationErrors, visitedStages]);
   const currentStageMeta = stageStatuses.find((s) => s.num === wizardStage) || stageStatuses[0];
-  const emailErrMsg = (touchedFields.actorEmail || forceShowStageErrors[2]) && (!actorEmail.trim() || !actorEmail.includes('@') || !actorEmail.includes('.')) ? 'Vui lòng nhập địa chỉ email công vụ HCM-UTE (ví dụ: ten@hcmute.edu.vn).' : undefined;
-  const roleErrMsg = (touchedFields.actorTitle || forceShowStageErrors[2]) && !actorTitle.trim() ? 'Vui lòng nhập hoặc chọn chức vụ, vai trò của người lập hồ sơ tại đơn vị.' : undefined;
+  const emailErrMsg = (touchedFields.actorEmail || forceShowStageErrors[1]) && (!actorEmail.trim() || !actorEmail.includes('@') || !actorEmail.includes('.')) ? 'Vui lòng nhập địa chỉ email công vụ HCM-UTE (ví dụ: ten@hcmute.edu.vn).' : undefined;
+  const roleErrMsg = (touchedFields.actorTitle || forceShowStageErrors[1]) && !actorTitle.trim() ? 'Vui lòng nhập hoặc chọn chức vụ, vai trò của người lập hồ sơ tại đơn vị.' : undefined;
   const handleSaveDraft = () => {
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
     persistState({ unitCode: currentUnit.code, kind, customDate, actorEmail, actorTitle, activeStep, wizardStage, scaleMetrics, ngachAllocations, proposedPositions: positions });
@@ -155,12 +159,13 @@ export default function TaoTepPage() {
   };
   const handleContinueAction = () => {
     if (isCheckingContinue || loading) return;
-    if (activeStep !== 1 || wizardStage === 5) { void handleCreateFiles(); return; }
+    if (wizardStage === 5) { if (typeof window !== 'undefined') window.location.href = '/ra-soat'; return; }
+    if (wizardStage === 4) { void handleCreateFiles(); return; }
     setIsCheckingContinue(true); const stageErrs = validateStageData(wizardStage, currentUnit, actorEmail, actorTitle, positions);
     setTimeout(() => {
       setIsCheckingContinue(false);
       if (stageErrs.length > 0) {
-        setForceShowStageErrors((p) => ({ ...p, [wizardStage]: true })); if (wizardStage === 2) setTouchedFields((p) => ({ ...p, actorEmail: true, actorTitle: true }));
+        setForceShowStageErrors((p) => ({ ...p, [wizardStage]: true })); if (wizardStage === 1) setTouchedFields((p) => ({ ...p, actorEmail: true, actorTitle: true }));
         focusTaskTarget(stageErrs[0].targetId); return;
       }
       setContinueCheckedOk(true); persistState({ unitCode: currentUnit.code, kind, customDate, actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), activeStep: 1, wizardStage: (wizardStage + 1) as 1 | 2 | 3 | 4 | 5, proposedPositions: positions });
@@ -169,14 +174,14 @@ export default function TaoTepPage() {
   };
   const handleCreateFiles = async () => {
     if (validationErrors.length > 0) {
-      setActiveStep(1); setForceShowStageErrors({ 1: true, 2: true, 3: true, 4: true, 5: true }); setTouchedFields({ actorEmail: true, actorTitle: true });
-      handleStageChange(5); focusTaskTarget(validationErrors[0].targetId); return;
+      setForceShowStageErrors({ 1: true, 2: true, 3: true, 4: true, 5: true }); setTouchedFields({ actorEmail: true, actorTitle: true });
+      handleStageChange(validationErrors[0].stage, false); focusTaskTarget(validationErrors[0].targetId); return;
     }
     setLoading(true); setStale(false);
     try {
-      persistState({ unitCode: currentUnit.code, kind, customDate, actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), activeStep: 2, scaleMetrics, ngachAllocations, proposedPositions: positions });
+      persistState({ unitCode: currentUnit.code, kind, customDate, actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), activeStep: 1, wizardStage: 4, scaleMetrics, ngachAllocations, proposedPositions: positions });
       const res = await generateUnitFiles({ kind, unitCode: currentUnit.code, unitNameVi: currentUnit.nameVi, unitNameEn: currentUnit.nameEn, period: HD07_CONSTANTS.STATISTICAL_PERIOD, exportDate: customDate, includeZipPerPosition: includeZip, actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim(), scaleMetrics, ngachAllocations, ngachOverrides: {}, proposedPositions: positions });
-      setResult(res); setActiveStep(2); setSessionRootWorkbook(res.unitCode, res.unitBlob, res.unitFileName);
+      setResult(res); setSessionRootWorkbook(res.unitCode, res.unitBlob, res.unitFileName);
       recordActivity(res.unitCode, res.unitNameVi, 'TAO_TEP', `Khởi tạo 4 tệp chuẩn (${positions.length} VTVL · hệ số ×${scaleMetrics.scaleMultiplier}): ${res.unitFileName}`, { actorEmail: actorEmail.trim(), actorTitle: actorTitle.trim() });
       pushToast('success', `Đã khởi tạo thành công 4 tệp đầu ra cho [${res.unitCode}].`); void syncUnitSplitToSupabase(res, { scaleMetrics, ngachAllocations, proposedPositions: positions });
     } catch { pushToast('error', 'Không thể khởi tạo bộ biểu. Vui lòng thử lại.', () => void handleCreateFiles()); } finally { setLoading(false); }
@@ -185,11 +190,10 @@ export default function TaoTepPage() {
     const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); pushToast('success', `Đang tải xuống: ${filename}`);
   };
 
-  const sidebarStep = activeStep === 2 ? 6 : activeStep === 4 ? 7 : wizardStage === 3 ? 2 : wizardStage >= 4 ? 5 : 1;
+  const sidebarStep = wizardStage === 1 ? 1 : wizardStage === 2 ? 2 : wizardStage === 3 ? 5 : wizardStage === 4 ? 6 : 7;
   const handleSelectSidebarStep = (s: number) => {
-    if (s === 1 || s === 2 || s === 5) { setActiveStep(1); handleStageChange(s === 1 ? 1 : s === 2 ? 3 : 4, true); }
-    else if (s === 6 || s === 20) { setActiveStep(2); persistState({ activeStep: 2 }); }
-    else if (s === 7 || s === 40) { setActiveStep(4); persistState({ activeStep: 4 }); }
+    const map: Record<number, 1 | 2 | 3 | 4 | 5> = { 1: 1, 2: 2, 5: 3, 6: 4, 20: 4, 7: 5, 40: 5 };
+    if (map[s]) handleStageChange(map[s], true);
   };
 
   return (
@@ -199,88 +203,80 @@ export default function TaoTepPage() {
         <WorkflowSidebar activeStep={sidebarStep} errorStep={validationErrors.length > 0 && activeStep > 1 ? 1 : null} onSelectStep={handleSelectSidebarStep} unitCode={currentUnit.code} />
 
         <div className="flex-1 w-full space-y-6 min-w-0">
-          {activeStep === 1 && (
-            <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6 sm:space-y-7">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
-                <div className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">{sidebarStep}</span><div><h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 1, 2 &amp; 5 (trên 08 bước HD 07) — Nhiệm vụ (A1), Công việc (A2) &amp; Danh mục VTVL, Năng lực (C1, C2)</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code}) · Bộ 10 biểu nghiệp vụ chuẩn Hướng dẫn số 07-HD/BTCTW</p></div></div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {undoSnapshot && <button type="button" onClick={handleUndoSnapshot} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--primary)]/40 bg-[var(--surface-tint)] text-xs sm:text-sm font-bold text-[var(--primary)] cursor-pointer"><Undo2 className="w-4 h-4" /><span>Phục hồi phiên bản trước</span></button>}
-                  <button type="button" onClick={() => setConfirmAction({ type: 'reset' })} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--fix)] text-xs sm:text-sm font-semibold text-[var(--foreground)] cursor-pointer"><RotateCcw className="w-4 h-4 text-[var(--fix)]" /><span>Khôi phục mặc định</span></button>
+          <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6 sm:space-y-7">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
+              <div className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">{sidebarStep}</span><div><h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">{currentStageMeta.fullTitle}</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code}) · Quy trình 08 bước &amp; Bộ 10 biểu nghiệp vụ chuẩn Hướng dẫn số 07-HD/BTCTW</p></div></div>
+              <div className="flex flex-wrap items-center gap-2">
+                {undoSnapshot && <button type="button" onClick={handleUndoSnapshot} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--primary)]/40 bg-[var(--surface-tint)] text-xs sm:text-sm font-bold text-[var(--primary)] cursor-pointer"><Undo2 className="w-4 h-4" /><span>Phục hồi phiên bản trước</span></button>}
+                <button type="button" onClick={() => setConfirmAction({ type: 'reset' })} className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--fix)] text-xs sm:text-sm font-semibold text-[var(--foreground)] cursor-pointer"><RotateCcw className="w-4 h-4 text-[var(--fix)]" /><span>Khôi phục mặc định</span></button>
+              </div>
+            </div>
+            {confirmAction && (
+              <div role="alertdialog" aria-labelledby="confirm-title" className="rounded-xl border border-[var(--fix)] bg-[var(--fix-soft)] p-4 space-y-3">
+                <div className="flex items-start gap-2.5"><ShieldAlert className="w-5 h-5 text-[var(--fix)] shrink-0 mt-0.5" /><div className="space-y-1 text-sm"><strong id="confirm-title" className="text-[var(--fix)] block text-base">Xác nhận khôi phục dữ liệu mặc định</strong><p className="text-[var(--foreground)]">{confirmAction.type === 'reset' ? `Chọn phạm vi khôi phục cho [${currentUnit.code}] ${currentUnit.nameVi}: khôi phục danh sách VTVL mặc định hoặc đặt lại toàn bộ phiên về Bước 1/8.` : `Xóa vị trí "${confirmAction.row?.specificName}" (${currentUnit.code}-${confirmAction.row?.vtvlSuffix}) khỏi danh sách đề xuất?`}</p></div></div>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <button type="button" onClick={() => setConfirmAction(null)} className="min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold text-[var(--foreground)] cursor-pointer">Hủy bỏ</button>
+                  {confirmAction.type === 'reset' ? (<><button type="button" onClick={() => handleExecuteConfirmedAction(false)} className="min-h-[44px] px-4 rounded-xl border border-[var(--fix)] bg-[var(--sheet)] text-[var(--fix)] text-sm font-bold cursor-pointer">Khôi phục VTVL mặc định</button><button type="button" onClick={() => handleExecuteConfirmedAction(true)} className="min-h-[44px] px-4 rounded-xl bg-[var(--fix)] text-white text-sm font-bold cursor-pointer">Đặt lại toàn bộ về Bước 1</button></>) : <button type="button" onClick={() => handleExecuteConfirmedAction(false)} className="min-h-[44px] px-4 rounded-xl bg-[var(--fix)] text-white text-sm font-bold cursor-pointer">Xác nhận xóa vị trí</button>}
                 </div>
               </div>
-              {confirmAction && (
-                <div role="alertdialog" aria-labelledby="confirm-title" className="rounded-xl border border-[var(--fix)] bg-[var(--fix-soft)] p-4 space-y-3">
-                  <div className="flex items-start gap-2.5"><ShieldAlert className="w-5 h-5 text-[var(--fix)] shrink-0 mt-0.5" /><div className="space-y-1 text-sm"><strong id="confirm-title" className="text-[var(--fix)] block text-base">Xác nhận khôi phục dữ liệu mặc định</strong><p className="text-[var(--foreground)]">{confirmAction.type === 'reset' ? `Chọn phạm vi khôi phục cho [${currentUnit.code}] ${currentUnit.nameVi}: khôi phục danh sách VTVL mặc định (chuyển về Chặng 4 để xem ngay) hoặc đặt lại toàn bộ phiên về Chặng 1/5.` : `Xóa vị trí "${confirmAction.row?.specificName}" (${currentUnit.code}-${confirmAction.row?.vtvlSuffix}) khỏi danh sách đề xuất?`}</p></div></div>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    <button type="button" onClick={() => setConfirmAction(null)} className="min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold text-[var(--foreground)] cursor-pointer">Hủy bỏ</button>
-                    {confirmAction.type === 'reset' ? (<><button type="button" onClick={() => handleExecuteConfirmedAction(false)} className="min-h-[44px] px-4 rounded-xl border border-[var(--fix)] bg-[var(--sheet)] text-[var(--fix)] text-sm font-bold cursor-pointer">Khôi phục VTVL mặc định (Xem tại Chặng 4)</button><button type="button" onClick={() => handleExecuteConfirmedAction(true)} className="min-h-[44px] px-4 rounded-xl bg-[var(--fix)] text-white text-sm font-bold cursor-pointer">Đặt lại toàn bộ về Chặng 1/5</button></>) : <button type="button" onClick={() => handleExecuteConfirmedAction(false)} className="min-h-[44px] px-4 rounded-xl bg-[var(--fix)] text-white text-sm font-bold cursor-pointer">Xác nhận xóa vị trí</button>}
+            )}
+            <StageStepperBar stages={stageStatuses} currentStage={wizardStage} onSelectStage={(s) => handleStageChange(s, true)} />
+            <div className="flex flex-wrap items-center justify-between gap-2"><h2 id="stage-heading-title" ref={stageHeadingRef} tabIndex={-1} className="text-sm sm:text-base font-bold text-[var(--foreground)] focus:outline-none">Thao tác tại {currentStageMeta.shortLabel}</h2><StatusBadge status={currentStageMeta.status} /></div>
+            {wizardStage === 1 && (
+              <div className="space-y-5">
+                <SegmentedControl ariaLabel="Chọn khối đơn vị thuộc HCM-UTE" options={UNIT_GROUPS} value={kind} onChange={handleGroupChange} />
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
+                  <div className="sm:col-span-7"><FormField htmlFor="task-1-unit" label={`Đơn vị thuộc HCM-UTE (${unitsOfGroup.length} đơn vị)`} required state={fieldStates.unit || 'default'}><Select id="task-1-unit" value={currentUnit.code} onChange={(e) => handleUnitChange(e.target.value)}>{unitsOfGroup.map((u) => <option key={u.code} value={u.code}>[{u.code}] {u.nameVi}</option>)}</Select></FormField></div>
+                  <div className="sm:col-span-2"><FormField htmlFor="unit-code-ro" label="Mã đơn vị" state="readOnly" hint="Tự động theo đơn vị"><TextInput id="unit-code-ro" readOnly state="readOnly" value={currentUnit.code} /></FormField></div>
+                  <div className="sm:col-span-3"><FormField htmlFor="unit-date" label="Ngày lập hồ sơ" state={fieldStates.customDate || 'default'}><DateInput id="unit-date" value={customDate} onChange={(e) => { setCustomDate(e.target.value); scheduleAutosave({ customDate: e.target.value }, 'customDate'); }} onBlur={() => persistState({ customDate }, 'customDate')} /></FormField></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[var(--border-subtle)]">
+                  <FormField htmlFor="task-1-actor" label="Email công vụ người thực hiện (Biểu 15. S_NhatKy)" required state={fieldStates.actorEmail || 'default'} errorMessage={emailErrMsg} errorId="actor-email-err" hint="Sử dụng địa chỉ email công vụ @hcmute.edu.vn để lưu vết phiên làm việc và lịch sử thẩm định."><TextInput id="task-1-actor" type="email" required errorMessage={emailErrMsg} errorId="actor-email-err" value={actorEmail} onFocusChange={(f) => setFieldStates((p) => ({ ...p, actorEmail: f ? 'focused' : p.actorEmail === 'focused' ? 'default' : p.actorEmail }))} onChange={(e) => { setActorEmail(e.target.value); scheduleAutosave({ actorEmail: e.target.value, actorTitle }, 'actorEmail'); }} onBlur={() => { setTouchedFields((p) => ({ ...p, actorEmail: true })); persistState({ actorEmail, actorTitle }, 'actorEmail'); }} placeholder={`VD: ${currentUnit.code.toLowerCase()}@hcmute.edu.vn`} /></FormField>
+                  <FormField htmlFor="task-1-role" label="Chức vụ / Vai trò người thực hiện (Biểu 15. S_NhatKy)" required state={fieldStates.actorTitle || 'default'} errorMessage={roleErrMsg} errorId="actor-role-err" hint="Chọn nhanh từ danh sách gợi ý hoặc tự nhập chức vụ thực tế tại đơn vị."><TextInput id="task-1-role" type="text" list="hcmute-actor-roles" required errorMessage={roleErrMsg} errorId="actor-role-err" value={actorTitle} onFocusChange={(f) => setFieldStates((p) => ({ ...p, actorTitle: f ? 'focused' : p.actorTitle === 'focused' ? 'default' : p.actorTitle }))} onChange={(e) => { setActorTitle(e.target.value); scheduleAutosave({ actorEmail, actorTitle: e.target.value }, 'actorTitle'); }} onBlur={() => { setTouchedFields((p) => ({ ...p, actorTitle: true })); persistState({ actorEmail, actorTitle }, 'actorTitle'); }} placeholder={`VD: ${currentUnit.headTitleVi} / Thư ký Đề án VTVL`} /><datalist id="hcmute-actor-roles">{ROLE_PRESETS.map((r) => <option key={r} value={r} />)}</datalist></FormField>
+                </div>
+                <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} onCopied={(fn) => pushToast('success', `Đã sao chép tên tệp: ${fn}`)} />
+              </div>
+            )}
+            {wizardStage === 2 && (
+              <div className="space-y-4">
+                <Step1CatalogSelector unitNameVi={currentUnit.nameVi} kind={kind} existingFrameworkIds={positions.map((p) => p.frameworkId)} onAddMultiplePositions={handleAddMultiplePositions} />
+                <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="text-xs sm:text-sm text-[var(--foreground)]"><strong>Chuyển sang Bước 3 &amp; 4 (Đo khối lượng B1 &amp; Tác động B2):</strong> Sau khi xác định công việc và sản phẩm đầu ra tại Biểu 2. A2_CongViec, bạn có thể sang Bước 3 để đo thời gian thực hiện hoặc sang Bước 5 để rà soát danh mục VTVL (C1–C2).</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link href="/bam-gio?step=3" className="btn-touch inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[var(--primary)]/40 bg-[var(--sheet)] text-xs font-bold text-[var(--primary)]"><Timer className="w-4 h-4" /><span>Sang Bước 3: Đo khối lượng &amp; thời gian (B1)</span></Link>
+                    <button type="button" onClick={() => handleStageChange(3, true)} className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl bg-[var(--primary)] text-white text-xs font-bold cursor-pointer"><span>Sang Bước 5: Danh mục VTVL &amp; Mô tả (C1, C2)</span><ArrowRight className="w-4 h-4" /></button>
                   </div>
                 </div>
-              )}
-              <StageStepperBar stages={stageStatuses} currentStage={wizardStage} onSelectStage={(s) => handleStageChange(s, true)} />
-              <div className="flex flex-wrap items-center justify-between gap-2"><h2 id="stage-heading-title" ref={stageHeadingRef} tabIndex={-1} className="text-base font-bold text-[var(--foreground)] focus:outline-none">{currentStageMeta.fullTitle}</h2><StatusBadge status={currentStageMeta.status} /></div>
+              </div>
+            )}
+            {wizardStage === 3 && <Step1PositionList unitCode={currentUnit.code} positions={positions} forceShowErrors={Boolean(forceShowStageErrors[3])} onUpdateRow={handleUpdateRow} onDuplicateRow={handleDuplicateRow} onRequestRemoveRow={(row) => setConfirmAction({ type: 'delete', row })} />}
 
-              {wizardStage === 1 && (
-                <div className="space-y-4">
-                  <SegmentedControl ariaLabel="Chọn khối đơn vị thuộc HCM-UTE" options={UNIT_GROUPS} value={kind} onChange={handleGroupChange} />
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                    <div className="sm:col-span-7"><FormField htmlFor="task-1-unit" label={`Đơn vị thuộc HCM-UTE (${unitsOfGroup.length} đơn vị)`} required state={fieldStates.unit || 'default'}><Select id="task-1-unit" value={currentUnit.code} onChange={(e) => handleUnitChange(e.target.value)}>{unitsOfGroup.map((u) => <option key={u.code} value={u.code}>[{u.code}] {u.nameVi}</option>)}</Select></FormField></div>
-                    <div className="sm:col-span-2"><FormField htmlFor="unit-code-ro" label="Mã đơn vị" state="readOnly" hint="Tự động theo đơn vị"><TextInput id="unit-code-ro" readOnly state="readOnly" value={currentUnit.code} /></FormField></div>
-                    <div className="sm:col-span-3"><FormField htmlFor="unit-date" label="Ngày lập hồ sơ" state={fieldStates.customDate || 'default'}><DateInput id="unit-date" value={customDate} onChange={(e) => { setCustomDate(e.target.value); scheduleAutosave({ customDate: e.target.value }, 'customDate'); }} onBlur={() => persistState({ customDate }, 'customDate')} /></FormField></div>
-                  </div>
-                  <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} onCopied={(fn) => pushToast('success', `Đã sao chép tên tệp: ${fn}`)} />
+            {wizardStage === 4 && (
+              <div className="space-y-5">
+                <UnitScaleAndNgachTool unitCode={currentUnit.code} kind={kind} scaleMetrics={scaleMetrics} ngachAllocations={ngachAllocations} positions={positions} onChangeScaleMetrics={(next) => { setScaleMetrics(next); persistState({ scaleMetrics: next }); }} onChangeNgachAllocations={(next) => { setNgachAllocations(next); persistState({ ngachAllocations: next }); }} onPushToPositionStaffCounts={(staffByPos) => { syncPositions(positions.map((p) => (staffByPos[p.id] !== undefined ? { ...p, staffCount: staffByPos[p.id] } : p)), currentUnit.code, kind, positions); pushToast('success', 'Đã cộng dồn nhân sự theo mã ngạch vào cột Hiện có (D1).'); }} />
+                <Step1ReviewConfirm unit={currentUnit} actorEmail={actorEmail} actorTitle={actorTitle} customDate={customDate} positions={positions} loading={loading} onJumpToError={(err) => { setForceShowStageErrors((p) => ({ ...p, [err.stage]: true })); if (err.stage === 1) setTouchedFields({ actorEmail: true, actorTitle: true }); handleStageChange(err.stage, false); focusTaskTarget(err.targetId); }} onConfirmExport={() => void handleCreateFiles()} />
+                <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input id="task-2-zip" type="checkbox" checked={includeZip} onChange={(e) => setIncludeZip(e.target.checked)} className="w-5 h-5 mt-0.5 accent-[var(--primary)] shrink-0" />
+                    <span className="space-y-0.5"><span className="block text-sm font-bold text-[var(--foreground)]">Kèm gói phiếu khảo sát B1–B2 riêng từng vị trí (.zip)</span><span className="block text-xs text-[var(--ink-muted)]">Xuất thêm 1 tệp .zip cho {positions.length} vị trí của <strong>[{currentUnit.code}]</strong> để gửi cá nhân kê khai Bước 3 &amp; Bước 4.</span></span>
+                  </label>
+                  <button id="task-2-export" type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white font-bold text-sm shrink-0 cursor-pointer shadow-2xs"><FileSpreadsheet className="w-4 h-4" /><span>{result && !stale ? 'Tạo lại 4 tệp' : `Khởi tạo 4 tệp ${currentUnit.code}`}</span></button>
                 </div>
-              )}
+                {result && <SplitResultBanner result={result} onDownload={triggerDownload} />}
+                <RegenFormsFromUnitBox exportDate={customDate} includeZip={includeZip} onDownload={triggerDownload} />
+              </div>
+            )}
 
-              {wizardStage === 2 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField htmlFor="task-1-actor" label="Email công vụ người thực hiện" required state={fieldStates.actorEmail || 'default'} errorMessage={emailErrMsg} errorId="actor-email-err" hint="Sử dụng địa chỉ email công vụ @hcmute.edu.vn để ghi nhận lịch sử thẩm định.">
-                    <TextInput id="task-1-actor" type="email" required errorMessage={emailErrMsg} errorId="actor-email-err" value={actorEmail} onFocusChange={(f) => setFieldStates((p) => ({ ...p, actorEmail: f ? 'focused' : p.actorEmail === 'focused' ? 'default' : p.actorEmail }))} onChange={(e) => { setActorEmail(e.target.value); scheduleAutosave({ actorEmail: e.target.value, actorTitle }, 'actorEmail'); }} onBlur={() => { setTouchedFields((p) => ({ ...p, actorEmail: true })); persistState({ actorEmail, actorTitle }, 'actorEmail'); }} placeholder={`VD: ${currentUnit.code.toLowerCase()}@hcmute.edu.vn`} />
-                  </FormField>
-                  <FormField htmlFor="task-1-role" label="Chức vụ / Vai trò người thực hiện" required state={fieldStates.actorTitle || 'default'} errorMessage={roleErrMsg} errorId="actor-role-err" hint="Chọn nhanh từ danh sách gợi ý hoặc tự nhập chức vụ thực tế.">
-                    <TextInput id="task-1-role" type="text" list="hcmute-actor-roles" required errorMessage={roleErrMsg} errorId="actor-role-err" value={actorTitle} onFocusChange={(f) => setFieldStates((p) => ({ ...p, actorTitle: f ? 'focused' : p.actorTitle === 'focused' ? 'default' : p.actorTitle }))} onChange={(e) => { setActorTitle(e.target.value); scheduleAutosave({ actorEmail, actorTitle: e.target.value }, 'actorTitle'); }} onBlur={() => { setTouchedFields((p) => ({ ...p, actorTitle: true })); persistState({ actorEmail, actorTitle }, 'actorTitle'); }} placeholder={`VD: ${currentUnit.headTitleVi} / Thư ký Đề án VTVL`} />
-                    <datalist id="hcmute-actor-roles">{ROLE_PRESETS.map((r) => <option key={r} value={r} />)}</datalist>
-                  </FormField>
+            {wizardStage === 5 && (
+              <div className="space-y-4">
+                <MergeStepSection unit={currentUnit} />
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border-subtle)]">
+                  <button type="button" onClick={() => handleStageChange(4, true)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Bước 6 (Nhu cầu C3 &amp; Xuất biểu)</span></button>
+                  <Link href="/ra-soat" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white text-sm font-bold shadow-2xs"><span>Sang Bước 8: Kiểm tra 10 biểu &amp; Gửi kết quả</span><ArrowRight className="w-4 h-4" /></Link>
                 </div>
-              )}
-              {wizardStage === 3 && <Step1CatalogSelector unitNameVi={currentUnit.nameVi} kind={kind} existingFrameworkIds={positions.map((p) => p.frameworkId)} onAddMultiplePositions={handleAddMultiplePositions} />}
-              {wizardStage === 4 && (
-                <div className="space-y-4">
-                  <UnitScaleAndNgachTool unitCode={currentUnit.code} kind={kind} scaleMetrics={scaleMetrics} ngachAllocations={ngachAllocations} positions={positions} onChangeScaleMetrics={(next) => { setScaleMetrics(next); persistState({ scaleMetrics: next }); }} onChangeNgachAllocations={(next) => { setNgachAllocations(next); persistState({ ngachAllocations: next }); }} onPushToPositionStaffCounts={(staffByPos) => { syncPositions(positions.map((p) => (staffByPos[p.id] !== undefined ? { ...p, staffCount: staffByPos[p.id] } : p)), currentUnit.code, kind, positions); pushToast('success', 'Đã cộng dồn nhân sự theo mã ngạch vào cột Hiện có (D1).'); }} />
-                  <Step1PositionList unitCode={currentUnit.code} positions={positions} forceShowErrors={Boolean(forceShowStageErrors[4])} onUpdateRow={handleUpdateRow} onDuplicateRow={handleDuplicateRow} onRequestRemoveRow={(row) => setConfirmAction({ type: 'delete', row })} />
-                </div>
-              )}
-              {wizardStage === 5 && <Step1ReviewConfirm unit={currentUnit} actorEmail={actorEmail} actorTitle={actorTitle} customDate={customDate} positions={positions} loading={loading} onJumpToError={(err) => { setForceShowStageErrors((p) => ({ ...p, [err.stage]: true })); if (err.stage === 2) setTouchedFields({ actorEmail: true, actorTitle: true }); handleStageChange(err.stage, false); focusTaskTarget(err.targetId); }} onConfirmExport={() => void handleCreateFiles()} />}
-            </section>
-          )}
-          {activeStep === 2 && (
-            <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">6</span>
-                  <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 6/8 (HD 07) — Xác định nhu cầu nhân lực (C3) &amp; Xuất bộ 10 biểu gốc (A1–D2)</h1>
-                </div>
-                <button type="button" onClick={() => setActiveStep(1)} className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Bước 1–5</span></button>
               </div>
-              <SplitFileNamesPreview unitCode={currentUnit.code} exportDate={customDate} includeZip={includeZip} hasGenerated={Boolean(result && !stale)} onCopied={(fn) => pushToast('success', `Đã sao chép tên tệp: ${fn}`)} />
-              <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input id="task-2-zip" type="checkbox" checked={includeZip} onChange={(e) => setIncludeZip(e.target.checked)} className="w-5 h-5 mt-0.5 accent-[var(--primary)] shrink-0" />
-                  <span className="space-y-0.5"><span className="block text-sm font-bold text-[var(--foreground)]">Kèm gói phiếu khảo sát B1–B2 riêng từng vị trí (.zip)</span><span className="block text-xs text-[var(--ink-muted)]">Xuất thêm 1 tệp .zip, trong đó mỗi vị trí có 1 bộ phiếu riêng (không có D1) để tránh tính trùng kiêm nhiệm cho {positions.length} vị trí của <strong>[{currentUnit.code}]</strong>.</span></span>
-                </label>
-                <button id="task-2-export" type="button" disabled={loading} onClick={() => void handleCreateFiles()} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white font-bold text-sm shrink-0 cursor-pointer shadow-2xs"><FileSpreadsheet className="w-4 h-4" /><span>{result && !stale ? 'Tạo lại 4 tệp' : `Khởi tạo 4 tệp ${currentUnit.code}`}</span></button>
-              </div>
-              {result && <SplitResultBanner result={result} onDownload={triggerDownload} />}
-              <RegenFormsFromUnitBox exportDate={customDate} includeZip={includeZip} onDownload={triggerDownload} />
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border-subtle)]">
-                <Link href="/bam-gio" className="btn-touch inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold text-[var(--foreground)]"><Timer className="w-4 h-4 text-[var(--primary)]" /><span>Sang Bước 3 &amp; 4: Đo thời gian B1 &amp; Tác động B2</span></Link>
-                <button type="button" onClick={() => setActiveStep(4)} className="inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold cursor-pointer"><span>Sang Bước 7: Đối chiếu D1 &amp; Phương án D2</span><ArrowRight className="w-4 h-4" /></button>
-              </div>
-            </section>
-          )}
-          {activeStep === 4 && (
-            <div className="space-y-4"><MergeStepSection unit={currentUnit} /><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => setActiveStep(2)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Bước 6 (Xuất bộ biểu gốc)</span></button><Link href="/ra-soat" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white text-sm font-bold shadow-2xs"><span>Sang Bước 8: Kiểm tra 10 biểu &amp; Gửi kết quả</span><ArrowRight className="w-4 h-4" /></Link></div></div>
-          )}
+            )}
+          </section>
           <details className="surface-secondary rounded-xl overflow-hidden">
             <summary className="cursor-pointer px-5 min-h-[52px] text-sm font-bold text-[var(--foreground)] flex items-center justify-between"><span className="inline-flex items-center gap-2"><BookOpenCheck className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Tra cứu Khung 38 vị trí việc làm HCM-UTE &amp; Tải dự thảo Tờ trình [{currentUnit.code}]</span></span><span className="text-xs font-semibold text-[var(--primary)] shrink-0">Mở / Đóng</span></summary>
             <div className="p-4 border-t border-[var(--border-subtle)]"><Hd07OrderGuideCard unit={currentUnit} splitResult={result} /></div>
@@ -291,7 +287,7 @@ export default function TaoTepPage() {
         activeStep={activeStep} wizardStage={wizardStage} lastSavedAt={lastSavedAt} unitCode={currentUnit.code} vtvlCount={positions.length} errorCount={validationErrors.length}
         saveLifecycle={saveLifecycle} isCheckingContinue={isCheckingContinue} continueCheckedOk={continueCheckedOk}
         onPrevStage={() => handleStageChange((wizardStage - 1) as 1 | 2 | 3 | 4 | 5, true)} onSaveNow={handleSaveDraft}
-        onInspectErrors={() => { setActiveStep(1); setForceShowStageErrors({ 1: true, 2: true, 3: true, 4: true, 5: true }); setTouchedFields({ actorEmail: true, actorTitle: true }); handleStageChange(5, true); if (validationErrors[0]) focusTaskTarget(validationErrors[0].targetId); }}
+        onInspectErrors={() => { setForceShowStageErrors({ 1: true, 2: true, 3: true, 4: true, 5: true }); setTouchedFields({ actorEmail: true, actorTitle: true }); handleStageChange(4, true); if (validationErrors[0]) focusTaskTarget(validationErrors[0].targetId); }}
         onContinue={handleContinueAction}
       />
     </div>

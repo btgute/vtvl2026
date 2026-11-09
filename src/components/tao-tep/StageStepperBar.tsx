@@ -11,6 +11,7 @@ export type WorkflowStatusKind = 'completed' | 'in_progress' | 'needs_supplement
 
 export interface StageMetaItem {
   num: 1 | 2 | 3 | 4 | 5;
+  stepNum: 1 | 2 | 5 | 6 | 7;
   shortLabel: string;
   fullTitle: string;
   status: WorkflowStatusKind;
@@ -54,31 +55,34 @@ export function computeStageStatuses(
 
   const evalRawStatus = (num: 1 | 2 | 3 | 4 | 5): WorkflowStatusKind => {
     const isVisited = inspectAll || visitedStages.includes(num);
-    if (num === 1) return unitCode.trim() ? 'completed' : 'needs_supplement';
-    if (num === 2) {
+    if (num === 1) {
+      if (!unitCode.trim()) return 'needs_supplement';
       if (!emailTrim && !titleTrim) return isVisited ? 'needs_supplement' : 'not_started';
       if (emailTrim && (!emailTrim.includes('@') || !emailTrim.includes('.'))) return isVisited ? 'error' : 'needs_supplement';
       if (!emailTrim || !titleTrim) return 'needs_supplement';
       return 'completed';
     }
-    if (num === 3) return positions.length > 0 ? 'completed' : 'needs_supplement';
-    if (num === 4) {
+    if (num === 2) return positions.length > 0 ? 'completed' : 'needs_supplement';
+    if (num === 3) {
       if (positions.length === 0) return 'not_started';
       if (positions.some((p) => !isPositionRowValid(p).valid)) return isVisited ? 'error' : 'needs_supplement';
       const totalStaff = positions.reduce((s, p) => s + Number(p.staffCount || 0), 0);
       return totalStaff === 0 ? 'needs_supplement' : 'completed';
     }
-    if (!isVisited) return 'not_started';
-    if (validationErrors.length > 0) return 'needs_supplement';
-    return 'completed';
+    if (num === 4) {
+      if (!isVisited) return 'not_started';
+      if (validationErrors.length > 0) return 'needs_supplement';
+      return 'completed';
+    }
+    return isVisited ? 'completed' : 'not_started';
   };
 
-  const labels: { num: 1 | 2 | 3 | 4 | 5; shortLabel: string; fullTitle: string }[] = [
-    { num: 1, shortLabel: 'Bước 1: Nhiệm vụ (A1)', fullTitle: 'Bước 1 (HD 07) — Chọn đơn vị & Rà soát danh mục nhiệm vụ (Biểu 1. A1_NhiemVu)' },
-    { num: 2, shortLabel: 'Người thực hiện (S)', fullTitle: 'Bước 1 (HD 07) — Khai báo thông tin người thực hiện & lưu vết (Biểu 15. S_NhatKy)' },
-    { num: 3, shortLabel: 'Bước 2: Công việc (A2)', fullTitle: 'Bước 2 (HD 07) — Xác định công việc, sản phẩm (Biểu 2. A2_CongViec & 11. DM_SAN_PHAM)' },
-    { num: 4, shortLabel: 'Bước 5: VTVL & Năng lực (C1, C2)', fullTitle: 'Bước 5 (HD 07) — Đối chiếu danh mục VTVL, bản mô tả, năng lực (Biểu 6. C1, 7. C2) & nhân lực (9. D1)' },
-    { num: 5, shortLabel: 'Bước 6: Nhu cầu (C3) & Xuất biểu', fullTitle: 'Bước 6 (HD 07) — Xác định số người cần thiết (Biểu 8. C3_NhuCau) & Xuất bộ 10 biểu gốc (A1–D2)' }
+  const labels: { num: 1 | 2 | 3 | 4 | 5; stepNum: 1 | 2 | 5 | 6 | 7; shortLabel: string; fullTitle: string }[] = [
+    { num: 1, stepNum: 1, shortLabel: 'Bước 1: Nhiệm vụ (A1) & Người lập', fullTitle: 'Bước 1/8 (HD 07) — Rà soát chức năng, nhiệm vụ đơn vị (Biểu 1. A1_NhiemVu) & Khai báo người thực hiện (15. S_NhatKy)' },
+    { num: 2, stepNum: 2, shortLabel: 'Bước 2: Công việc & SP (A2)', fullTitle: 'Bước 2/8 (HD 07) — Xác định công việc, công đoạn và sản phẩm đầu ra (Biểu 2. A2_CongViec & 11. DM_SAN_PHAM)' },
+    { num: 3, stepNum: 5, shortLabel: 'Bước 5: Danh mục VTVL (C1, C2)', fullTitle: 'Bước 5/8 (HD 07) — Đối chiếu danh mục VTVL chuẩn, xây dựng bản mô tả công việc và khung năng lực (Biểu 6. C1 & 7. C2)' },
+    { num: 4, stepNum: 6, shortLabel: 'Bước 6: Nhu cầu (C3) & Xuất biểu', fullTitle: 'Bước 6/8 (HD 07) — Xác định số lượng người làm việc cần thiết PP1/PP2/PP3 (Biểu 8. C3_NhuCau) & Xuất bộ 10 biểu gốc' },
+    { num: 5, stepNum: 7, shortLabel: 'Bước 7: Đối chiếu D1 & Phương án D2', fullTitle: 'Bước 7/8 (HD 07) — Đối chiếu số lượng người làm việc hiện có (Biểu 9. D1_NhanLuc) & Lập phương án sử dụng biên chế (Biểu 10. D2_PhuongAn)' }
   ];
 
   return labels.map((item) => {
@@ -146,9 +150,9 @@ export function StageStepperBar({
                     <button type="button" aria-current={isCurrent ? 'step' : undefined} onClick={() => { onSelectStage(st.num); closeDrawer(); }} className={`w-full flex items-center justify-between gap-3 px-3 py-3 min-h-[48px] text-left rounded-lg cursor-pointer ${isCurrent ? 'bg-[var(--surface-tint)] font-bold text-[var(--primary)]' : ''}`}>
                       <span className="flex items-center gap-2.5 min-w-0">
                         <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 ${st.status === 'completed' ? 'bg-[var(--ok-soft)] text-[var(--ok)]' : st.status === 'error' ? 'bg-[var(--fix)] text-white' : st.status === 'needs_supplement' ? 'bg-[var(--warn-soft)] text-[var(--warn)]' : isCurrent ? 'bg-[var(--primary)] text-white' : 'bg-[var(--muted)] text-[var(--ink-subtle)]'}`}>
-                          {st.status === 'completed' ? <Check className="w-3.5 h-3.5" /> : st.status === 'error' ? <AlertTriangle className="w-3.5 h-3.5" /> : st.num}
+                          {st.status === 'completed' ? <Check className="w-3.5 h-3.5" /> : st.status === 'error' ? <AlertTriangle className="w-3.5 h-3.5" /> : st.stepNum}
                         </span>
-                        <span className="text-sm truncate">Chặng {st.num}/5 — {st.shortLabel}</span>
+                        <span className="text-sm truncate">{st.shortLabel}</span>
                       </span>
                       <span className="text-xs text-[var(--ink-muted)] shrink-0">{meta.label}</span>
                     </button>
@@ -186,7 +190,7 @@ export function StageStepperBar({
                 <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center shrink-0 ${
                   st.status === 'completed' ? 'bg-[var(--ok-soft)] text-[var(--ok)]' : st.status === 'error' ? 'bg-[var(--fix)] text-white' : st.status === 'needs_supplement' ? 'bg-[var(--warn-soft)] text-[var(--warn)]' : isCurrent ? 'bg-[var(--primary)] text-white' : 'bg-[var(--muted)] text-[var(--ink-subtle)]'
                 }`}>
-                  {st.status === 'completed' ? <Check className="w-3.5 h-3.5" /> : st.status === 'error' ? <AlertTriangle className="w-3 h-3" /> : st.status === 'needs_supplement' ? <Clock className="w-3 h-3" /> : st.num}
+                  {st.status === 'completed' ? <Check className="w-3.5 h-3.5" /> : st.status === 'error' ? <AlertTriangle className="w-3 h-3" /> : st.status === 'needs_supplement' ? <Clock className="w-3 h-3" /> : st.stepNum}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={`block text-xs sm:text-sm leading-tight truncate ${stateTextClass}`}>{st.shortLabel}</span>
@@ -225,7 +229,16 @@ export function StickyActionBar({
     return () => { ro?.disconnect(); window.removeEventListener('resize', syncHeight); };
   }, []);
 
-  const isFinalExportBlocked = (activeStep !== 1 || wizardStage === 5) && errorCount > 0;
+  const isFinalExportBlocked = wizardStage === 4 && errorCount > 0;
+  const continueLabel = wizardStage === 1
+    ? 'Sang Bước 2 (Công việc A2)'
+    : wizardStage === 2
+      ? 'Sang Bước 5 (Danh mục C1–C2)'
+      : wizardStage === 3
+        ? 'Sang Bước 6 (Nhu cầu C3)'
+        : wizardStage === 4
+          ? (isFinalExportBlocked ? `Còn ${errorCount} mục cần xử lý` : 'Xuất 4 tệp & Sang Bước 7')
+          : 'Sang Bước 8 (Kiểm tra K)';
   return (
     <div ref={barRef} className="fixed bottom-0 left-0 right-0 z-40 sticky-action-bar pb-[env(safe-area-inset-bottom)]">
       <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -237,16 +250,16 @@ export function StickyActionBar({
           </button>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-          {activeStep === 1 && wizardStage > 1 && (
+          {wizardStage > 1 && (
             <button type="button" onClick={onPrevStage} className="inline-flex items-center justify-center gap-1 min-h-[44px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-xs sm:text-sm font-semibold text-[var(--foreground)] hover:bg-[var(--muted)] cursor-pointer">
-              <ArrowLeft className="w-4 h-4" /><span className="hidden sm:inline">Quay lại</span>
+              <ArrowLeft className="w-4 h-4" /><span className="hidden sm:inline">Bước trước</span>
             </button>
           )}
           <button type="button" onClick={onInspectErrors} className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border text-xs sm:text-sm font-bold cursor-pointer transition-colors ${errorCount > 0 ? 'border-[var(--fix)]/50 bg-[var(--fix-soft)] text-[var(--fix)]' : 'border-[var(--border)] bg-[var(--sheet)] text-[var(--foreground)] hover:border-[var(--primary)]'}`}>
             {errorCount > 0 ? <><AlertTriangle className="w-4 h-4 shrink-0" /><span>{errorCount} lỗi cần xử lý</span></> : <><Check className="w-4 h-4 text-[var(--ok)] shrink-0" /><span>Kiểm tra dữ liệu</span></>}
           </button>
           <button type="button" disabled={isCheckingContinue || saveLifecycle === 'saving' || isFinalExportBlocked} title={isFinalExportBlocked ? `Vui lòng bổ sung ${errorCount} mục còn thiếu trước khi xuất 4 tệp` : undefined} onClick={onContinue} className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-deep)] text-white text-xs sm:text-sm font-bold cursor-pointer shadow-2xs transition-colors disabled:opacity-55 disabled:cursor-not-allowed">
-            {isCheckingContinue ? <><Loader2 className="w-4 h-4 animate-spin shrink-0" /><span>Đang kiểm tra…</span></> : continueCheckedOk ? <><Check className="w-4 h-4 shrink-0" /><span>Hợp lệ</span></> : <><span>{activeStep === 1 && wizardStage < 5 ? 'Tiếp tục' : isFinalExportBlocked ? `Còn ${errorCount} mục cần xử lý` : 'Xuất 4 tệp'}</span><ArrowRight className="w-4 h-4 shrink-0" /></>}
+            {isCheckingContinue ? <><Loader2 className="w-4 h-4 animate-spin shrink-0" /><span>Đang kiểm tra…</span></> : continueCheckedOk ? <><Check className="w-4 h-4 shrink-0" /><span>Hợp lệ</span></> : <><span>{continueLabel}</span><ArrowRight className="w-4 h-4 shrink-0" /></>}
           </button>
         </div>
       </div>

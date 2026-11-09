@@ -24,7 +24,7 @@ export function validateStep1Data(
       id: 'err-unit',
       stage: 1,
       targetId: 'task-1-unit',
-      label: 'Chặng 1 — Đơn vị thực hiện',
+      label: 'Bước 1 — Đơn vị thực hiện (A1)',
       message: 'Vui lòng chọn đơn vị thuộc HCM-UTE trong danh mục 51 đơn vị.'
     });
   }
@@ -32,56 +32,56 @@ export function validateStep1Data(
   if (!emailTrim || !emailTrim.includes('@') || !emailTrim.includes('.')) {
     errors.push({
       id: 'err-email',
-      stage: 2,
+      stage: 1,
       targetId: 'task-1-actor',
-      label: 'Chặng 2 — Email công vụ người thực hiện',
+      label: 'Bước 1 — Email công vụ người thực hiện (S_NhatKy)',
       message: 'Vui lòng nhập địa chỉ email công vụ HCM-UTE (ví dụ: ten@hcmute.edu.vn).'
     });
   }
   if (!actorTitle.trim()) {
     errors.push({
       id: 'err-role',
-      stage: 2,
+      stage: 1,
       targetId: 'task-1-role',
-      label: 'Chặng 2 — Chức vụ / Vai trò người thực hiện',
+      label: 'Bước 1 — Chức vụ / Vai trò người thực hiện (S_NhatKy)',
       message: 'Vui lòng nhập hoặc chọn chức vụ, vai trò của người lập hồ sơ tại đơn vị.'
     });
   }
   if (positions.length === 0) {
     errors.push({
       id: 'err-empty-pos',
-      stage: 3,
+      stage: 2,
       targetId: 'task-1-add',
-      label: 'Chặng 3 — Danh mục vị trí việc làm',
-      message: 'Vui lòng chọn ít nhất 01 vị trí việc làm từ Khung 38 vị trí của Trường.'
+      label: 'Bước 2 — Công việc & Sản phẩm đầu ra (A2)',
+      message: 'Vui lòng chọn ít nhất 01 vị trí / nhóm công việc từ Khung 38 vị trí của Trường.'
     });
   }
   positions.forEach((pos, idx) => {
     if (!pos.specificName.trim()) {
       errors.push({
         id: `err-name-${pos.id}`,
-        stage: 4,
+        stage: 3,
         targetId: `desk-name-${pos.id}`,
-        label: `Chặng 4 — Vị trí số ${idx + 1} (${unit.code}-${pos.vtvlSuffix || '...'})`,
-        message: 'Vui lòng nhập tên vị trí việc làm cụ thể tại đơn vị (theo Biểu C1).'
+        label: `Bước 5 — Vị trí số ${idx + 1} (${unit.code}-${pos.vtvlSuffix || '...'})`,
+        message: 'Vui lòng nhập tên vị trí việc làm cụ thể tại đơn vị (theo Biểu 6. C1_DanhMucVTVL).'
       });
     }
     if (!pos.vtvlSuffix.trim()) {
       errors.push({
         id: `err-code-${pos.id}`,
-        stage: 4,
+        stage: 3,
         targetId: `desk-code-${pos.id}`,
-        label: `Chặng 4 — Vị trí số ${idx + 1}`,
+        label: `Bước 5 — Vị trí số ${idx + 1}`,
         message: 'Vui lòng bổ sung mã hậu tố vị trí việc làm (ví dụ: GV-01, CV-01).'
       });
     }
     if (pos.proposedFte <= 0 || Number.isNaN(pos.proposedFte)) {
       errors.push({
         id: `err-fte-${pos.id}`,
-        stage: 4,
+        stage: 3,
         targetId: `desk-fte-${pos.id}`,
-        label: `Chặng 4 — Vị trí ${pos.specificName || idx + 1}`,
-        message: 'Biên chế đề xuất (FTE tại Biểu C3) phải lớn hơn 0 (tối thiểu 0.5 FTE).'
+        label: `Bước 5 — Vị trí ${pos.specificName || idx + 1}`,
+        message: 'Biên chế đề xuất (FTE tại Biểu 8. C3_NhuCau) phải lớn hơn 0 (tối thiểu 0.5 FTE).'
       });
     }
   });
@@ -99,7 +99,7 @@ export function validateStageData(
   positions: ProposedVtvlRow[]
 ): Step1ValidationError[] {
   const all = validateStep1Data(unit, actorEmail, actorTitle, positions);
-  if (stage === 5) return all;
+  if (stage >= 4) return all;
   return all.filter((e) => e.stage === stage);
 }
 
@@ -203,10 +203,10 @@ export function Step1ReviewConfirm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[var(--border-subtle)] text-xs sm:text-sm text-[var(--ink-muted)]">
           <div>
             <strong>Người thực hiện:</strong>{' '}
-            {actorTitle && actorEmail ? `${actorTitle} (${actorEmail})` : <span className="text-[var(--fix)] font-semibold">Chưa nhập đầy đủ tại Chặng 2</span>}
+            {actorTitle && actorEmail ? `${actorTitle} (${actorEmail})` : <span className="text-[var(--fix)] font-semibold">Chưa nhập đầy đủ tại Bước 1</span>}
           </div>
           <div>
-            <strong>Sản phẩm đầu ra ({customDate}):</strong> Tệp đơn vị gốc (22 sheet), Tệp dự thảo gợi ý, Phiếu khảo sát B2 &amp; Gói .zip
+            <strong>Sản phẩm đầu ra ({customDate}):</strong> Tệp đơn vị gốc (17 sheet · 10 biểu A1–D2), Tệp dự thảo, Phiếu khảo sát B1–B2 &amp; Gói .zip
           </div>
         </div>
       </div>
@@ -254,7 +254,7 @@ export function Step1ReviewConfirm({
             className="w-full sm:w-auto justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-deep)] text-white text-sm font-bold shadow-2xs cursor-pointer disabled:opacity-50 shrink-0 transition-colors"
           >
             <FileSpreadsheet className="w-4 h-4 shrink-0" />
-            <span>{loading ? 'Đang khởi tạo bộ biểu…' : 'Xác nhận & Xuất 4 tệp (Sang Giai đoạn 2)'}</span>
+            <span>{loading ? 'Đang khởi tạo bộ 10 biểu…' : 'Xác nhận & Khởi tạo 4 tệp chuẩn HD 07'}</span>
           </button>
         </div>
       )}
