@@ -29,13 +29,17 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     activeSheetIndex,
     data,
     lastSaved,
+    lastSavedSheet,
     isExporting,
+    dynamicOptionsMap,
     handleUnitChange,
     handleLoadTcnsData,
     setActiveSheet,
     updateCell,
     addRow,
     deleteRow,
+    saveSheetData,
+    saveAndGoNext,
     exportFullWorkbook,
     goToNextSheet,
     goToPrevSheet
@@ -85,6 +89,16 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
             <button
               type="button"
+              onClick={() => saveSheetData(activeSheet)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg cursor-pointer transition-colors shadow-2xs"
+              title="Lưu lại bảng tính của biểu hiện tại"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Lưu biểu {activeMeta.shortLabel}</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveSheet('K')}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer border transition-colors ${
                 activeSheet === 'K'
@@ -124,19 +138,25 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
           {lastSaved && (
             <div className="flex items-center gap-1 text-emerald-700 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Tự động tính toán & cập nhật lúc {lastSaved}</span>
+              <span>Đã lưu thành công lúc {lastSaved}</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Main Spreadsheet grid view */}
+      {/* Main Spreadsheet grid view with Save and Next button */}
       <ExcelTableRenderer
         meta={activeMeta}
         rows={activeRows}
+        dynamicOptionsMap={dynamicOptionsMap}
+        lastSaved={lastSaved}
+        lastSavedSheet={lastSavedSheet}
         onCellChange={(rowId, field, val) => updateCell(activeSheet, rowId, field, val)}
         onAddRow={() => addRow(activeSheet)}
         onDeleteRow={(rowId) => deleteRow(activeSheet, rowId)}
+        onSaveSheet={() => saveSheetData(activeSheet)}
+        onSaveAndNext={saveAndGoNext}
+        canNext={activeSheetIndex < 14}
       />
 
       {/* Bottom Excel Sheet Tabs Bar */}
@@ -151,3 +171,4 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     </div>
   );
 }
+

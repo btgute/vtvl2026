@@ -1,24 +1,38 @@
 'use client';
 
 import React from 'react';
-import { ExcelColumnDef, ExcelSheetMeta, GenericGridRow } from './excel-grid-types';
-import { Plus, Trash2, Info, FunctionSquare } from 'lucide-react';
+import { ExcelSheetMeta, GenericGridRow } from './excel-grid-types';
+import { Plus, Trash2, Info, FunctionSquare, Save, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 interface ExcelTableRendererProps {
   meta: ExcelSheetMeta;
   rows: GenericGridRow[];
+  dynamicOptionsMap?: Record<string, string[]>;
+  lastSaved?: string;
+  lastSavedSheet?: string;
   onCellChange: (rowId: string, field: string, value: string | number) => void;
   onAddRow: () => void;
   onDeleteRow: (rowId: string) => void;
+  onSaveSheet: () => void;
+  onSaveAndNext: () => void;
+  canNext?: boolean;
 }
 
 export function ExcelTableRenderer({
   meta,
   rows,
+  dynamicOptionsMap,
+  lastSaved,
+  lastSavedSheet,
   onCellChange,
   onAddRow,
-  onDeleteRow
+  onDeleteRow,
+  onSaveSheet,
+  onSaveAndNext,
+  canNext = true
 }: ExcelTableRendererProps) {
+  const isJustSaved = lastSavedSheet === meta.key && Boolean(lastSaved);
+
   return (
     <div className="flex flex-col h-full bg-white border border-[#cbd5e1] rounded-lg shadow-xs overflow-hidden">
       {/* Sheet description banner */}
@@ -36,7 +50,7 @@ export function ExcelTableRenderer({
       </div>
 
       {/* Spreadsheet scroll area */}
-      <div className="flex-1 overflow-auto max-h-[620px] select-text">
+      <div className="flex-1 overflow-auto max-h-[580px] select-text">
         <table className="w-full text-xs border-collapse">
           {/* Row 1: Excel column letters (A, B, C...) */}
           <thead>
@@ -116,10 +130,7 @@ export function ExcelTableRenderer({
                       if (col.type === 'status') {
                         const isOk = val === 'ĐẠT' || val === 'Hoàn thành';
                         return (
-                          <td
-                            key={col.field}
-                            className="py-1 px-2 border-r border-[#cbd5e1] text-center"
-                          >
+                          <td key={col.field} className="py-1 px-2 border-r border-[#cbd5e1] text-center">
                             <span
                               className={`inline-block px-2 py-0.5 text-[11px] font-bold rounded ${
                                 isOk
@@ -153,7 +164,12 @@ export function ExcelTableRenderer({
                         );
                       }
 
-                      if (col.type === 'select' && col.selectOptions) {
+                      const dynamicOptions = col.dynamicOptionsKey && dynamicOptionsMap?.[col.dynamicOptionsKey];
+                      const selectOptions = dynamicOptions && dynamicOptions.length > 0
+                        ? dynamicOptions
+                        : (col.selectOptions || []);
+
+                      if (col.type === 'select' || (dynamicOptions && dynamicOptions.length > 0)) {
                         return (
                           <td key={col.field} className="py-0.5 px-1 border-r border-[#cbd5e1]">
                             <select
@@ -162,7 +178,7 @@ export function ExcelTableRenderer({
                               className="w-full h-7 px-1.5 rounded border border-[#cbd5e1] bg-white text-[#004776] text-xs focus:ring-1 focus:ring-[#004776] focus:border-[#004776]"
                             >
                               <option value="">-- Chọn --</option>
-                              {col.selectOptions.map((opt) => (
+                              {selectOptions.map((opt) => (
                                 <option key={opt} value={opt}>
                                   {opt}
                                 </option>
@@ -210,22 +226,50 @@ export function ExcelTableRenderer({
         </table>
       </div>
 
-      {/* Table bottom footer with Add Row button */}
-      <div className="px-4 py-2 bg-[#f8fafc] border-t border-[#e2e8f0] flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onAddRow}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#004776] text-white rounded-md hover:bg-[#00385c] cursor-pointer shadow-2xs transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>Thêm dòng mới</span>
-        </button>
+      {/* Table bottom footer with Add Row & Save Buttons */}
+      <div className="px-4 py-2.5 bg-[#f8fafc] border-t border-[#e2e8f0] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onAddRow}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#004776] text-white rounded-md hover:bg-[#00385c] cursor-pointer shadow-2xs transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Thêm dòng mới</span>
+          </button>
+
+          {/* User requested Save Button before moving sheets */}
+          <button
+            type="button"
+            onClick={onSaveSheet}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-md cursor-pointer shadow-2xs transition-colors"
+            title="Lưu lại toàn bộ dữ liệu biểu hiện tại vào bộ nhớ"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>Lưu biểu {meta.sheetName}</span>
+          </button>
+
+          {canNext && (
+            <button
+              type="button"
+              onClick={onSaveAndNext}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-md cursor-pointer shadow-2xs transition-colors"
+              title="Lưu dữ liệu và tự động liên thông sang sheet tiếp theo"
+            >
+              <span>Lưu &amp; Sang sheet tiếp theo</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center gap-3 text-xs text-[#64748b]">
+          {isJustSaved && (
+            <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Đã lưu lúc {lastSaved}</span>
+            </span>
+          )}
           <span>Tổng số: <strong>{rows.length}</strong> dòng</span>
-          <span className="hidden sm:inline border-l border-[#cbd5e1] pl-3">
-            Quy chuẩn: <strong className="text-[#004776]">{meta.ruleHint}</strong>
-          </span>
         </div>
       </div>
     </div>

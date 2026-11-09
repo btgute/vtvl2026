@@ -24,6 +24,7 @@ export interface ExcelColumnDef {
   isFormula?: boolean;
   formulaHint?: string;
   selectOptions?: string[];
+  dynamicOptionsKey?: 'vtvlList' | 'missionList' | 'taskList' | 'productList';
   readOnly?: boolean;
 }
 
@@ -69,3 +70,4 @@ export const WORKFLOW_SHEET_ORDER: ExcelSheetKey[] = [
   'T',
   'S'
 ];
+

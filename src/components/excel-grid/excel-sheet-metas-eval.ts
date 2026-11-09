@@ -14,7 +14,7 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Bước 8: Khung năng lực chuẩn theo Nghị định 232/2026/NĐ-CP và Thông tư 31/2026/TT-BGDĐT phân bổ Bậc 1–5 cho từng VTVL.',
     ruleHint: 'Cột C quy định Bậc nghề nghiệp (Bậc 1 đến Bậc 5) gắn ngạch viên chức tương ứng.',
     columns: [
-      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px' },
+      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'B', field: 'tenVtvl', headerName: 'Tên VTVL', width: '240px' },
       { colLetter: 'C', field: 'bacNgheNghiep', headerName: 'Bậc nghề nghiệp', width: '150px', type: 'select', selectOptions: ['Bậc 1 (Nhân viên)', 'Bậc 2 (Cán sự)', 'Bậc 3 (Chuyên viên)', 'Bậc 4 (Chuyên viên chính)', 'Bậc 5 (Chuyên viên cao cấp)'] },
       { colLetter: 'D', field: 'nhomNangLuc', headerName: 'Nhóm năng lực', width: '160px', type: 'select', selectOptions: ['Năng lực chung', 'Năng lực chuyên môn', 'Năng lực quản lý'] },
@@ -34,7 +34,7 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     ruleHint: 'Mã VTVL đảm nhận (Cột B) phải khớp với danh mục VTVL đã khai tại Biểu 6. C1_VTVL.',
     columns: [
       { colLetter: 'A', field: 'hoTen', headerName: 'Họ và tên nhân sự', width: '220px' },
-      { colLetter: 'B', field: 'maVtvl', headerName: 'Mã VTVL đảm nhận', width: '130px' },
+      { colLetter: 'B', field: 'maVtvl', headerName: 'Mã VTVL đảm nhận', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'C', field: 'ngaySinh', headerName: 'Ngày sinh', width: '110px' },
       { colLetter: 'D', field: 'gioiTinh', headerName: 'Giới tính', width: '90px', type: 'select', selectOptions: ['Nam', 'Nữ'] },
       { colLetter: 'E', field: 'trinhDo', headerName: 'Trình độ đào tạo', width: '130px', type: 'select', selectOptions: ['Tiến sĩ', 'Thạc sĩ', 'Đại học', 'Cao đẳng', 'Trung cấp'] },
@@ -55,7 +55,7 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Bước 10: Tự động tổng hợp giờ làm việc từ B1/B2, chia cho Quỹ giờ chuẩn PP2 (C1) để xác định số người FTE (Cột G & Cột J).',
     ruleHint: 'Phương pháp PP1 (1 người quản lý), PP2 (Tổng giờ ròng / 1.904h), làm tròn lên số người cần bố trí (Cột J).',
     columns: [
-      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px' },
+      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'B', field: 'phuongPhap', headerName: 'Phương pháp', width: '110px', type: 'select', selectOptions: ['PP1', 'PP2', 'PP3', 'PP1+PP2'] },
       { colLetter: 'C', field: 'gioB1', headerName: 'Giờ B1', width: '110px', isFormula: true, formulaHint: '=SUMIFS(B1!G,...)' },
       { colLetter: 'D', field: 'gioB2', headerName: 'Giờ tác động B2', width: '120px', isFormula: true, formulaHint: '=SUMIFS(B2!F,...)' },
@@ -78,7 +78,7 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Bước 11: Dự báo biến động nhu cầu nhân lực từng năm giai đoạn 2027–2031 so với năm cơ sở (C3).',
     ruleHint: 'Mỗi thay đổi tăng/giảm (+/- người) phải có căn cứ rõ ràng và được lãnh đạo xác nhận.',
     columns: [
-      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px' },
+      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'B', field: 'nam', headerName: 'Năm dự báo', width: '100px' },
       { colLetter: 'C', field: 'bienDong', headerName: 'Biến động (+/- người)', width: '140px', type: 'number' },
       { colLetter: 'D', field: 'noiDungThayDoi', headerName: 'Nội dung thay đổi', width: '260px' },
@@ -98,7 +98,7 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Bước 12: So sánh số người cần bố trí (Cột C, lấy từ DU_BAO_5_NAM) với số người có thể bố trí (Cột D, đếm từ D1_NhanLuc).',
     ruleHint: 'Đề nghị điều chỉnh (Cột G) = Cột C - Cột D. Phục vụ Đề án VTVL trình cấp có thẩm quyền phê duyệt.',
     columns: [
-      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px' },
+      { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'B', field: 'nam', headerName: 'Năm phương án', width: '110px' },
       { colLetter: 'C', field: 'soNguoiCanBoTri', headerName: 'Người cần bố trí trong năm', width: '160px', isFormula: true, formulaHint: '=SUMIFS(DU_BAO!H,...)' },
       { colLetter: 'D', field: 'soNguoiCoTheBoTri', headerName: 'Người có thể bố trí', width: '140px', isFormula: true, formulaHint: '=COUNTIFS(D1!B,A)' },
@@ -168,3 +168,4 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
     ]
   }
 };
+

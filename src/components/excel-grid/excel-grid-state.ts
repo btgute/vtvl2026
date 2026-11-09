@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ExcelSheetKey, GenericGridRow, WORKFLOW_SHEET_ORDER } from './excel-grid-types';
 import { buildDefaultGridWorkbook } from './excel-grid-defaults';
+import { recalculateGridFormulas } from './excel-grid-formulas';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
 import { UnitGroupKind } from '@/types/vtvl';
@@ -8,17 +9,30 @@ import { UnitGroupKind } from '@/types/vtvl';
 export function useExcelGridState(initialUnitCode = 'TCNS') {
   const [unitCode, setUnitCode] = useState(initialUnitCode);
   const [activeSheet, setActiveSheet] = useState<ExcelSheetKey>('C1');
-  const [data, setData] = useState<Record<ExcelSheetKey, GenericGridRow[]>>(() =>
-    buildDefaultGridWorkbook(initialUnitCode)
-  );
+  const [data, setData] = useState<Record<ExcelSheetKey, GenericGridRow[]>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`hcmute_vtvl_grid_${initialUnitCode}`);
+        if (stored) return JSON.parse(stored);
+      } catch { /* ignore */ }
+    }
+    return buildDefaultGridWorkbook(initialUnitCode);
+  });
   const [lastSaved, setLastSaved] = useState<string>('');
+  const [lastSavedSheet, setLastSavedSheet] = useState<string>('');
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
   const currentUnit = HCMUTE_UNITS.find((u) => u.code === unitCode) || HCMUTE_UNITS[0];
 
   const handleUnitChange = useCallback((newUnitCode: string) => {
     setUnitCode(newUnitCode);
-    const fresh = buildDefaultGridWorkbook(newUnitCode);
+    let fresh = buildDefaultGridWorkbook(newUnitCode);
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`hcmute_vtvl_grid_${newUnitCode}`);
+        if (stored) fresh = JSON.parse(stored);
+      } catch { /* ignore */ }
+    }
     setData(fresh);
     setActiveSheet('C1');
   }, []);
@@ -28,174 +42,63 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     const tcnsData = buildDefaultGridWorkbook('TCNS');
     setData(tcnsData);
     setActiveSheet('C1');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hcmute_vtvl_grid_TCNS', JSON.stringify(tcnsData));
+    }
   }, []);
 
-  const recalculateFormulas = useCallback((prev: Record<ExcelSheetKey, GenericGridRow[]>) => {
-    const next = { ...prev };
-
-    // 1. Recalculate B1 formulas: gioSp, gioTong
-    const updatedB1: GenericGridRow[] = (next.B1 || []).map((row): GenericGridRow => {
-      const qty = Number(row.soSpNam) || 0;
-      const mins = Number(row.phutThucTe) || 0;
-      const extra = Number(row.gioBoSung) || 0;
-      const hours = Math.round((qty * mins / 60) * 10) / 10;
-      const total = Math.round((hours + extra) * 10) / 10;
-      return {
-        ...row,
-        gioSp: hours,
-        gioTong: total,
-        canhBao: total > 0 ? 'ĐẠT' : 'CHƯA ĐẠT'
-      };
+  const updateCell = useCallback((sheetKey: ExcelSheetKey, rowId: string, field: string, value: string | number) => {
+    setData((prev) => {
+      const sheetRows = prev[sheetKey] || [];
+      const updatedRows = sheetRows.map((row) => (row.id === rowId ? { ...row, [field]: value } : row));
+      return recalculateGridFormulas({ ...prev, [sheetKey]: updatedRows }, currentUnit.code, currentUnit.nameVi);
     });
-    next.B1 = updatedB1;
-
-    // 2. Recalculate B2 formulas: gioGiam from B2_CT, gioSauTacDong
-    const updatedB2: GenericGridRow[] = (next.B2 || []).map((row): GenericGridRow => {
-      const b1Item = updatedB1.find((b) => b.maCongViec === row.maCongViec);
-      const b1Hours = Number(b1Item?.gioTong) || Number(row.gioB1) || 0;
-      const ctMatches = (next.B2_CT || []).filter((c) => c.maCongViec === row.maCongViec);
-      const sumVar = ctMatches.reduce((acc, c) => acc + (Number(c.gioBienDong) || 0), 0);
-      const newHours = Number(row.gioMoi) || 0;
-      const finalHours = Math.max(0, Math.round((b1Hours + sumVar + newHours) * 10) / 10);
-      return {
-        ...row,
-        gioB1: b1Hours,
-        gioGiam: sumVar,
-        gioSauTacDong: finalHours,
-        tyLeThayDoi: b1Hours > 0 ? `${Math.round((sumVar / b1Hours) * 100)}%` : '0%'
-      };
-    });
-    next.B2 = updatedB2;
-
-    // 3. Recalculate C3 formulas: gioB1, gioB2, gioRong, nguoiQuyDoi, nguoiCanBoTri
-    const updatedC3: GenericGridRow[] = (next.C3 || []).map((row): GenericGridRow => {
-      const vCode = String(row.maVtvl);
-      const c1Match = (next.C1 || []).find((c) => c.maVtvl === vCode);
-      const stdHours = Number(c1Match?.gioChuanPp2) || Number(row.gioPp2) || 1904;
-      const sumB1 = updatedB1
-        .filter((b) => b.maVtvl === vCode)
-        .reduce((acc, b) => acc + (Number(b.gioTong) || 0), 0);
-      const sumB2 = updatedB2
-        .filter((b) => b.maVtvl === vCode)
-        .reduce((acc, b) => acc + (Number(b.gioGiam) || 0), 0);
-      const netHours = Math.max(0, Math.round(sumB1 + sumB2));
-      const isQl = vCode.startsWith('QL');
-      const fteCalc = Math.round((netHours / stdHours) * 100) / 100;
-      const people = isQl ? 1 : Math.max(1, Math.ceil(fteCalc));
-      return {
-        ...row,
-        gioB1: Math.round(sumB1),
-        gioB2: Math.round(sumB2),
-        gioRong: netHours,
-        gioPp2: stdHours,
-        nguoiQuyDoi: fteCalc,
-        nguoiCanBoTri: people,
-        canhBao: 'ĐẠT'
-      };
-    });
-    next.C3 = updatedC3;
-
-    // 4. Update DU_BAO: nguoiC3, nguoiCanBoTriNam
-    const updatedDuBao: GenericGridRow[] = (next.DU_BAO || []).map((row): GenericGridRow => {
-      const c3Match = updatedC3.find((c) => c.maVtvl === row.maVtvl);
-      const basePeople = Number(c3Match?.nguoiCanBoTri) || Number(row.nguoiC3) || 1;
-      const diff = Number(row.bienDong) || 0;
-      return {
-        ...row,
-        nguoiC3: basePeople,
-        nguoiCanBoTriNam: Math.max(0, basePeople + diff)
-      };
-    });
-    next.DU_BAO = updatedDuBao;
-
-    // 5. Update D2: soNguoiCanBoTri, soNguoiCoTheBoTri, deNghiDieuChinh
-    const updatedD2: GenericGridRow[] = (next.D2 || []).map((row): GenericGridRow => {
-      const duBaoMatch = updatedDuBao.find((d) => d.maVtvl === row.maVtvl);
-      const need = Number(duBaoMatch?.nguoiCanBoTriNam) || Number(row.soNguoiCanBoTri) || 1;
-      const countD1 = (next.D1 || []).filter((d) => d.maVtvl === row.maVtvl).length;
-      return {
-        ...row,
-        soNguoiCanBoTri: need,
-        soNguoiCoTheBoTri: countD1,
-        deNghiDieuChinh: need - countD1
-      };
-    });
-    next.D2 = updatedD2;
-
-    // 6. Update T_TienDo
-    next.T = [
-      {
-        id: 't-1',
-        maDonVi: currentUnit.code,
-        tenDonVi: currentUnit.nameVi,
-        soNhiemVu: (next.A1 || []).length,
-        soCongViec: (next.A2 || []).length,
-        soVtvl: (next.C1 || []).length,
-        tongFte: updatedC3.reduce((acc, c) => acc + (Number(c.nguoiCanBoTri) || 0), 0),
-        trangThai: 'Đạt 6/6 chỉ tiêu kiểm tra'
-      }
-    ];
-
-    return next;
   }, [currentUnit.code, currentUnit.nameVi]);
-
-  const updateCell = useCallback(
-    (sheetKey: ExcelSheetKey, rowId: string, field: string, value: string | number) => {
-      setData((prev) => {
-        const sheetRows = prev[sheetKey] || [];
-        const updatedRows = sheetRows.map((row) => {
-          if (row.id === rowId) {
-            return { ...row, [field]: value };
-          }
-          return row;
-        });
-        const intermediate = { ...prev, [sheetKey]: updatedRows };
-        return recalculateFormulas(intermediate);
-      });
-      setLastSaved(new Date().toLocaleTimeString('vi-VN'));
-    },
-    [recalculateFormulas]
-  );
 
   const addRow = useCallback((sheetKey: ExcelSheetKey) => {
     setData((prev) => {
       const sheetRows = prev[sheetKey] || [];
       const newId = `${sheetKey.toLowerCase()}-${Date.now().toString(36)}`;
-      const emptyRow: GenericGridRow = { id: newId };
-      const intermediate = { ...prev, [sheetKey]: [...sheetRows, emptyRow] };
-      return recalculateFormulas(intermediate);
+      return recalculateGridFormulas({ ...prev, [sheetKey]: [...sheetRows, { id: newId }] }, currentUnit.code, currentUnit.nameVi);
     });
-  }, [recalculateFormulas]);
+  }, [currentUnit.code, currentUnit.nameVi]);
 
   const deleteRow = useCallback((sheetKey: ExcelSheetKey, rowId: string) => {
     setData((prev) => {
-      const sheetRows = prev[sheetKey] || [];
-      const filtered = sheetRows.filter((r) => r.id !== rowId);
-      const intermediate = { ...prev, [sheetKey]: filtered };
-      return recalculateFormulas(intermediate);
+      const sheetRows = (prev[sheetKey] || []).filter((r) => r.id !== rowId);
+      return recalculateGridFormulas({ ...prev, [sheetKey]: sheetRows }, currentUnit.code, currentUnit.nameVi);
     });
-  }, [recalculateFormulas]);
+  }, [currentUnit.code, currentUnit.nameVi]);
 
-  const exportFullWorkbook = useCallback(async () => {
-    setIsExporting(true);
-    try {
-      await generateUnitFiles({
-        kind: currentUnit.group as UnitGroupKind,
-        unitCode: currentUnit.code,
-        unitNameVi: currentUnit.nameVi,
-        unitNameEn: currentUnit.nameEn,
-        period: '2025–2026',
-        exportDate: new Date().toISOString().slice(0, 10),
-        includeZipPerPosition: false,
-        ngachOverrides: {}
-      });
-    } catch (err) {
-      console.error('Lỗi xuất tệp Excel:', err);
-      alert('Không thể tạo file Excel, vui lòng thử lại.');
-    } finally {
-      setIsExporting(false);
-    }
-  }, [currentUnit]);
+  const saveSheetData = useCallback((sheetKey: ExcelSheetKey) => {
+    const timeStr = new Date().toLocaleTimeString('vi-VN');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    setData((prev) => {
+      const synced = recalculateGridFormulas(prev, currentUnit.code, currentUnit.nameVi);
+      // Append or update in S_NhatKy
+      const sRows = [...(synced.S || [])];
+      const logEntry: GenericGridRow = {
+        id: `s-${Date.now()}`,
+        ky: '2025–2026',
+        bieu: `Biểu ${sheetKey}`,
+        ma: currentUnit.code,
+        noiDung: `Lưu cập nhật biểu ${sheetKey} lúc ${timeStr}`,
+        nguon: 'Giao diện Bảng tính Excel HCM-UTE',
+        nguoiXacNhan: `Tổ công tác VTVL [${currentUnit.code}]`,
+        ngay: dateStr,
+        phienBan: 'v1.x'
+      };
+      synced.S = [logEntry, ...sRows.slice(0, 19)];
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`hcmute_vtvl_grid_${currentUnit.code}`, JSON.stringify(synced));
+      }
+      return synced;
+    });
+    setLastSaved(timeStr);
+    setLastSavedSheet(sheetKey);
+    return timeStr;
+  }, [currentUnit.code, currentUnit.nameVi]);
 
   const activeSheetIndex = WORKFLOW_SHEET_ORDER.indexOf(activeSheet);
   const goToNextSheet = useCallback(() => {
@@ -210,6 +113,38 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     }
   }, [activeSheetIndex]);
 
+  const saveAndGoNext = useCallback(() => {
+    saveSheetData(activeSheet);
+    goToNextSheet();
+  }, [saveSheetData, activeSheet, goToNextSheet]);
+
+  const dynamicOptionsMap = useMemo(() => ({
+    vtvlList: Array.from(new Set((data.C1 || []).map((r) => String(r.maVtvl || '')).filter(Boolean))),
+    missionList: Array.from(new Set((data.A1 || []).map((r) => String(r.maNhiemVu || '')).filter(Boolean))),
+    taskList: Array.from(new Set((data.A2 || []).map((r) => String(r.maCongViec || '')).filter(Boolean))),
+    productList: Array.from(new Set((data.DM_SP || []).map((r) => String(r.maSpChuan || '')).filter(Boolean)))
+  }), [data.C1, data.A1, data.A2, data.DM_SP]);
+
+  const exportFullWorkbook = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      await generateUnitFiles({
+        kind: currentUnit.group as UnitGroupKind,
+        unitCode: currentUnit.code,
+        unitNameVi: currentUnit.nameVi,
+        unitNameEn: currentUnit.nameEn,
+        period: '2025–2026',
+        exportDate: new Date().toISOString().slice(0, 10),
+        includeZipPerPosition: false,
+        ngachOverrides: {}
+      });
+    } catch {
+      alert('Không thể tạo file Excel, vui lòng thử lại.');
+    } finally {
+      setIsExporting(false);
+    }
+  }, [currentUnit]);
+
   return {
     unitCode,
     currentUnit,
@@ -217,13 +152,17 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
     activeSheetIndex,
     data,
     lastSaved,
+    lastSavedSheet,
     isExporting,
+    dynamicOptionsMap,
     handleUnitChange,
     handleLoadTcnsData,
     setActiveSheet,
     updateCell,
     addRow,
     deleteRow,
+    saveSheetData,
+    saveAndGoNext,
     exportFullWorkbook,
     goToNextSheet,
     goToPrevSheet

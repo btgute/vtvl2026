@@ -57,8 +57,8 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     ruleHint: 'Mỗi công việc có mã chuẩn [MÃ_ĐV]-[MÃ_NV]-CV[xx], gắn đúng Mã VTVL đã khai tại Biểu 6. C1_VTVL.',
     columns: [
       { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '150px' },
-      { colLetter: 'B', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ (A1)', width: '130px' },
-      { colLetter: 'C', field: 'maVtvl', headerName: 'Mã VTVL (từ C1)', width: '130px' },
+      { colLetter: 'B', field: 'maNhiemVu', headerName: 'Mã nhiệm vụ (A1)', width: '140px', type: 'select', dynamicOptionsKey: 'missionList' },
+      { colLetter: 'C', field: 'maVtvl', headerName: 'Mã VTVL (từ C1)', width: '130px', type: 'select', dynamicOptionsKey: 'vtvlList' },
       { colLetter: 'D', field: 'tenCongViec', headerName: 'Tên công việc cụ thể', width: '300px' },
       { colLetter: 'E', field: 'sanPham', headerName: 'Sản phẩm đầu ra', width: '200px' },
       { colLetter: 'F', field: 'dvt', headerName: 'Đơn vị tính', width: '90px' },
@@ -96,7 +96,7 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Bước 5: Kê khai sản lượng thực tế trong 12 tháng (Cột C), số phút đo thực tế (Cột D), công thức tự tính Giờ SP và Giờ tổng.',
     ruleHint: 'Mã VTVL (Cột B) tự lấy từ A2; Giờ SP (Cột F) = Cột C × Cột P / 60; Giờ tổng (Cột G) = F + E.',
     columns: [
-      { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '150px' },
+      { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '160px', type: 'select', dynamicOptionsKey: 'taskList' },
       { colLetter: 'B', field: 'maVtvl', headerName: 'Mã VTVL', width: '120px', isFormula: true, formulaHint: '=INDEX(A2!C,MATCH(A,A2!A,0))' },
       { colLetter: 'C', field: 'soSpNam', headerName: 'Số SP/năm', width: '100px', type: 'number' },
       { colLetter: 'D', field: 'phutThucTe', headerName: 'Phút/SP (thực tế)', width: '120px', type: 'number' },
@@ -119,7 +119,7 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     guideDesc: 'Bước 6: Kê khai các công đoạn được số hóa (hệ thống S-Link, ERP...), ứng dụng AI hoặc chuyển giao giúp tăng năng suất/giảm thời gian.',
     ruleHint: 'Giờ biến động (Cột F) âm khi giảm thời gian nhờ CĐS, dương khi phát sinh nhiệm vụ mới.',
     columns: [
-      { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '150px' },
+      { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '160px', type: 'select', dynamicOptionsKey: 'taskList' },
       { colLetter: 'B', field: 'maVtvl', headerName: 'Mã VTVL', width: '120px', isFormula: true, formulaHint: '=INDEX(A2!C,MATCH(A,A2!A,0))' },
       { colLetter: 'C', field: 'congDoan', headerName: 'Công đoạn / Quy trình tác động', width: '240px' },
       { colLetter: 'D', field: 'loaiTacDong', headerName: 'Loại tác động', width: '140px', type: 'select', selectOptions: ['Chuyển đổi số / AI', 'Tự chủ đại học', 'Thuê dịch vụ ngoài', 'Chuẩn hóa quy trình'] },
@@ -148,3 +148,4 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     ]
   }
 };
+
