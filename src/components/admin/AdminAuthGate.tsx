@@ -2,22 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShieldAlert, KeyRound, ArrowLeft, Unlock, AlertCircle, Sparkles } from 'lucide-react';
+import { ShieldAlert, KeyRound, ArrowLeft, Unlock, AlertCircle, ShieldCheck } from 'lucide-react';
 import { verifyAdminPassword } from '@/components/excel-grid/useC1AdminLock';
 
 interface AdminAuthGateProps {
   onSuccess: () => void;
 }
-
-const ALLOWED_PASSWORDS = [
-  'tcns@2026',
-  'admin@2026',
-  'HCMUTE@2026',
-  'hcmute@2026',
-  'tcns@hcmute.edu.vn',
-  'TCNS@2026',
-  'ADMIN@2026'
-];
 
 export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
   const [password, setPassword] = useState('');
@@ -35,13 +25,13 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
     setIsVerifying(true);
     setError('');
 
-    // Kiểm tra danh sách mật khẩu quản trị cho phép hoặc hash SHA-256
-    const isDirectMatch = ALLOWED_PASSWORDS.includes(trimmed);
-    const isHashMatch = await verifyAdminPassword(trimmed);
+    // Xác thực an toàn cục bộ (Local Client-Side) bằng mã băm mật mã học SHA-256,
+    // tuyệt đối không gửi mật khẩu qua mạng hay lưu plaintext.
+    const isMatch = await verifyAdminPassword(trimmed);
 
     setIsVerifying(false);
 
-    if (isDirectMatch || isHashMatch) {
+    if (isMatch) {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('hcmute_vtvl_admin_auth', 'true');
       }
@@ -97,13 +87,9 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
           </div>
 
           <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl text-[11px] text-[#004776] flex items-start gap-2">
-            <Sparkles className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Ghi chú xác thực:</span> Mật khẩu quản trị được cấp riêng cho Ban Chỉ đạo VTVL và chuyên viên Phòng Tổ chức - Nhân sự (mặc định thử nghiệm:{' '}
-              <code className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-blue-200">
-                tcns@2026
-              </code>
-              ).
+              <span className="font-bold">Bảo mật cấp cao:</span> Mật khẩu quản trị được xác thực cục bộ bằng thuật toán băm mật mã học một chiều (SHA-256) trên trình duyệt người dùng, tuyệt đối không gửi qua mạng hay lưu trữ máy chủ.
             </div>
           </div>
 
