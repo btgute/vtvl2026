@@ -117,48 +117,48 @@ export default function RaSoatPage() {
   const currentFileName = report?.unitSummaries[0]?.fileName || `${activeUnit.code}_K2526_v2.xlsx`;
 
   return (
-    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6">
-      <div className="flex flex-col lg:flex-row gap-5 items-start">
+    <div className="w-full max-w-[1360px] mx-auto px-3.5 sm:px-5 lg:px-6 py-4">
+      <div className="flex flex-col lg:flex-row gap-4 items-start min-w-0">
         <WorkflowSidebar activeStep={8} unitCode={activeUnit.code} />
 
-        <div className="flex-1 w-full space-y-5 min-w-0">
-          <div onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop} className={`surface-canvas rounded-2xl p-5 sm:p-7 space-y-5 transition-colors ${dragOver ? 'ring-2 ring-[var(--primary)]' : ''}`}>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3.5">
-              <div className="flex items-center">
-                <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-sm flex items-center justify-center mr-2.5 shrink-0">8</span>
-                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">Bước 8/8 (HD 07) — Kiểm tra 10 biểu (K_KiemTra), xác nhận &amp; gửi kết quả</h1>
+        <div className="flex-1 w-full space-y-4 min-w-0">
+          <div onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop} className={`bg-white rounded-xl border border-[var(--border)] p-4 sm:p-5 space-y-4 shadow-2xs transition-colors ${dragOver ? 'ring-2 ring-[var(--primary)]' : ''}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-semibold text-xs flex items-center justify-center shrink-0">8</span>
+                <h1 className="text-lg sm:text-xl font-semibold text-[var(--foreground)]">Bước 8/8 — Kiểm tra 10 biểu (K_KiemTra) &amp; thẩm định</h1>
                 <InfoTip title="Tự tính lại từ các cột nhập liệu & 5 thẻ kết quả">
-                  <p>Công cụ tự đọc các cột nhập liệu từ một hoặc nhiều tệp .xlsx để tự tính lại Giờ B1, đối chiếu Người quy đổi PP2 — Người C3 — Nhân sự D1, và xuất tệp Excel kết quả gồm cả trang <strong>Chua_du_can_cu</strong> và <strong>Gop_y_bieu_mau</strong>.</p>
+                  <p>Công cụ tự đọc các cột nhập liệu từ các tệp .xlsx để tự tính lại Giờ B1, đối chiếu Người quy đổi PP2 — Người C3 — Nhân sự D1.</p>
                 </InfoTip>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={() => void handleLoadRealTcnsTemplate()} disabled={auditing} className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-[var(--primary)]/40 bg-[var(--surface-tint)] hover:border-[var(--primary)] text-xs font-bold text-[var(--primary)] cursor-pointer">
-                  <Briefcase className="w-3.5 h-3.5" /><span>Nạp mẫu thực tế TCNS (200 việc)</span>
+                <button type="button" onClick={() => void handleLoadRealTcnsTemplate()} disabled={auditing} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-[var(--primary)]/30 bg-[var(--surface-tint)] text-xs font-medium text-[var(--primary)] cursor-pointer">
+                  <Briefcase className="w-3.5 h-3.5" /><span>Nạp mẫu chuẩn TCNS</span>
                 </button>
-                <button type="button" onClick={() => void handleAuditActiveUnit(activeUnit, true)} disabled={auditing} className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] hover:border-[var(--primary)] text-xs font-bold text-[var(--foreground)] cursor-pointer">
+                <button type="button" onClick={() => void handleAuditActiveUnit(activeUnit, true)} disabled={auditing} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs font-medium text-[var(--foreground)] cursor-pointer">
                   <FlaskConical className="w-3.5 h-3.5 text-[var(--primary)]" /><span>Xem ví dụ minh họa (X99)</span>
                 </button>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2.5 min-w-0">
-                <div className="inline-flex items-center gap-2 text-xs sm:text-sm">
-                  <span className="w-6 h-6 rounded-md bg-emerald-600 text-white font-extrabold text-[11px] flex items-center justify-center shrink-0">X</span>
-                  <strong className="font-mono text-[var(--foreground)] truncate">{currentFileName}</strong>
-                  <span className="text-[var(--ink-muted)]">· Đã kiểm tra lúc {checkedAtTime}</span>
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <div className="inline-flex items-center gap-1.5 text-xs text-[#476885]">
+                  <span className="w-5 h-5 rounded bg-emerald-600 text-white font-semibold text-[10px] flex items-center justify-center shrink-0">X</span>
+                  <span className="font-mono font-medium text-[var(--foreground)] truncate max-w-[200px]">{currentFileName}</span>
+                  <span>· Lúc {checkedAtTime}</span>
                 </div>
-                <button id="task-5-run" type="button" onClick={() => void handleAuditActiveUnit(activeUnit, false)} disabled={auditing} className="inline-flex items-center gap-1.5 min-h-[38px] px-3.5 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-xs font-bold text-[var(--foreground)] cursor-pointer transition-colors">
+                <button id="task-5-run" type="button" onClick={() => void handleAuditActiveUnit(activeUnit, false)} disabled={auditing} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-[#cbd5e1] bg-white text-xs font-medium text-[var(--foreground)] cursor-pointer hover:bg-[#f8fafc]">
                   <RefreshCw className={`w-3.5 h-3.5 text-[var(--primary)] ${auditing ? 'animate-spin' : ''}`} /><span>Kiểm tra lại</span>
                 </button>
-                <label className="inline-flex items-center gap-1.5 min-h-[38px] px-3 rounded-xl border border-dashed border-[var(--primary)]/40 bg-[var(--surface-secondary)] hover:border-[var(--primary)] text-xs font-bold text-[var(--primary)] cursor-pointer">
+                <label className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-dashed border-[var(--primary)]/40 bg-[var(--surface-secondary)] text-xs font-medium text-[var(--primary)] cursor-pointer">
                   <input type="file" multiple accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => void handleFilesSelected(e.target.files)} className="sr-only" />
                   <UploadCloud className="w-3.5 h-3.5" /><span>Chọn tệp .xlsx khác</span>
                 </label>
               </div>
               {report && (
-                <button id="task-5-export" type="button" onClick={() => exportAuditReportToExcel(report, report.unitSummaries[0]?.unitCode || activeUnit.code)} className="inline-flex items-center gap-1.5 min-h-[40px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-[var(--foreground)] font-bold text-xs sm:text-sm cursor-pointer shadow-2xs">
-                  <Download className="w-4 h-4 text-[var(--primary)]" /><span>Tải báo cáo kiểm tra</span>
+                <button id="task-5-export" type="button" onClick={() => exportAuditReportToExcel(report, report.unitSummaries[0]?.unitCode || activeUnit.code)} className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-[#cbd5e1] bg-white text-[var(--foreground)] font-medium text-xs cursor-pointer hover:bg-[#f8fafc]">
+                  <Download className="w-3.5 h-3.5 text-[var(--primary)]" /><span>Tải báo cáo kiểm tra</span>
                 </button>
               )}
             </div>
@@ -166,43 +166,43 @@ export default function RaSoatPage() {
             {report && (
               <>
                 {report.isSampleDemo && (
-                  <div role="status" className="rounded-xl border border-[var(--primary)]/40 bg-[var(--surface-tint)] p-3 text-xs sm:text-sm text-[var(--foreground)] flex flex-wrap items-center justify-between gap-2">
-                    <span>Đang xem <strong>ví dụ minh họa</strong> (đơn vị giả định <strong>X99</strong>). Bấm <strong>Kiểm tra lại</strong> để quay về hồ sơ thật của <strong>[{activeUnit.code}]</strong>.</span>
-                    <button type="button" onClick={() => void handleAuditActiveUnit(activeUnit, false)} className="min-h-[34px] px-3 rounded-lg bg-[var(--primary)] text-white text-xs font-bold cursor-pointer">Quay về [{activeUnit.code}]</button>
+                  <div role="status" className="rounded-lg border border-[var(--primary)]/30 bg-[var(--surface-tint)] p-2.5 text-xs text-[var(--foreground)] flex flex-wrap items-center justify-between gap-2">
+                    <span>Đang xem <strong>ví dụ minh họa (X99)</strong>.</span>
+                    <button type="button" onClick={() => void handleAuditActiveUnit(activeUnit, false)} className="h-7 px-2.5 rounded-md bg-[var(--primary)] text-white text-xs font-medium cursor-pointer">Quay về [{activeUnit.code}]</button>
                   </div>
                 )}
 
                 {report.countsBySeverity.fix > 0 ? (
-                  <div className="rounded-xl border border-[var(--fix)]/35 bg-[var(--fix-soft)] px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-start sm:items-center gap-3">
-                      <AlertTriangle className="w-6 h-6 text-[var(--fix)] shrink-0 mt-0.5 sm:mt-0" />
-                      <div><div className="text-sm sm:text-base font-extrabold uppercase tracking-wide text-[var(--fix)]">Hồ sơ cần sửa lỗi bắt buộc</div><p className="text-xs sm:text-sm text-[var(--foreground)]">Phát hiện <strong>{report.countsBySeverity.fix}</strong> mục phải sửa và <strong>{report.countsBySeverity.evidence}</strong> nội dung cần bổ sung căn cứ trước khi hoàn tất thẩm định.</p></div>
+                  <div className="rounded-lg border border-[var(--fix)]/30 bg-[var(--fix-soft)] px-3.5 py-3 flex flex-wrap items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <AlertTriangle className="w-5 h-5 text-[var(--fix)] shrink-0" />
+                      <div><div className="text-xs sm:text-sm font-semibold text-[var(--fix)]">Hồ sơ cần sửa lỗi bắt buộc</div><p className="text-xs text-[var(--foreground)] font-normal">Phát hiện <strong>{report.countsBySeverity.fix}</strong> mục phải sửa và <strong>{report.countsBySeverity.evidence}</strong> nội dung cần bổ sung căn cứ.</p></div>
                     </div>
-                    <a href="#audit-results-panel" className="inline-flex items-center gap-1 min-h-[36px] px-3.5 rounded-xl border border-[var(--fix)]/30 bg-[var(--sheet)] text-xs font-bold text-[var(--fix)]"><span>Xem {report.totalIssues} nội dung</span><ChevronRight className="w-3.5 h-3.5" /></a>
+                    <a href="#audit-results-panel" className="inline-flex items-center gap-1 h-8 px-3 rounded-lg border border-[var(--fix)]/30 bg-white text-xs font-medium text-[var(--fix)]"><span>Xem {report.totalIssues} nội dung</span><ChevronRight className="w-3.5 h-3.5" /></a>
                   </div>
                 ) : report.countsBySeverity.evidence > 0 ? (
-                  <div className="rounded-xl border border-[var(--warn)]/35 bg-[var(--warn-soft)] px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-start sm:items-center gap-3">
-                      <AlertTriangle className="w-6 h-6 text-[var(--warn)] shrink-0 mt-0.5 sm:mt-0" />
-                      <div><div className="text-sm sm:text-base font-extrabold uppercase tracking-wide text-[var(--warn)]">Hồ sơ cần bổ sung căn cứ</div><p className="text-xs sm:text-sm text-[var(--foreground)]"><strong>{report.countsBySeverity.evidence}</strong> nội dung cần bổ sung trước khi hoàn tất thẩm định. Không phát hiện lỗi bắt buộc phải sửa.</p></div>
+                  <div className="rounded-lg border border-[var(--warn)]/30 bg-[var(--warn-soft)] px-3.5 py-3 flex flex-wrap items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <AlertTriangle className="w-5 h-5 text-[var(--warn)] shrink-0" />
+                      <div><div className="text-xs sm:text-sm font-semibold text-[var(--warn)]">Hồ sơ cần bổ sung căn cứ</div><p className="text-xs text-[var(--foreground)] font-normal"><strong>{report.countsBySeverity.evidence}</strong> nội dung cần bổ sung trước khi hoàn tất thẩm định.</p></div>
                     </div>
-                    <a href="#audit-results-panel" className="inline-flex items-center gap-1 min-h-[36px] px-3.5 rounded-xl border border-[var(--warn)]/30 bg-[var(--sheet)] text-xs font-bold text-[var(--warn)]"><span>Xem {report.countsBySeverity.evidence} nội dung</span><ChevronRight className="w-3.5 h-3.5" /></a>
+                    <a href="#audit-results-panel" className="inline-flex items-center gap-1 h-8 px-3 rounded-lg border border-[var(--warn)]/30 bg-white text-xs font-medium text-[var(--warn)]"><span>Xem {report.countsBySeverity.evidence} nội dung</span><ChevronRight className="w-3.5 h-3.5" /></a>
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-[var(--ok)]/35 bg-[var(--ok-soft)] px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="w-6 h-6 text-[var(--ok)] shrink-0" />
-                      <div><div className="text-sm sm:text-base font-extrabold uppercase tracking-wide text-[var(--ok)]">Hồ sơ đạt yêu cầu thẩm định</div><p className="text-xs sm:text-sm text-[var(--foreground)]">Đạt toàn bộ chỉ tiêu kiểm tra chéo và đầy đủ căn cứ.</p></div>
+                  <div className="rounded-lg border border-[var(--ok)]/30 bg-[var(--ok-soft)] px-3.5 py-3 flex flex-wrap items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-5 h-5 text-[var(--ok)] shrink-0" />
+                      <div><div className="text-xs sm:text-sm font-semibold text-[var(--ok)]">Hồ sơ đạt yêu cầu thẩm định</div><p className="text-xs text-[var(--foreground)] font-normal">Đạt toàn bộ chỉ tiêu kiểm tra chéo và đầy đủ căn cứ.</p></div>
                     </div>
                   </div>
                 )}
 
-                <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--sheet)] grid grid-cols-2 sm:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border-subtle)]">
-                  <div className="px-3.5 py-3 flex items-center justify-center gap-2 text-xs sm:text-sm"><FileText className="w-4 h-4 text-[var(--primary)] shrink-0" /><strong className="text-base sm:text-lg font-extrabold text-[var(--foreground)] tabular-nums">{report.countsBySeverity.evidence}</strong><span className="text-[var(--ink-muted)]">cần bổ sung</span></div>
-                  <div className="px-3.5 py-3 flex items-center justify-center gap-2 text-xs sm:text-sm"><AlertCircle className="w-4 h-4 text-[var(--primary)] shrink-0" /><strong className="text-base sm:text-lg font-extrabold text-[var(--foreground)] tabular-nums">{report.templateFeedbackItems.length}</strong><span className="text-[var(--ink-muted)]">lỗi biểu mẫu</span></div>
-                  <div className="px-3.5 py-3 flex items-center justify-center gap-2 text-xs sm:text-sm"><Briefcase className="w-4 h-4 text-[var(--primary)] shrink-0" /><strong className="text-base sm:text-lg font-extrabold text-[var(--foreground)] tabular-nums">{report.vtvlRecalcRows.length}</strong><span className="text-[var(--ink-muted)]">Tổng VTVL (C1)</span></div>
-                  <div className="px-3.5 py-3 flex items-center justify-center gap-2 text-xs sm:text-sm"><ShieldCheck className={`w-4 h-4 shrink-0 ${report.countsBySeverity.fix > 0 ? 'text-[var(--fix)]' : 'text-[var(--ink-subtle)]'}`} /><strong className={`text-base sm:text-lg font-extrabold tabular-nums ${report.countsBySeverity.fix > 0 ? 'text-[var(--fix)]' : 'text-[var(--ink-subtle)]'}`}>{report.countsBySeverity.fix}</strong><span className="text-[var(--ink-muted)]">Phải sửa</span></div>
-                  <div className="col-span-2 sm:col-span-1 px-3.5 py-3 flex items-center justify-center gap-2 text-xs sm:text-sm"><strong className={`text-base sm:text-lg font-extrabold tabular-nums ${report.countsBySeverity.review > 0 ? 'text-[var(--primary)]' : 'text-[var(--ink-subtle)]'}`}>{report.countsBySeverity.review}</strong><span className="text-[var(--ink-muted)]">Nên xem lại</span></div>
+                <div className="rounded-lg border border-[var(--border-subtle)] bg-[#f8fafc] grid grid-cols-2 sm:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border-subtle)]">
+                  <div className="px-3 py-2 flex items-center justify-center gap-1.5 text-xs"><FileText className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" /><strong className="text-sm font-semibold text-[var(--foreground)] tabular-nums">{report.countsBySeverity.evidence}</strong><span className="text-[var(--ink-muted)]">cần bổ sung</span></div>
+                  <div className="px-3 py-2 flex items-center justify-center gap-1.5 text-xs"><AlertCircle className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" /><strong className="text-sm font-semibold text-[var(--foreground)] tabular-nums">{report.templateFeedbackItems.length}</strong><span className="text-[var(--ink-muted)]">lỗi biểu mẫu</span></div>
+                  <div className="px-3 py-2 flex items-center justify-center gap-1.5 text-xs"><Briefcase className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" /><strong className="text-sm font-semibold text-[var(--foreground)] tabular-nums">{report.vtvlRecalcRows.length}</strong><span className="text-[var(--ink-muted)]">VTVL (C1)</span></div>
+                  <div className="px-3 py-2 flex items-center justify-center gap-1.5 text-xs"><ShieldCheck className={`w-3.5 h-3.5 shrink-0 ${report.countsBySeverity.fix > 0 ? 'text-[var(--fix)]' : 'text-[var(--ink-subtle)]'}`} /><strong className={`text-sm font-semibold tabular-nums ${report.countsBySeverity.fix > 0 ? 'text-[var(--fix)]' : 'text-[var(--ink-subtle)]'}`}>{report.countsBySeverity.fix}</strong><span className="text-[var(--ink-muted)]">Phải sửa</span></div>
+                  <div className="col-span-2 sm:col-span-1 px-3 py-2 flex items-center justify-center gap-1.5 text-xs"><strong className={`text-sm font-semibold tabular-nums ${report.countsBySeverity.review > 0 ? 'text-[var(--primary)]' : 'text-[var(--ink-subtle)]'}`}>{report.countsBySeverity.review}</strong><span className="text-[var(--ink-muted)]">Nên xem lại</span></div>
                 </div>
 
                 <div id="audit-results-panel"><AuditResultTabs report={report} /></div>

@@ -44,90 +44,86 @@ export function ExcelSheetTabs({
   const isTechnical = orderMode === 'technical';
 
   return (
-    <div className="w-full bg-[#f8fafc] border border-[#cbd5e1] rounded-xl select-none shadow-2xs overflow-hidden">
-      <div className="flex items-center justify-between gap-1.5 px-2.5 py-1.5">
-        <div className="flex items-center gap-1.5 overflow-hidden min-w-0 flex-1">
-          {/* Navigation arrows */}
-          <div className="flex items-center gap-0.5 shrink-0 pr-1.5 border-r border-[#cbd5e1]">
-            <button
-              type="button"
-              onClick={onPrev}
-              disabled={!canPrev}
-              aria-label="Sheet trước"
-              title="Biểu tính trước đó"
-              className="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-white text-[#004776] disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed border border-transparent hover:border-[#cbd5e1] transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={onNext}
-              disabled={!canNext}
-              aria-label="Sheet tiếp theo"
-              title="Biểu tính tiếp theo"
-              className="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-white text-[#004776] disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed border border-transparent hover:border-[#cbd5e1] transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Scrollable list of sheets */}
-          <div
-            ref={scrollRef}
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
-            role="tablist"
-            aria-label="Danh sách các biểu mẫu 15 sheet theo chuẩn Hướng dẫn 07"
+    <div className="w-full bg-[#f8fafc] border-b border-[var(--border-subtle)] select-none overflow-hidden">
+      <div className="flex items-center gap-1 px-2.5">
+        {/* Navigation arrows */}
+        <div className="flex items-center gap-0.5 shrink-0 pr-1.5 py-1 border-r border-[var(--border-subtle)]">
+          <button
+            type="button"
+            onClick={onPrev}
+            disabled={!canPrev}
+            aria-label="Sheet trước"
+            title="Biểu tính trước đó"
+            className="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-white text-[#004776] disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed transition-colors"
           >
-            {displayOrder.map((key, index) => {
-              const meta = EXCEL_SHEET_METAS[key];
-              const isActive = activeSheet === key;
-              const isDirty = dirtySheets?.has(key);
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!canNext}
+            aria-label="Sheet tiếp theo"
+            title="Biểu tính tiếp theo"
+            className="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-white text-[#004776] disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
 
-              return (
-                <button
-                  key={key}
-                  role="tab"
-                  data-tab-key={key}
-                  aria-selected={isActive}
-                  onClick={() => onSelectSheet(key)}
-                  className={`group relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all shrink-0 cursor-pointer border ${
-                    isActive
-                      ? 'bg-white text-[#004776] border-[#004776] shadow-xs font-bold ring-2 ring-[#004776]/10'
-                      : 'bg-[#f1f5f9] text-[#475569] border-[#cbd5e1]/80 hover:bg-white hover:text-[#004776] hover:border-[#004776]/50'
-                  }`}
-                >
-                  {/* Indicator: B.{n} in Technical mode, FileSpreadsheet in Excel mode */}
-                  {isTechnical ? (
-                    <span
-                      className={`px-1.5 py-0.2 rounded text-[10px] inline-flex items-center justify-center font-bold ${
-                        isActive
-                          ? 'bg-[#004776] text-white'
-                          : 'bg-[#cbd5e1] text-[#334155] group-hover:bg-[#004776] group-hover:text-white'
-                      }`}
-                      title={`Bước kỹ thuật ${index + 1}`}
-                    >
-                      B.{index + 1}
-                    </span>
-                  ) : (
-                    <FileSpreadsheet
-                      className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#004776]' : 'text-[#64748b]'}`}
-                    />
-                  )}
+        {/* Scrollable underline tabs */}
+        <div
+          ref={scrollRef}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex items-center gap-0.5 overflow-x-auto no-scrollbar scroll-smooth"
+          role="tablist"
+          aria-label="Danh sách các biểu mẫu 15 sheet theo chuẩn Hướng dẫn 07"
+        >
+          {displayOrder.map((key, index) => {
+            const meta = EXCEL_SHEET_METAS[key];
+            const isActive = activeSheet === key;
+            const isDirty = dirtySheets?.has(key);
 
-                  <span className="whitespace-nowrap">{meta.sheetName}</span>
+            return (
+              <button
+                key={key}
+                role="tab"
+                data-tab-key={key}
+                aria-selected={isActive}
+                onClick={() => onSelectSheet(key)}
+                className={`group relative inline-flex items-center gap-1.5 px-3 h-10 text-xs transition-all shrink-0 cursor-pointer border-b-[3px] ${
+                  isActive
+                    ? 'bg-white text-[#004776] border-[#004776] font-semibold'
+                    : 'bg-transparent text-[#476885] border-transparent font-medium hover:bg-white/70 hover:text-[#004776]'
+                }`}
+              >
+                {isTechnical ? (
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-[10px] inline-flex items-center justify-center font-semibold ${
+                      isActive
+                        ? 'bg-[#004776] text-white'
+                        : 'bg-[#e2e8f0] text-[#476885] group-hover:bg-[#004776] group-hover:text-white'
+                    }`}
+                    title={`Bước kỹ thuật ${index + 1}`}
+                  >
+                    B.{index + 1}
+                  </span>
+                ) : (
+                  <FileSpreadsheet
+                    className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#004776]' : 'text-[#64748b]'}`}
+                  />
+                )}
 
-                  {/* Dirty Dot or Control indicator */}
-                  {isDirty && (
-                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 animate-pulse" title="Sheet có thay đổi chưa lưu" />
-                  )}
-                  {key === 'K' && (
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Chỉ tiêu kiểm soát K" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                <span className="whitespace-nowrap">{meta.sheetName}</span>
+
+                {isDirty && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--warn)] shrink-0" title="Sheet có thay đổi chưa lưu" />
+                )}
+                {key === 'K' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--ok)] shrink-0" title="Chỉ tiêu kiểm soát K" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

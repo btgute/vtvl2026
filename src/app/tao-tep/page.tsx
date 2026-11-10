@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { FileSpreadsheet, ArrowRight, ArrowLeft, RotateCcw, BookOpenCheck, Timer, ShieldAlert, Undo2, Layers } from 'lucide-react';
+import { ArrowRight, ArrowLeft, BookOpenCheck } from 'lucide-react';
 import { WorkflowSidebar, focusTaskTarget } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS, UNIT_GROUPS } from '@/configs/hcmute-units';
 import { HD07_CONSTANTS } from '@/configs/hcmute-hd07-catalog';
@@ -14,12 +14,12 @@ import { SplitFileNamesPreview } from '@/components/tao-tep/SplitResultBanner';
 import { Hd07OrderGuideCard } from '@/components/tao-tep/Hd07OrderGuideCard';
 import { Step1CatalogSelector } from '@/components/tao-tep/Step1CatalogSelector';
 import { Step1PositionList } from '@/components/tao-tep/Step1PositionList';
-import { validateStep1Data, validateStageData } from '@/components/tao-tep/Step1ReviewConfirm';
+import { validateStep1Data } from '@/components/tao-tep/Step1ReviewConfirm';
 import { Step1Stage4Export } from '@/components/tao-tep/Step1Stage4Export';
-import { StageStepperBar, StickyActionBar, computeStageStatuses, StatusBadge } from '@/components/tao-tep/StageStepperBar';
+import { StageStepperBar, computeStageStatuses } from '@/components/tao-tep/StageStepperBar';
 import { FormField, FormFieldState, SaveLifecycleState, SegmentedControl, ToastNotice, ToastRegion } from '@/components/ui/FormFeedbackPrimitives';
 import { TextInput, DateInput, Select } from '@/components/ui/FormInputs';
-import { buildDefaultNgachAllocations, buildDefaultScaleMetrics, formatCurrentHHMM, getActiveUnitSession, getRealtimeDateYYYYMMDD, recordActivity, resetActiveUnitToDefault, saveActiveUnitSession, setSessionRootWorkbook } from '@/services/telemetry/activity-log';
+import { buildDefaultNgachAllocations, buildDefaultScaleMetrics, formatCurrentHHMM, getActiveUnitSession, getRealtimeDateYYYYMMDD, recordActivity, saveActiveUnitSession, setSessionRootWorkbook } from '@/services/telemetry/activity-log';
 import { syncUnitSplitToSupabase } from '@/services/supabase/vtvl-sync';
 import { ExcelWorkbookViewer } from '@/components/excel-grid/ExcelWorkbookViewer';
 
@@ -36,19 +36,18 @@ export default function TaoTepPage() {
   const [actorEmail, setActorEmail] = useState<string>('');
   const [actorTitle, setActorTitle] = useState<string>('');
   const [lastSavedAt, setLastSavedAt] = useState<string>(() => formatCurrentHHMM());
-  const [saveLifecycle, setSaveLifecycle] = useState<SaveLifecycleState>('idle');
+  const [, setSaveLifecycle] = useState<SaveLifecycleState>('idle');
   const [fieldStates, setFieldStates] = useState<Record<string, FormFieldState>>({});
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [forceShowStageErrors, setForceShowStageErrors] = useState<Record<number, boolean>>({});
-  const [isCheckingContinue, setIsCheckingContinue] = useState<boolean>(false);
-  const [continueCheckedOk, setContinueCheckedOk] = useState<boolean>(false);
+  const [isCheckingContinue] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastNotice[]>([]);
   const [includeZip, setIncludeZip] = useState<boolean>(true);
   const [positions, setPositions] = useState<ProposedVtvlRow[]>(() => buildDefaultProposedPositionsForUnit('Phòng Tổ chức - Nhân sự', 'phong-ban'));
   const [scaleMetrics, setScaleMetrics] = useState<UnitScaleMetrics>(() => buildDefaultScaleMetrics('phong-ban'));
   const [ngachAllocations, setNgachAllocations] = useState<NgachAllocationRow[]>(() => buildDefaultNgachAllocations(buildDefaultProposedPositionsForUnit('Phòng Tổ chức - Nhân sự', 'phong-ban')));
-  const [undoSnapshot, setUndoSnapshot] = useState<ProposedVtvlRow[] | undefined>(undefined);
-  const [confirmAction, setConfirmAction] = useState<{ type: 'reset' | 'delete'; row?: ProposedVtvlRow } | null>(null);
+  const [, setUndoSnapshot] = useState<ProposedVtvlRow[] | undefined>(undefined);
+  const [, setConfirmAction] = useState<{ type: 'reset' | 'delete'; row?: ProposedVtvlRow } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [stale, setStale] = useState<boolean>(false);
   const [result, setResult] = useState<SplitResultSummary | null>(null);
@@ -155,34 +154,33 @@ export default function TaoTepPage() {
   const roleErrMsg = (touchedFields.actorTitle || forceShowStageErrors[1]) && !actorTitle.trim() ? 'Vui lòng nhập hoặc chọn chức vụ, vai trò.' : undefined;
 
   return (
-    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 space-y-4">
+    <div className="w-full max-w-none px-3.5 sm:px-5 lg:px-6 py-4 min-w-0">
       <ToastRegion toasts={toasts} onDismiss={(id) => setToasts((p) => p.filter((t) => t.id !== id))} />
 
-      {/* View Mode 1: Excel Interactive Spreadsheet (Default) */}
       {viewMode === 'excel' ? (
         <ExcelWorkbookViewer initialUnitCode={selectedUnitCode} />
       ) : (
-        /* View Mode 2: Wizard Flow */
-        <div className="flex flex-col lg:flex-row gap-5 items-start">
+        <div className="w-full max-w-[1360px] mx-auto flex flex-col lg:flex-row gap-4 items-start min-w-0">
           <WorkflowSidebar activeStep={wizardStage === 1 ? 1 : wizardStage === 2 ? 2 : wizardStage === 3 ? 5 : wizardStage === 4 ? 6 : 7} errorStep={validationErrors.length > 0 && activeStep > 1 ? 1 : null} onSelectStep={(s) => { const map: Record<number, 1 | 2 | 3 | 4 | 5> = { 1: 1, 2: 2, 5: 3, 6: 4, 7: 5 }; if (map[s]) handleStageChange(map[s], true); }} unitCode={currentUnit.code} />
-          <div className="flex-1 w-full space-y-6 min-w-0">
-            <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center shrink-0">{wizardStage}</span>
-                  <div><h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">{currentStageMeta.fullTitle}</h1><p className="text-xs text-[var(--ink-muted)]">{currentUnit.nameVi} ({currentUnit.code}) · Hướng dẫn số 07-HD/BTCTW</p></div>
+          <div className="flex-1 w-full space-y-4 min-w-0">
+            <section className="bg-white rounded-xl border border-[var(--border)] p-4 sm:p-5 space-y-4 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-semibold text-xs flex items-center justify-center shrink-0">{wizardStage}</span>
+                  <h1 ref={stageHeadingRef} tabIndex={-1} className="text-lg sm:text-xl font-semibold text-[var(--foreground)] outline-none">{currentStageMeta.fullTitle}</h1>
                 </div>
+                <span className="text-xs text-[var(--ink-muted)]">Cập nhật lúc: {lastSavedAt}</span>
               </div>
               <StageStepperBar stages={stageStatuses} currentStage={wizardStage} onSelectStage={(s) => handleStageChange(s, true)} />
               {wizardStage === 1 && (
-                <div className="space-y-5">
+                <div className="space-y-4">
                   <SegmentedControl ariaLabel="Chọn khối đơn vị thuộc HCM-UTE" options={UNIT_GROUPS} value={kind} onChange={handleGroupChange} />
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                     <div className="sm:col-span-7"><FormField htmlFor="task-1-unit" label={`Đơn vị thuộc HCM-UTE (${unitsOfGroup.length} đơn vị)`} required state={fieldStates.unit || 'default'}><Select id="task-1-unit" value={currentUnit.code} onChange={(e) => handleUnitChange(e.target.value)}>{unitsOfGroup.map((u) => <option key={u.code} value={u.code}>[{u.code}] {u.nameVi}</option>)}</Select></FormField></div>
                     <div className="sm:col-span-2"><FormField htmlFor="unit-code-ro" label="Mã đơn vị" state="readOnly"><TextInput id="unit-code-ro" readOnly state="readOnly" value={currentUnit.code} /></FormField></div>
                     <div className="sm:col-span-3"><FormField htmlFor="unit-date" label="Ngày lập hồ sơ" state={fieldStates.customDate || 'default'}><DateInput id="unit-date" value={customDate} onChange={(e) => { setCustomDate(e.target.value); scheduleAutosave({ customDate: e.target.value }, 'customDate'); }} onBlur={() => persistState({ customDate }, 'customDate')} /></FormField></div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[var(--border-subtle)]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 border-t border-[var(--border-subtle)]">
                     <FormField htmlFor="task-1-actor" label="Email công vụ người thực hiện (S_NhatKy)" required state={fieldStates.actorEmail || 'default'} errorMessage={emailErrMsg} errorId="actor-email-err"><TextInput id="task-1-actor" type="email" required errorMessage={emailErrMsg} errorId="actor-email-err" value={actorEmail} onFocusChange={(f) => setFieldStates((p) => ({ ...p, actorEmail: f ? 'focused' : p.actorEmail === 'focused' ? 'default' : p.actorEmail }))} onChange={(e) => { setActorEmail(e.target.value); scheduleAutosave({ actorEmail: e.target.value, actorTitle }, 'actorEmail'); }} onBlur={() => { setTouchedFields((p) => ({ ...p, actorEmail: true })); persistState({ actorEmail, actorTitle }, 'actorEmail'); }} placeholder={`VD: ${currentUnit.code.toLowerCase()}@hcmute.edu.vn`} /></FormField>
                     <FormField htmlFor="task-1-role" label="Chức vụ / Vai trò (S_NhatKy)" required state={fieldStates.actorTitle || 'default'} errorMessage={roleErrMsg} errorId="actor-role-err"><TextInput id="task-1-role" type="text" list="hcmute-actor-roles" required errorMessage={roleErrMsg} errorId="actor-role-err" value={actorTitle} onFocusChange={(f) => setFieldStates((p) => ({ ...p, actorTitle: f ? 'focused' : p.actorTitle === 'focused' ? 'default' : p.actorTitle }))} onChange={(e) => { setActorTitle(e.target.value); scheduleAutosave({ actorEmail, actorTitle: e.target.value }, 'actorTitle'); }} onBlur={() => { setTouchedFields((p) => ({ ...p, actorTitle: true })); persistState({ actorEmail, actorTitle }, 'actorTitle'); }} placeholder={`VD: ${currentUnit.headTitleVi} / Thư ký`} /><datalist id="hcmute-actor-roles">{ROLE_PRESETS.map((r) => <option key={r} value={r} />)}</datalist></FormField>
                   </div>
@@ -192,7 +190,7 @@ export default function TaoTepPage() {
               {wizardStage === 2 && (
                 <div className="space-y-4">
                   <Step1CatalogSelector unitNameVi={currentUnit.nameVi} kind={kind} existingFrameworkIds={positions.map((p) => p.frameworkId)} onAddMultiplePositions={handleAddMultiplePositions} />
-                  <div className="flex justify-end"><button type="button" onClick={() => handleStageChange(3, true)} className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 rounded-xl bg-[var(--primary)] text-white text-xs font-bold cursor-pointer"><span>Sang Chặng 3: Danh sách VTVL (C1, C2)</span><ArrowRight className="w-4 h-4" /></button></div>
+                  <div className="flex justify-end"><button type="button" onClick={() => handleStageChange(3, true)} className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold cursor-pointer"><span>Sang Chặng 3: Danh sách VTVL (C1, C2)</span><ArrowRight className="w-4 h-4" /></button></div>
                 </div>
               )}
               {wizardStage === 3 && <Step1PositionList unitCode={currentUnit.code} positions={positions} forceShowErrors={Boolean(forceShowStageErrors[3])} onUpdateRow={(id, patch) => syncPositions(positions.map((r) => (r.id === id ? { ...r, ...patch } : r)))} onDuplicateRow={(row) => { const seq = positions.length + 1; const baseCode = row.vtvlSuffix.replace(/-\d+$/, ''); syncPositions([...positions, { ...row, id: `pos-${Date.now()}-${seq}`, vtvlSuffix: `${baseCode}-${String(seq).padStart(2, '0')}`, specificName: `${row.specificName} (${seq})` }], currentUnit.code, kind, positions); }} onRequestRemoveRow={(row) => setConfirmAction({ type: 'delete', row })} />}
@@ -203,15 +201,15 @@ export default function TaoTepPage() {
                 <div className="space-y-4">
                   <MergeStepSection unit={currentUnit} />
                   <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border-subtle)]">
-                    <button type="button" onClick={() => handleStageChange(4, true)} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] text-sm font-semibold cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Chặng 4</span></button>
-                    <Link href="/ra-soat" className="btn-touch inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white text-sm font-bold shadow-2xs"><span>Sang Kiểm tra 10 biểu &amp; Gửi kết quả</span><ArrowRight className="w-4 h-4" /></Link>
+                    <button type="button" onClick={() => handleStageChange(4, true)} className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg border border-[var(--border)] bg-[var(--sheet)] text-sm font-medium cursor-pointer"><ArrowLeft className="w-4 h-4" /><span>Quay lại Chặng 4</span></button>
+                    <Link href="/ra-soat" className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-[var(--primary)] text-white text-sm font-semibold shadow-2xs"><span>Sang Kiểm tra 10 biểu &amp; Gửi kết quả</span><ArrowRight className="w-4 h-4" /></Link>
                   </div>
                 </div>
               )}
             </section>
-            <details className="surface-secondary rounded-xl overflow-hidden">
-              <summary className="cursor-pointer px-5 min-h-[52px] text-sm font-bold text-[var(--foreground)] flex items-center justify-between"><span className="inline-flex items-center gap-2"><BookOpenCheck className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Tra cứu Khung 38 vị trí việc làm HCM-UTE [{currentUnit.code}]</span></span><span className="text-xs font-semibold text-[var(--primary)] shrink-0">Mở / Đóng</span></summary>
-              <div className="p-4 border-t border-[var(--border-subtle)]"><Hd07OrderGuideCard unit={currentUnit} splitResult={result} /></div>
+            <details className="bg-[var(--surface-secondary)] rounded-xl border border-[var(--border-subtle)] overflow-hidden">
+              <summary className="cursor-pointer px-4 h-11 text-[13.5px] font-semibold text-[var(--foreground)] flex items-center justify-between"><span className="inline-flex items-center gap-2"><BookOpenCheck className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Tra cứu Khung 38 vị trí việc làm HCM-UTE [{currentUnit.code}]</span></span><span className="text-xs font-medium text-[var(--primary)] shrink-0">Mở / Đóng</span></summary>
+              <div className="p-4 border-t border-[var(--border-subtle)] bg-white"><Hd07OrderGuideCard unit={currentUnit} splitResult={result} /></div>
             </details>
           </div>
         </div>

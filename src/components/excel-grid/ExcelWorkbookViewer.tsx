@@ -7,7 +7,6 @@ import { ExcelSheetTabs } from './ExcelSheetTabs';
 import { ExcelTableRenderer } from './ExcelTableRenderer';
 import { ScientificWorkspaceCard } from './ScientificWorkspaceCard';
 import { GuidanceDrawerModal } from './GuidanceDrawerModal';
-import { WorkflowSidebar } from '@/components/layout/MilestonesBar';
 import { ExcelSheetKey } from './excel-grid-types';
 import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
 import { DataQualityReportModal } from './DataQualityReportModal';
@@ -15,7 +14,6 @@ import { OperatorSessionModal } from './OperatorSessionModal';
 import { SyncStatusBar } from './SyncStatusBar';
 import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 const getStepFromSheet = (sheet: ExcelSheetKey): number => {
   switch (sheet) {
@@ -38,20 +36,6 @@ const getStepFromSheet = (sheet: ExcelSheetKey): number => {
   }
 };
 
-const getSheetFromStep = (step: number): ExcelSheetKey => {
-  switch (step) {
-    case 1: return 'A1';
-    case 2: return 'A2';
-    case 3: return 'B1';
-    case 4: return 'B2_CT';
-    case 5: return 'C1';
-    case 6: return 'C3';
-    case 7: return 'D1';
-    case 8: return 'K';
-    default: return 'A1';
-  }
-};
-
 interface ExcelWorkbookViewerProps {
   initialUnitCode?: string;
 }
@@ -61,20 +45,6 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   const [showQualityModal, setShowQualityModal] = useState(false);
   const [showGuidanceModal, setShowGuidanceModal] = useState(false);
   const [dirtySheets, setDirtySheets] = useState<Set<ExcelSheetKey>>(new Set());
-  const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try { return localStorage.getItem('hcmute_vtvl_sidebar_visible') === 'true'; } catch { /* ignore */ }
-    }
-    return false;
-  });
-
-  const toggleSidebar = () => {
-    const nextVal = !isSidebarVisible;
-    setIsSidebarVisible(nextVal);
-    if (typeof window !== 'undefined') {
-      try { localStorage.setItem('hcmute_vtvl_sidebar_visible', String(nextVal)); } catch { /* ignore */ }
-    }
-  };
 
   const markSheetDirty = (sheetKey: ExcelSheetKey) => {
     setDirtySheets((prev) => (prev.has(sheetKey) ? prev : new Set(prev).add(sheetKey)));
@@ -101,7 +71,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     activeSheet, activeSheetIndex, data, lastSaved, lastSavedSheet,
     isExporting, dynamicOptionsMap, isC1Unlocked, unlockC1, lockC1,
     handleUnitChange: gridHandleUnitChange, handleLoadTcnsData, restoreWorkbookData,
-    loadFullPl1Catalog, loadRecommendedVtvls, setActiveSheet,
+    loadRecommendedVtvls, setActiveSheet,
     updateCell, addRow, splitRow, deleteRow, saveSheetData,
     exportFullWorkbook, goToNextSheet, goToPrevSheet
   } = useExcelGridState(session?.unitCode || initialUnitCode);
@@ -143,8 +113,8 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   }, [data, unitCode, currentUnit.nameVi]);
 
   return (
-    <div className="w-full max-w-full min-w-0 overflow-hidden flex flex-col gap-3">
-      {/* 1. KHỐI TIÊU ĐỀ & ĐIỀU KHIỂN CHUẨN KHOA HỌC (CARD 1) */}
+    <div className="w-full max-w-full min-w-0 bg-white border border-[var(--border)] rounded-xl overflow-hidden flex flex-col">
+      {/* 1. HEADER & THANH CÔNG CỤ THỐNG NHẤT */}
       <ScientificWorkspaceCard
         activeSheet={activeSheet}
         currentUnit={currentUnit}
@@ -175,87 +145,65 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onOpenUnlockModal={() => setShowUnlockModal(true)}
       />
 
+      {/* 2. THANH TRẠNG THÁI LƯU & ĐỒNG BỘ DUY NHẤT */}
       <SyncStatusBar
-        session={session} unitNameVi={currentUnit.nameVi} revision={currentRevision}
-        syncStatus={syncStatus} dataSource={dataSource} apiError={apiError}
-        lastSyncedAt={lastSyncedAt} onSwitchSession={switchSession} onRetry={retrySync}
+        session={session}
+        unitNameVi={currentUnit.nameVi}
+        revision={currentRevision}
+        syncStatus={syncStatus}
+        dataSource={dataSource}
+        apiError={apiError}
+        lastSyncedAt={lastSyncedAt}
+        onSwitchSession={switchSession}
+        onRetry={retrySync}
         onSaveNow={() => { handleSave(); persistDataForSession(data, true); }}
       />
 
-      {/* Dải 15 sheet cuộn ngang */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-xs font-semibold text-[#004776] shadow-2xs cursor-pointer shrink-0 transition-colors"
-          title={isSidebarVisible ? 'Ẩn quy trình 8 bước để mở rộng bảng' : 'Hiện quy trình 8 bước'}
-        >
-          {isSidebarVisible ? <PanelLeftClose className="w-3.5 h-3.5" /> : <PanelLeftOpen className="w-3.5 h-3.5" />}
-          <span>{isSidebarVisible ? 'Thu gọn' : 'Quy trình 8 bước'}</span>
-        </button>
+      {/* 3. DẢI TAB 15 BIỂU CUỘN NGANG (UNDERLINE TABS) */}
+      <ExcelSheetTabs
+        activeSheet={activeSheet}
+        sheetOrder={currentSheetOrder}
+        orderMode={orderMode}
+        dirtySheets={dirtySheets}
+        onSelectSheet={handleSelectSheetSafe}
+        onPrev={goToPrevSheet}
+        onNext={goToNextSheet}
+        canPrev={activeSheetIndex > 0}
+        canNext={activeSheetIndex < currentSheetOrder.length - 1}
+      />
 
-        <div className="flex-1 min-w-0">
-          <ExcelSheetTabs
-            activeSheet={activeSheet}
-            sheetOrder={currentSheetOrder}
-            orderMode={orderMode}
-            dirtySheets={dirtySheets}
-            onSelectSheet={handleSelectSheetSafe}
-            onPrev={goToPrevSheet}
-            onNext={goToNextSheet}
-            canPrev={activeSheetIndex > 0}
-            canNext={activeSheetIndex < currentSheetOrder.length - 1}
+      {/* 4. BANNER C1 HOẶC LƯỚI BẢNG DỮ LIỆU CHÍNH */}
+      {activeSheet === 'C1' && (
+        <div className="px-4 py-2 border-b border-[var(--border-subtle)] bg-[#f8fafc]">
+          <C1AdminStatusBanner
+            isUnlocked={isC1Unlocked}
+            onOpenUnlockModal={() => setShowUnlockModal(true)}
+            onLock={lockC1}
           />
         </div>
-      </div>
+      )}
 
-      {/* 2. KHÔNG GIAN BẢNG DỮ LIỆU CHÍNH (CARD 2) */}
-      <div className="flex flex-col lg:flex-row gap-3 items-start w-full max-w-full min-w-0">
-        {isSidebarVisible && (
-          <div className="w-full shrink-0 transition-all duration-200 lg:w-72">
-            <WorkflowSidebar
-              activeStep={getStepFromSheet(activeSheet)}
-              onSelectStep={(s) => handleSelectSheetSafe(getSheetFromStep(s))}
-              unitCode={unitCode}
-              alwaysExpanded={true}
-              isCollapsed={false}
-              onToggleCollapse={() => {}}
-            />
-          </div>
-        )}
-
-        <div className="flex-1 min-w-0 w-full max-w-full flex flex-col gap-3 overflow-hidden">
-          {activeSheet === 'C1' && (
-            <C1AdminStatusBanner
-              isUnlocked={isC1Unlocked}
-              onOpenUnlockModal={() => setShowUnlockModal(true)}
-              onLock={lockC1}
-            />
-          )}
-
-          <ExcelTableRenderer
-            meta={activeMeta}
-            rows={activeRows}
-            dynamicOptionsMap={dynamicOptionsMap}
-            lastSaved={lastSaved}
-            lastSavedSheet={lastSavedSheet}
-            isC1Unlocked={isC1Unlocked}
-            touchedCells={touchedCells}
-            onCellTouch={markCellTouched}
-            onCellChange={(rowId, field, val) => {
-              markCellTouched(`${rowId}_${field}`);
-              markSheetDirty(activeSheet);
-              updateCell(activeSheet, rowId, field, val);
-            }}
-            onAddRow={() => { markSheetDirty(activeSheet); addRow(activeSheet); }}
-            onSplitRow={(rowId) => { markSheetDirty(activeSheet); splitRow(activeSheet, rowId); }}
-            onDeleteRow={(rowId) => { markSheetDirty(activeSheet); deleteRow(activeSheet, rowId); }}
-            onSaveSheet={handleSave}
-            onSaveAndNext={handleSaveAndNext}
-            canNext={activeSheetIndex < currentSheetOrder.length - 1}
-          />
-        </div>
-      </div>
+      <ExcelTableRenderer
+        meta={activeMeta}
+        rows={activeRows}
+        dynamicOptionsMap={dynamicOptionsMap}
+        lastSaved={lastSaved}
+        lastSavedSheet={lastSavedSheet}
+        isC1Unlocked={isC1Unlocked}
+        touchedCells={touchedCells}
+        onCellTouch={markCellTouched}
+        onCellChange={(rowId, field, val) => {
+          markCellTouched(`${rowId}_${field}`);
+          markSheetDirty(activeSheet);
+          updateCell(activeSheet, rowId, field, val);
+        }}
+        onAddRow={() => { markSheetDirty(activeSheet); addRow(activeSheet); }}
+        onSplitRow={(rowId) => { markSheetDirty(activeSheet); splitRow(activeSheet, rowId); }}
+        onDeleteRow={(rowId) => { markSheetDirty(activeSheet); deleteRow(activeSheet, rowId); }}
+        onSaveSheet={handleSave}
+        onSaveAndNext={handleSaveAndNext}
+        canNext={activeSheetIndex < currentSheetOrder.length - 1}
+      />
 
       <GuidanceDrawerModal
         isOpen={showGuidanceModal}

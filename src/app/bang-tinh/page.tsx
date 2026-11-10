@@ -9,8 +9,7 @@ function BangTinhContent() {
   const unitParam = searchParams.get('unit') || 'TCNS';
 
   return (
-    <div className="w-full max-w-full min-w-0 overflow-hidden px-3 sm:px-6 lg:px-8 xl:px-10 py-3 sm:py-4">
-      {/* Main Interactive Excel Workbook with Integrated Compact Workspace Header */}
+    <div className="w-full max-w-none min-w-0 overflow-hidden px-3 sm:px-5 lg:px-6 py-3 sm:py-4">
       <ExcelWorkbookViewer initialUnitCode={unitParam} />
     </div>
   );
@@ -18,7 +17,7 @@ function BangTinhContent() {
 
 export default function BangTinhPage() {
   return (
-    <Suspense fallback={<div className="p-10 text-center text-[#004776]">Đang tải bảng tính Excel...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-[#004776]">Đang tải bảng tính Excel...</div>}>
       <BangTinhContent />
     </Suspense>
   );

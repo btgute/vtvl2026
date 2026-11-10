@@ -16,15 +16,15 @@ export interface ToastNotice {
 export function InlineStatus({ state, savedLabel = 'Đã lưu', onRetry }: { state: FormFieldState | SaveLifecycleState; savedLabel?: string; onRetry?: () => void }) {
   if (state === 'dirty') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--warn)]">
-        <span className="w-2 h-2 rounded-full bg-[var(--warn)] shrink-0" aria-hidden="true" />
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--warn)]">
+        <span className="w-1.5 h-1.5 rounded-full bg-[var(--warn)] shrink-0" aria-hidden="true" />
         <span>Chưa lưu</span>
       </span>
     );
   }
   if (state === 'saving') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--primary)]">
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--primary)]">
         <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" aria-hidden="true" />
         <span>Đang lưu…</span>
       </span>
@@ -32,7 +32,7 @@ export function InlineStatus({ state, savedLabel = 'Đã lưu', onRetry }: { sta
   }
   if (state === 'saved') {
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--ok)] transition-opacity duration-200">
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--ok)] transition-opacity duration-200">
         <Check className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
         <span>{savedLabel}</span>
       </span>
@@ -40,7 +40,7 @@ export function InlineStatus({ state, savedLabel = 'Đã lưu', onRetry }: { sta
   }
   if (state === 'error') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--fix)]">
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--fix)]">
         <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
         <span>Chưa thể lưu</span>
         {onRetry && (
@@ -53,7 +53,7 @@ export function InlineStatus({ state, savedLabel = 'Đã lưu', onRetry }: { sta
   }
   if (state === 'readOnly') {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--ink-subtle)]">
+      <span className="inline-flex items-center gap-1 text-[11px] font-normal text-[var(--ink-subtle)]">
         <Lock className="w-3 h-3 shrink-0" aria-hidden="true" /><span>Hệ thống tự tạo</span>
       </span>
     );
@@ -64,7 +64,7 @@ export function InlineStatus({ state, savedLabel = 'Đã lưu', onRetry }: { sta
 export function ValidationMessage({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="mt-1.5 flex items-start gap-1.5 text-xs font-semibold text-[var(--fix)] leading-snug">
+    <p id={id} role="alert" className="mt-1 flex items-start gap-1.5 text-xs font-medium text-[var(--fix)] leading-snug">
       <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
       <span>{message}</span>
     </p>
@@ -74,17 +74,17 @@ export function ValidationMessage({ id, message }: { id: string; message?: strin
 export function SaveStatus({ lifecycle, lastSavedAt, errorCount, onRetrySave }: { lifecycle: SaveLifecycleState; lastSavedAt: string; errorCount: number; onRetrySave?: () => void }) {
   if (lifecycle === 'saving') {
     return (
-      <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--primary)]">
-        <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" aria-hidden="true" /><span>Đang lưu dữ liệu…</span>
+      <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--primary)]">
+        <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" aria-hidden="true" /><span>Đang lưu…</span>
       </span>
     );
   }
   if (lifecycle === 'error') {
     return (
-      <span role="alert" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--fix)]">
-        <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /><span>Chưa thể lưu thay đổi</span>
+      <span role="alert" className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--fix)]">
+        <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /><span>Lưu thất bại —</span>
         {onRetrySave && (
-          <button type="button" onClick={onRetrySave} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-[var(--fix)] bg-[var(--fix-soft)] text-[var(--fix)] font-bold cursor-pointer min-h-[32px]">
+          <button type="button" onClick={onRetrySave} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-[var(--fix)] bg-[var(--fix-soft)] text-[var(--fix)] font-medium cursor-pointer min-h-[28px]">
             <RotateCcw className="w-3 h-3" /><span>Thử lại</span>
           </button>
         )}
@@ -93,21 +93,21 @@ export function SaveStatus({ lifecycle, lastSavedAt, errorCount, onRetrySave }: 
   }
   if (lifecycle === 'dirty') {
     return (
-      <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--warn)]">
-        <span className="inline-block w-2 h-2 rounded-full bg-[var(--warn)] shrink-0" aria-hidden="true" /><span>Có thay đổi chưa lưu</span>
+      <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--warn)]">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--warn)] shrink-0" aria-hidden="true" /><span>Đang lưu…</span>
       </span>
     );
   }
   if (errorCount > 0) {
     return (
-      <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--fix)]">
-        <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /><span>Còn <strong>{errorCount}</strong> mục cần xử lý · Lưu lúc <strong>{lastSavedAt}</strong></span>
+      <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--fix)]">
+        <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /><span>Còn <strong className="font-semibold">{errorCount}</strong> mục cần xử lý · Đã lưu lúc <strong className="font-semibold">{lastSavedAt}</strong></span>
       </span>
     );
   }
   return (
     <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs text-[var(--ink-muted)]">
-      <CheckCircle2 className="w-3.5 h-3.5 text-[var(--ok)] shrink-0" aria-hidden="true" /><span>Đã tự động lưu lúc <strong>{lastSavedAt}</strong></span>
+      <CheckCircle2 className="w-3.5 h-3.5 text-[var(--ok)] shrink-0" aria-hidden="true" /><span>Đã lưu lúc <strong className="font-medium text-[var(--foreground)]">{lastSavedAt}</strong></span>
     </span>
   );
 }
@@ -122,7 +122,7 @@ export function FormField({
   return (
     <div className="space-y-1">
       <div className="flex flex-wrap items-center justify-between gap-1.5">
-        <label htmlFor={htmlFor} className={`text-sm font-semibold transition-colors duration-150 ${effectiveState === 'focused' ? 'text-[var(--primary)] font-bold' : effectiveState === 'error' ? 'text-[var(--fix)] font-bold' : 'text-[var(--foreground)]'}`}>
+        <label htmlFor={htmlFor} className={`text-[13.5px] font-medium transition-colors duration-150 ${effectiveState === 'focused' ? 'text-[var(--primary)] font-semibold' : effectiveState === 'error' ? 'text-[var(--fix)] font-semibold' : 'text-[var(--foreground)]'}`}>
           <span>{label}</span>{required && <span className="text-[var(--fix)] ml-0.5" aria-hidden="true">*</span>}
         </label>
         <InlineStatus state={effectiveState} savedLabel={savedLabel} onRetry={onRetrySave} />
@@ -140,7 +140,7 @@ export function SegmentedControl<T extends string>({
   ariaLabel: string; options: { id: T; label: string; subLabel?: string; disabled?: boolean }[]; value: T; onChange: (next: T) => void; columnsClass?: string;
 }) {
   return (
-    <div role="group" aria-label={ariaLabel} className={`grid ${columnsClass} gap-1.5 rounded-xl bg-[var(--muted)] p-1.5`}>
+    <div role="group" aria-label={ariaLabel} className={`grid ${columnsClass} gap-1 rounded-lg bg-[var(--muted)] p-1`}>
       {options.map((opt) => {
         const selected = opt.id === value;
         return (
@@ -150,14 +150,14 @@ export function SegmentedControl<T extends string>({
             disabled={opt.disabled}
             aria-pressed={selected}
             onClick={() => onChange(opt.id)}
-            className={`relative flex items-center justify-center gap-2 rounded-lg px-3 py-2 min-h-[44px] text-center transition-all duration-150 cursor-pointer ${
+            className={`relative flex items-center justify-center gap-1.5 rounded-md px-3 h-9 text-center transition-all duration-150 cursor-pointer ${
               selected
-                ? 'bg-[var(--sheet)] border border-[var(--primary)]/40 font-bold text-[var(--primary)] shadow-2xs'
-                : 'border border-transparent bg-transparent font-semibold text-[var(--foreground)] hover:bg-[var(--sheet)]/65 hover:text-[var(--primary)]'
+                ? 'bg-[var(--sheet)] border border-[var(--primary)]/35 font-semibold text-[var(--primary)] shadow-2xs'
+                : 'border border-transparent bg-transparent font-medium text-[var(--foreground)] hover:bg-[var(--sheet)]/65 hover:text-[var(--primary)]'
             } disabled:opacity-45 disabled:cursor-not-allowed`}
           >
-            {selected && <span className="w-4 h-4 rounded-full bg-[var(--primary)] text-white inline-flex items-center justify-center shrink-0" aria-hidden="true"><Check className="w-3 h-3" /></span>}
-            <span className="text-sm leading-snug">{opt.label}</span>
+            {selected && <span className="w-3.5 h-3.5 rounded-full bg-[var(--primary)] text-white inline-flex items-center justify-center shrink-0" aria-hidden="true"><Check className="w-2.5 h-2.5" /></span>}
+            <span className="text-[13.5px] leading-snug">{opt.label}</span>
           </button>
         );
       })}
@@ -170,14 +170,14 @@ export function ToastRegion({ toasts, onDismiss }: { toasts: ToastNotice[]; onDi
   return (
     <div aria-live="polite" aria-atomic="false" className="fixed bottom-20 right-4 z-50 flex flex-col gap-2 max-w-sm w-[calc(100vw-2rem)] pointer-events-none">
       {toasts.map((t) => (
-        <div key={t.id} role={t.kind === 'error' ? 'alert' : 'status'} className={`pointer-events-auto flex items-center justify-between gap-2.5 rounded-xl border px-3.5 py-2.5 shadow-md transition-all duration-150 ${t.kind === 'error' ? 'border-[var(--fix)] bg-[var(--fix-soft)] text-[var(--fix)]' : 'border-[var(--ok)]/45 bg-[var(--sheet)] text-[var(--foreground)]'}`}>
-          <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold min-w-0">
+        <div key={t.id} role={t.kind === 'error' ? 'alert' : 'status'} className={`pointer-events-auto flex items-center justify-between gap-2.5 rounded-lg border px-3.5 py-2.5 shadow-sm transition-all duration-150 ${t.kind === 'error' ? 'border-[var(--fix)] bg-[var(--fix-soft)] text-[var(--fix)]' : 'border-[var(--ok)]/40 bg-[var(--sheet)] text-[var(--foreground)]'}`}>
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-medium min-w-0">
             {t.kind === 'error' ? <AlertTriangle className="w-4 h-4 text-[var(--fix)] shrink-0" /> : <CheckCircle2 className="w-4 h-4 text-[var(--ok)] shrink-0" />}
             <span className="break-words">{t.message}</span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            {t.onRetry && <button type="button" onClick={t.onRetry} className="px-2 py-1 rounded-lg bg-[var(--fix)] text-white text-xs font-bold cursor-pointer min-h-[32px]">Thử lại</button>}
-            <button type="button" aria-label="Đóng thông báo" onClick={() => onDismiss(t.id)} className="p-1.5 rounded-lg hover:bg-[var(--muted)] text-[var(--ink-muted)] cursor-pointer min-h-[32px] min-w-[32px] inline-flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>
+            {t.onRetry && <button type="button" onClick={t.onRetry} className="px-2 py-1 rounded-md bg-[var(--fix)] text-white text-xs font-medium cursor-pointer min-h-[28px]">Thử lại</button>}
+            <button type="button" aria-label="Đóng thông báo" onClick={() => onDismiss(t.id)} className="p-1.5 rounded-md hover:bg-[var(--muted)] text-[var(--ink-muted)] cursor-pointer min-h-[28px] min-w-[28px] inline-flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>
           </div>
         </div>
       ))}

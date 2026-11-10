@@ -63,18 +63,18 @@ export function TextInput({
           onFocusChange?.(false);
           onBlur?.(e);
         }}
-        className={`w-full rounded-xl px-3.5 py-2.5 text-base sm:text-sm ${resolveControlStateClass(
+        className={`w-full h-10 rounded-lg px-3 text-sm font-normal ${resolveControlStateClass(
           state,
           focused,
           hasError,
           disabled || state === 'disabled',
           isRo
-        )} ${isRo ? 'pr-9 font-mono font-bold text-[var(--primary)]' : ''} ${className}`}
+        )} ${isRo ? 'pr-8 font-mono font-medium text-[var(--primary)]' : ''} ${className}`}
         {...rest}
       />
       {isRo && (
         <Lock
-          className="w-3.5 h-3.5 text-[var(--ink-subtle)] absolute right-3 pointer-events-none"
+          className="w-3.5 h-3.5 text-[var(--ink-subtle)] absolute right-2.5 pointer-events-none"
           aria-hidden="true"
         />
       )}
@@ -118,7 +118,7 @@ export function NumberInput({
         onFocusChange?.(false);
         onBlur?.(e);
       }}
-      className={`w-full rounded-xl px-3 py-2 text-base sm:text-sm tabular-nums ${resolveControlStateClass(
+      className={`w-full h-10 rounded-lg px-3 text-sm font-normal tabular-nums ${resolveControlStateClass(
         state,
         focused,
         hasError,
@@ -166,7 +166,7 @@ export function DateInput({
         onFocusChange?.(false);
         onBlur?.(e);
       }}
-      className={`w-full rounded-xl px-3.5 py-2 text-base sm:text-sm ${resolveControlStateClass(
+      className={`w-full h-10 rounded-lg px-3 text-sm font-normal ${resolveControlStateClass(
         state,
         focused,
         hasError,
@@ -211,7 +211,7 @@ export function Select({
         onFocusChange?.(false);
         onBlur?.(e);
       }}
-      className={`w-full rounded-xl px-3 py-2 text-base sm:text-sm font-semibold ${resolveControlStateClass(
+      className={`w-full h-10 rounded-lg px-3 text-sm font-normal ${resolveControlStateClass(
         state,
         focused,
         hasError,
@@ -278,10 +278,9 @@ export function SearchableSelect({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="font-mono font-bold text-[var(--primary)] text-xs py-2"
+          className="font-mono font-medium text-[var(--primary)] text-xs"
         />
       </div>
     </div>
   );
 }
-

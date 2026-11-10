@@ -40,7 +40,7 @@ interface ScientificWorkspaceCardProps {
 
 export function ScientificWorkspaceCard(props: ScientificWorkspaceCardProps) {
   return (
-    <div className="bg-white border border-[#cbd5e1] rounded-2xl shadow-2xs p-3 sm:p-4 flex flex-col gap-3 w-full max-w-full min-w-0">
+    <div className="bg-white border-b border-[var(--border-subtle)] px-4 py-3 flex flex-col gap-2.5 w-full max-w-full min-w-0">
       <WorkspaceHeaderRow
         activeSheet={props.activeSheet}
         currentUnit={props.currentUnit}

@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --font-weight-black: 715;
-  --font-weight-extrabold: 660;
-  --font-weight-bold: 580;
+  --font-weight-black: 700;
+  --font-weight-extrabold: 600;
+  --font-weight-bold: 600;
   --font-weight-semibold: 500;
-  --font-weight-medium: 440;
-  --font-weight-normal: 440;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
   --background: #f5f7fa;
   --sheet: #ffffff;
   --surface-secondary: #f7f9fc;
@@ -14,33 +14,33 @@
   --foreground: rgb(0, 71, 118);
   --ink-muted: #20446c;
   --ink-subtle: #476885;
-  --primary: #005fa3;
-  --primary-action: #006cee;
-  --primary-deep: #004776;
+  --primary: #004776;
+  --primary-action: #005fa3;
+  --primary-deep: #00385c;
   --primary-foreground: #ffffff;
   --secondary-slink: #e1edf8;
   --accent-slink: #e3ecf6;
   --border-slink: #e1eaefe7;
-  --accent-red: #c81e1e;
-  --border: #c5d4e3;
-  --border-subtle: #e2eaf2;
+  --accent-red: #b42318;
+  --border: #cbd5e1;
+  --border-subtle: #e2e8f0;
   --card: #ffffff;
-  --muted: #eef2f6;
+  --muted: #f1f5f9;
   --fix: #b42318;
   --fix-soft: #fdeceb;
   --warn: #8f4f00;
   --warn-soft: #fdf2e1;
   --ok: #13653f;
   --ok-soft: #e3f5ec;
-  --focus-halo: rgba(0, 95, 163, 0.16);
+  --focus-halo: rgba(0, 71, 118, 0.16);
   --error-halo: rgba(180, 35, 24, 0.15);
-  --transition-ui: 170ms cubic-bezier(0.2, 0, 0, 1);
-  --sticky-action-height: 76px;
+  --transition-ui: 150ms cubic-bezier(0.2, 0, 0, 1);
+  --sticky-action-height: 68px;
 }
 
 @media (max-width: 639px) {
   :root {
-    --sticky-action-height: 116px;
+    --sticky-action-height: 104px;
   }
 }
 
@@ -81,8 +81,9 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: "Be Vietnam Pro", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 16px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -90,81 +91,82 @@ body {
   color: #ffffff !important;
 }
 
-/* Tăng độ dày (font-weight) của tất cả chữ lên 110% so với hiện tại */
-html,
-body,
-p,
-span,
-td,
-input,
-select,
-textarea,
-button,
-label {
-  font-weight: 440;
-}
-
-.font-normal {
-  font-weight: 440 !important;
-}
-
-.font-medium {
-  font-weight: 440 !important;
-}
-
-.font-semibold {
-  font-weight: 500 !important;
-}
-
-.font-bold,
-strong,
-b,
-th,
+/* Hệ thống phân cấp chữ chuẩn (Typography Hierarchy) */
 h1,
+.page-title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.015em;
+}
+
 h2,
 h3,
-h4,
-h5,
-h6 {
-  font-weight: 580 !important;
+.section-title {
+  font-size: 1.125rem;
+  line-height: 1.625rem;
+  font-weight: 600;
+  color: var(--foreground);
 }
 
-.font-extrabold {
-  font-weight: 660 !important;
+label,
+.form-label {
+  font-size: 0.84375rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--foreground);
 }
 
-.font-black {
-  font-weight: 715 !important;
+p,
+li,
+td {
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  font-weight: 400;
 }
 
+th {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* Chuẩn hóa kích thước Form Control: Desktop cao 40px, bo góc 6–8px */
 input:not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
-  font-size: 16px;
-  line-height: 1.5 !important;
-  min-height: 44px;
+  font-size: 14px;
+  line-height: 1.4 !important;
+  font-weight: 400;
+  border-radius: 0.5rem;
   overflow: visible !important;
 }
 
-@media (min-width: 640px) {
+input::placeholder,
+textarea::placeholder {
+  color: var(--ink-subtle);
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+@media (max-width: 639px) {
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {
-    font-size: 14px;
+    font-size: 16px;
+    min-height: 40px;
   }
-}
-
-button,
-[role="button"],
-a.btn-touch {
-  min-height: 44px;
 }
 
 /* Hệ thống trạng thái trường biểu mẫu dùng chung (Default / Focus / Error / ReadOnly / Disabled) */
 .vtvl-control {
   background-color: var(--sheet);
   border: 1px solid var(--border);
+  border-radius: 0.5rem;
   color: var(--foreground);
+  min-height: 40px;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
   transition: border-color var(--transition-ui), box-shadow var(--transition-ui), background-color var(--transition-ui);
 }
 
@@ -176,7 +178,7 @@ a.btn-touch {
 .vtvl-control-focused {
   outline: none !important;
   border-color: var(--primary) !important;
-  box-shadow: inset 0 0 0 1px var(--primary), 0 0 0 3px var(--focus-halo) !important;
+  box-shadow: 0 0 0 3px var(--focus-halo) !important;
 }
 
 .vtvl-control-error,
@@ -189,12 +191,12 @@ a.btn-touch {
 .vtvl-control[aria-invalid="true"]:focus {
   outline: none !important;
   border-color: var(--fix) !important;
-  box-shadow: inset 0 0 0 1px var(--fix), 0 0 0 3px var(--error-halo) !important;
+  box-shadow: 0 0 0 3px var(--error-halo) !important;
 }
 
 .vtvl-control-readonly {
   background-color: var(--muted) !important;
-  border-color: var(--border) !important;
+  border-color: var(--border-subtle) !important;
   cursor: default;
 }
 
@@ -202,14 +204,14 @@ a.btn-touch {
 .vtvl-control:disabled {
   background-color: var(--muted) !important;
   border-color: var(--border-subtle) !important;
-  color: var(--ink-muted) !important;
+  color: var(--ink-subtle) !important;
   cursor: not-allowed;
 }
 
 /* Hệ thống 3 lớp bề mặt (3-Layer Surface System) & Thanh hành động cố định */
 .surface-canvas {
   background-color: var(--sheet);
-  box-shadow: 0 1px 3px rgba(0, 71, 118, 0.04);
+  border: 1px solid var(--border-subtle);
 }
 
 .surface-secondary {
@@ -221,45 +223,42 @@ a.btn-touch {
 }
 
 .sticky-action-bar {
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(15, 46, 82, 0.08);
-  box-shadow: 0 -8px 24px rgba(15, 46, 82, 0.06);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
 }
 
 .page-with-sticky-bar {
-  padding-bottom: calc(var(--sticky-action-height, 76px) + 32px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--sticky-action-height, 68px) + 24px + env(safe-area-inset-bottom, 0px));
 }
 
 .section-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.75rem;
-  line-height: 1rem;
-  font-weight: 525;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  font-weight: 600;
   color: var(--foreground);
 }
 
 @media (min-width: 1024px) {
   .workflow-sidebar {
-    width: 288px;
-    min-width: 288px;
-    flex-basis: 288px;
+    width: 264px;
+    min-width: 264px;
+    flex-basis: 264px;
     transition: width var(--transition-ui), min-width var(--transition-ui), flex-basis var(--transition-ui);
   }
   .workflow-sidebar[data-collapsed="true"] {
-    width: 76px;
-    min-width: 76px;
-    flex-basis: 76px;
+    width: 68px;
+    min-width: 68px;
+    flex-basis: 68px;
   }
 }
 
 .dark .sticky-action-bar {
-  background: rgba(17, 32, 48, 0.94);
+  background: rgba(17, 32, 48, 0.95);
   border-top: 1px solid rgba(136, 172, 201, 0.14);
 }
 
@@ -270,7 +269,7 @@ a.btn-touch {
   transition: background-color 180ms ease-out, border-color 180ms ease-out;
 }
 *:focus-visible {
-  outline: 2px solid var(--primary-action, var(--primary)) !important;
+  outline: 2px solid var(--primary) !important;
   outline-offset: 2px !important;
 }
 .tabular-nums { font-variant-numeric: tabular-nums; }

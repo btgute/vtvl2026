@@ -101,8 +101,8 @@ export function ExcelTableRenderer({
   };
 
   return (
-    <div className={`flex flex-col bg-white border border-[#cbd5e1] rounded-2xl shadow-2xs overflow-hidden w-full max-w-full min-w-0 transition-all ${
-      isFullscreen ? 'fixed inset-2 z-50 rounded-xl' : 'h-full'
+    <div className={`flex flex-col bg-white overflow-hidden w-full max-w-full min-w-0 transition-all ${
+      isFullscreen ? 'fixed inset-2 z-50 rounded-xl border border-[#cbd5e1] shadow-xl' : 'h-full'
     }`}>
       <TableDeleteConfirmModal
         confirmDeleteId={confirmDeleteId}
@@ -115,10 +115,13 @@ export function ExcelTableRenderer({
       <TableControlBar
         meta={meta}
         rowsCount={processedRows.length}
+        selectedCount={selectedRowIds.size}
+        isC1Locked={isC1Locked}
         searchTerm={searchTerm}
         filterMode={filterMode}
         density={density}
         isFullscreen={isFullscreen}
+        onAddRow={onAddRow}
         onSearchChange={setSearchTerm}
         onFilterModeChange={setFilterMode}
         onDensityChange={setDensity}
@@ -142,21 +145,22 @@ export function ExcelTableRenderer({
       </div>
 
       {/* DESKTOP (>= 768px): BẢNG DỮ LIỆU */}
-      <div className="hidden md:block flex-1 overflow-x-auto overflow-y-auto max-h-[620px] select-text w-full max-w-full">
-        <table className="w-full text-xs border-collapse">
+      <div className="hidden md:block flex-1 overflow-x-auto overflow-y-auto max-h-[650px] select-text w-full max-w-full">
+        <table className="w-full text-[13.5px] border-collapse">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#f8fafc] text-[#004776] border-b border-[#cbd5e1]">
-              <th className="w-10 min-w-[40px] py-2 px-2 text-center border-r border-[#cbd5e1] sticky left-0 z-11 bg-[#f8fafc]">
+              <th className="w-10 min-w-[40px] py-2.5 px-2 text-center border-r border-[#e2e8f0] sticky left-0 z-11 bg-[#f8fafc]">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   onChange={toggleSelectAll}
+                  aria-label="Chọn tất cả dòng"
                   className="rounded border-[#cbd5e1] text-[#004776] focus:ring-[#004776] cursor-pointer"
                 />
               </th>
               <th
                 onClick={() => handleSort('id')}
-                className="w-12 min-w-[48px] py-2 px-1 text-center font-bold border-r border-[#cbd5e1] cursor-pointer hover:bg-[#f1f5f9] select-none"
+                className="w-12 min-w-[48px] py-2.5 px-1 text-center font-semibold border-r border-[#e2e8f0] cursor-pointer hover:bg-[#f1f5f9] select-none"
               >
                 <div className="inline-flex items-center gap-1 justify-center">
                   <span>STT</span>
@@ -168,32 +172,38 @@ export function ExcelTableRenderer({
                   key={c.field}
                   style={{ width: c.width || '150px', minWidth: c.width || '140px' }}
                   onClick={() => handleSort(c.field)}
-                  className="py-2 px-2.5 text-left font-bold border-r border-[#cbd5e1] align-middle cursor-pointer hover:bg-[#f1f5f9] select-none"
+                  className="py-2.5 px-2.5 text-left font-semibold border-r border-[#e2e8f0] align-middle cursor-pointer hover:bg-[#f1f5f9] select-none"
                 >
                   <div className="flex items-center justify-between gap-1">
-                    <span className="leading-tight">{c.headerName}</span>
+                    <span className="leading-snug">
+                      {c.headerName}
+                      {c.required && <span className="text-[var(--fix)] ml-0.5">*</span>}
+                    </span>
                     <ArrowUpDown className="w-3 h-3 text-[#94a3b8] shrink-0" />
                   </div>
                 </th>
               ))}
-              <th className="w-12 py-2 text-center border-r border-[#cbd5e1] select-none text-[#94a3b8]">⋯</th>
+              <th className="w-16 min-w-[64px] py-2.5 px-2 text-center font-semibold sticky right-0 z-11 bg-[#f8fafc] border-l border-[#e2e8f0] select-none text-[#476885]">
+                Thao tác
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#f1f5f9]">
             {processedRows.length === 0 ? (
-              <tr><td colSpan={meta.columns.length + 3} className="py-12 text-center text-[#64748b] bg-[#fafafa]">Không có dữ liệu phù hợp.</td></tr>
+              <tr><td colSpan={meta.columns.length + 3} className="py-12 text-center text-[#476885] bg-[#fafafa]">Không có dữ liệu phù hợp.</td></tr>
             ) : (
               processedRows.map((row, rIdx) => (
-                <tr key={row.id} className="odd:bg-white even:bg-[#fafcff] hover:bg-sky-50/50 transition-colors group">
+                <tr key={row.id} className="odd:bg-white even:bg-[#fafcff] hover:bg-[#f0f7ff] transition-colors group">
                   <td className="w-10 py-1.5 px-2 text-center border-r border-[#f1f5f9] sticky left-0 z-2 bg-inherit">
                     <input
                       type="checkbox"
                       checked={selectedRowIds.has(row.id)}
                       onChange={() => toggleSelectRow(row.id)}
+                      aria-label={`Chọn dòng ${rIdx + 1}`}
                       className="rounded border-[#cbd5e1] text-[#004776] focus:ring-[#004776] cursor-pointer"
                     />
                   </td>
-                  <td className="w-12 py-1.5 text-center font-semibold text-[#64748b] border-r border-[#f1f5f9] select-none">
+                  <td className="w-12 py-1.5 text-center font-normal tabular-nums text-[#476885] border-r border-[#f1f5f9] select-none">
                     {rIdx + 1}
                   </td>
                   {meta.columns.map((col) => (
@@ -206,15 +216,27 @@ export function ExcelTableRenderer({
                       density={density} onCellTouch={onCellTouch} onCellChange={onCellChange}
                     />
                   ))}
-                  <td className="w-12 py-1 text-center border-r border-[#f1f5f9]">
-                    <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td className="w-16 py-1 px-1.5 text-center sticky right-0 z-2 bg-inherit border-l border-[#f1f5f9]">
+                    <div className="flex items-center justify-center gap-1 opacity-75 group-hover:opacity-100 transition-opacity">
                       {meta.key === 'A1' && (
-                        <button type="button" onClick={() => onSplitRow?.(row.id)} title="Tách nhiệm vụ" className="w-5 h-5 text-indigo-600 hover:bg-indigo-50 rounded cursor-pointer">
+                        <button
+                          type="button"
+                          onClick={() => onSplitRow?.(row.id)}
+                          aria-label={`Tách nhiệm vụ dòng ${rIdx + 1}`}
+                          title="Tách nhiệm vụ"
+                          className="w-7 h-7 inline-flex items-center justify-center text-[#004776] hover:bg-[#e6f0f8] rounded-md cursor-pointer"
+                        >
                           <Copy className="w-3.5 h-3.5" />
                         </button>
                       )}
                       {!isC1Locked && (
-                        <button type="button" onClick={() => setConfirmDeleteId(row.id)} title="Xóa dòng" className="w-5 h-5 text-rose-500 hover:bg-rose-50 rounded cursor-pointer">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(row.id)}
+                          aria-label={`Xóa dòng ${rIdx + 1}`}
+                          title="Xóa dòng"
+                          className="w-7 h-7 inline-flex items-center justify-center text-[var(--fix)] hover:bg-[var(--fix-soft)] rounded-md cursor-pointer"
+                        >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       )}
@@ -228,21 +250,20 @@ export function ExcelTableRenderer({
       </div>
 
       {/* FOOTER BẢNG */}
-      <div className="px-3.5 py-2 bg-[#f8fafc] border-t border-[#e2e8f0] flex items-center justify-between text-xs text-[#64748b]">
+      <div className="px-4 py-2 bg-[#f8fafc] border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[#476885]">
         {!isC1Locked ? (
           <button
             type="button"
             onClick={onAddRow}
-            className="inline-flex items-center gap-1 px-3 py-1 font-bold text-[#004776] bg-white hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-lg cursor-pointer transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 h-8 px-3 font-medium text-[#004776] bg-white hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-lg cursor-pointer transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>{meta.key === 'A1' ? 'Thêm nhiệm vụ' : 'Thêm dòng mới'}</span>
           </button>
         ) : <div />}
 
-        <div>
-          <span>Tổng số: <strong>{processedRows.length}</strong> dòng</span>
-          {selectedRowIds.size > 0 && <span className="ml-2 text-[#004776] font-semibold">({selectedRowIds.size} đã chọn)</span>}
+        <div className="tabular-nums">
+          <span>Hiển thị <strong className="font-semibold text-[#004776]">{processedRows.length}</strong> / {rows.length} dòng</span>
         </div>
       </div>
     </div>

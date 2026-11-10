@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Timer, Play, Pause, Plus, Download, CheckCircle2, Trash2, ArrowRight, Building2, UserCheck, ClipboardList, Edit3 } from 'lucide-react';
+import { Timer, Play, Pause, Plus, Download, CheckCircle2, Trash2, ArrowRight, UserCheck, ClipboardList, Edit3 } from 'lucide-react';
 import { WorkflowSidebar, InfoTip } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { NGACH_LIST_BY_GROUP, TASK_TEMPLATES_BY_GROUP } from '@/configs/hcmute-quotas';
@@ -122,7 +122,7 @@ export default function BamGioPage() {
     const minPerProd = Number((durationMin / prods).toFixed(1)); const runNum = sessions.filter((s) => s.taskCode === activeTask.fullTaskCode).length + 1;
     const now = new Date(); const endStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     commitSessions([...sessions, { id: `${Date.now()}`, taskCode: activeTask.fullTaskCode, taskName: activeTask.taskName, runNumber: runNum, date: manualDate, startTime: 'Đo trực tiếp', endTime: endStr, durationMinutes: durationMin, productCount: prods, minutesPerProduct: minPerProd, performerTitle }]);
-    setRunning(false); setElapsedSec(0); setStatusBanner(`Đã lưu phiên đo thực tế mã ${activeTask.fullTaskCode} (${minPerProd} phút/SP) và tự động đính kèm phiếu sang Bước 7.`);
+    setRunning(false); setElapsedSec(0); setStatusBanner(`Đã lưu phiên đo thực tế mã ${activeTask.fullTaskCode} (${minPerProd} phút/SP).`);
   };
 
   const handleAddManualSession = (e: React.FormEvent) => {
@@ -131,62 +131,55 @@ export default function BamGioPage() {
     const durationMin = Math.max(5, eh * 60 + em - (sh * 60 + sm)); const prods = Math.max(1, manualProducts);
     const minPerProd = Number((durationMin / prods).toFixed(1)); const runNum = sessions.filter((s) => s.taskCode === activeTask.fullTaskCode).length + 1;
     commitSessions([...sessions, { id: `${Date.now()}`, taskCode: activeTask.fullTaskCode, taskName: activeTask.taskName, runNumber: runNum, date: manualDate, startTime: manualStart, endTime: manualEnd, durationMinutes: durationMin, productCount: prods, minutesPerProduct: minPerProd, performerTitle }]);
-    setStatusBanner(`Đã lưu bản ghi ${activeTask.fullTaskCode} (${minPerProd} phút/SP) và tự động liên thông sang Bước 7.`);
+    setStatusBanner(`Đã lưu bản ghi ${activeTask.fullTaskCode} (${minPerProd} phút/SP).`);
   };
 
   const handleExport = () => {
     const fileName = exportPersonalTimerWorkbook(unit, selectedVtvlSuffix, performerTitle, tasksForPosition, sessions, manualDate);
     saveActiveUnitSession({ unitCode: unit.code, timeSessions: sessions });
     recordActivity(unit.code, unit.nameVi, 'BAM_GIO', `Kết xuất phiếu kê khai định mức thời gian: ${fileName}`);
-    setStatusBanner(`Đã xuất tệp ${fileName} và đính kèm tự động vào Giai đoạn 4 (Gộp phiếu).`);
+    setStatusBanner(`Đã xuất tệp ${fileName} thành công.`);
   };
 
   return (
-    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6">
-      <div className="flex flex-col lg:flex-row gap-5 items-start">
+    <div className="w-full max-w-[1360px] mx-auto px-3.5 sm:px-5 lg:px-6 py-4">
+      <div className="flex flex-col lg:flex-row gap-4 items-start min-w-0">
         <WorkflowSidebar activeStep={stepMode} onSelectStep={(s) => { if (s === 3 || s === 4) handleSwitchStep(s); }} unitCode={unit.code} />
-        <div className="flex-1 w-full space-y-5 min-w-0">
-          <section className="surface-canvas rounded-2xl p-5 sm:p-7 space-y-5">
+        <div className="flex-1 w-full space-y-4 min-w-0">
+          <section className="bg-white rounded-xl border border-[var(--border)] p-4 sm:p-5 space-y-4 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
-              <div className="flex items-center">
-                <span className="w-7 h-7 rounded-full bg-[var(--primary)] text-white font-extrabold text-xs flex items-center justify-center mr-2.5 shrink-0">{stepMode}</span>
-                <h1 className="text-base sm:text-xl font-extrabold text-[var(--foreground)]">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-white font-semibold text-xs flex items-center justify-center shrink-0">{stepMode}</span>
+                <h1 className="text-lg sm:text-xl font-semibold text-[var(--foreground)]">
                   {stepMode === 3
-                    ? 'Bước 3/8 (HD 07) — Xác định số lượng sản phẩm và thời gian thực hiện (Biểu 3. B1_KhoiLuong)'
-                    : 'Bước 4/8 (HD 07) — Xác định thay đổi về công việc, sản phẩm do chuyển đổi số, tự chủ, thuê dịch vụ (Biểu 4. B2_CT_TacDong → 5. B2_ThayDoi)'}
+                    ? 'Bước 3/8 — Số lượng sản phẩm & thời gian (Biểu B1_KhoiLuong)'
+                    : 'Bước 4/8 — Tác động chuyển đổi số, tự chủ (Biểu B2_CT → B2)'}
                 </h1>
-                <InfoTip title="Hướng dẫn Bước 3 (Biểu 3. B1_KhoiLuong) & Bước 4 (Biểu 4. B2_CT_TacDong)">
-                  <p>Hệ thống tự động giữ nguyên đơn vị <strong>[{unit.code}] {unit.nameVi}</strong> cùng các Tên VTVL cụ thể và Bậc nghề nghiệp đã đặt.</p>
-                  <p>Mỗi bản ghi tại Bước 3 và Bước 4 được lưu trực tiếp vào phiên làm việc và tự động chuyển thành phiếu khảo sát tại <strong>Bước 7 (Đối chiếu D1 &amp; Phương án D2)</strong>.</p>
+                <InfoTip title="Hướng dẫn Bước 3 & Bước 4">
+                  <p>Mỗi bản ghi được lưu trực tiếp vào phiên làm việc và tự động chuyển thành phiếu khảo sát tại Bước 7.</p>
                 </InfoTip>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="inline-flex rounded-xl bg-[var(--surface-secondary)] p-1 border border-[var(--border-subtle)]">
-                  <button type="button" onClick={() => handleSwitchStep(3)} className={`min-h-[36px] px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors ${stepMode === 3 ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)] hover:text-[var(--primary)]'}`}>Bước 3: Khối lượng &amp; thời gian (B1)</button>
-                  <button type="button" onClick={() => handleSwitchStep(4)} className={`min-h-[36px] px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors ${stepMode === 4 ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)] hover:text-[var(--primary)]'}`}>Bước 4: Tác động CĐS, tự chủ (B2_CT → B2)</button>
-                </div>
-                <Link href="/tao-tep?step=1" className="text-xs font-semibold text-[var(--primary)] hover:underline">Đổi đơn vị</Link>
+              <div className="inline-flex rounded-lg bg-[var(--surface-secondary)] p-1 border border-[var(--border-subtle)]">
+                <button type="button" onClick={() => handleSwitchStep(3)} className={`h-8 px-3 rounded-md text-xs font-semibold cursor-pointer transition-colors ${stepMode === 3 ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)] hover:text-[var(--primary)]'}`}>Bước 3: B1_KhoiLuong</button>
+                <button type="button" onClick={() => handleSwitchStep(4)} className={`h-8 px-3 rounded-md text-xs font-semibold cursor-pointer transition-colors ${stepMode === 4 ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)] hover:text-[var(--primary)]'}`}>Bước 4: B2_CT_TacDong</button>
               </div>
             </div>
 
-            {statusBanner && <div role="status" aria-live="polite" className="rounded-xl border border-[var(--ok)]/40 bg-[var(--ok-soft)] px-3.5 py-2.5 text-xs sm:text-sm font-bold text-[var(--ok)]">✓ {statusBanner}</div>}
+            {statusBanner && <div role="status" aria-live="polite" className="rounded-lg border border-[var(--ok)]/40 bg-[var(--ok-soft)] px-3 py-2 text-xs font-medium text-[var(--ok)]">✓ {statusBanner}</div>}
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center py-1">
-              <div className="md:col-span-4 flex items-center gap-2 text-xs sm:text-sm font-bold text-[var(--foreground)] min-w-0">
-                <Building2 className="w-4 h-4 text-[var(--primary)] shrink-0" /><span className="truncate">[{unit.code}] {unit.nameVi}</span>
-              </div>
-              <div className="md:col-span-5 md:border-l md:border-[var(--border-subtle)] md:pl-4 flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center py-1">
+              <div className="md:col-span-8 flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <UserCheck className="w-4 h-4 text-[var(--primary)] shrink-0" />
-                  <select id="task-3-vtvl" aria-label="Chọn vị trí việc làm cần đo" value={selectedVtvlSuffix} onChange={(e) => setSelectedVtvlSuffix(e.target.value)} className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-[var(--foreground)] truncate">
+                  <select id="task-3-vtvl" aria-label="Chọn vị trí việc làm cần đo" value={selectedVtvlSuffix} onChange={(e) => setSelectedVtvlSuffix(e.target.value)} className="w-full h-10 rounded-lg border border-[#cbd5e1] bg-white px-2.5 text-xs sm:text-sm font-medium text-[var(--foreground)] truncate">
                     {vtvlOptions.map((v) => <option key={v.suffix} value={v.suffix}>{v.code} · {v.name} ({v.level})</option>)}
                   </select>
                 </div>
-                <input type="text" aria-label="Chức danh và bậc kê khai" value={performerTitle} onChange={(e) => setPerformerTitle(e.target.value)} className="sm:w-40 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-2.5 py-1.5 text-xs font-medium text-[var(--ink-muted)]" />
+                <input type="text" aria-label="Chức danh và bậc kê khai" value={performerTitle} onChange={(e) => setPerformerTitle(e.target.value)} className="sm:w-44 h-10 rounded-lg border border-[#cbd5e1] bg-white px-2.5 text-xs font-medium text-[var(--ink-muted)]" />
               </div>
-              <div className="md:col-span-3 md:border-l md:border-[var(--border-subtle)] md:pl-4 space-y-1.5">
-                <div className="text-xs font-bold text-[var(--foreground)]">{measuredTaskCount}/{tasksForPosition.length} công việc đã có dữ liệu</div>
-                <div className="h-2 w-full rounded-full bg-[var(--border-subtle)] overflow-hidden"><div className="h-full rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.max(12, Math.round((measuredTaskCount / Math.max(1, tasksForPosition.length)) * 100))}%` }} /></div>
+              <div className="md:col-span-4 md:border-l md:border-[var(--border-subtle)] md:pl-3 space-y-1">
+                <div className="text-xs font-medium text-[var(--foreground)]">{measuredTaskCount}/{tasksForPosition.length} công việc đã đo</div>
+                <div className="h-1.5 w-full rounded-full bg-[var(--border-subtle)] overflow-hidden"><div className="h-full rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.max(12, Math.round((measuredTaskCount / Math.max(1, tasksForPosition.length)) * 100))}%` }} /></div>
               </div>
             </div>
 
@@ -194,79 +187,75 @@ export default function BamGioPage() {
               <>
                 {activeTask && (
                   <div className="space-y-2">
-                    <div className="section-eyebrow"><Timer className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Công việc đang đo định mức (Biểu 3. B1_KhoiLuong)</span></div>
-                    <div className="rounded-xl border border-[var(--primary)] bg-[var(--surface-tint)]/75 px-4 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="min-w-0 space-y-0.5"><div className="font-mono font-bold text-sm text-[var(--primary)]">{activeTask.fullTaskCode}</div><p className="text-xs sm:text-sm font-medium text-[var(--foreground)]">{activeTask.taskName}</p></div>
-                      <div className="sm:border-l sm:border-[var(--primary)]/20 sm:pl-4 flex items-center gap-1.5 text-sm font-bold text-[var(--foreground)] shrink-0"><Timer className="w-4 h-4 text-[var(--primary)]" /><span className="tabular-nums">{activeTask.defaultMinutesPerProduct.toLocaleString('vi-VN')} phút/SP</span></div>
+                    <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--surface-tint)] px-3.5 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="min-w-0"><span className="font-mono font-semibold text-xs text-[var(--primary)]">{activeTask.fullTaskCode}</span><p className="text-xs sm:text-sm font-medium text-[var(--foreground)]">{activeTask.taskName}</p></div>
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--foreground)] shrink-0"><Timer className="w-4 h-4 text-[var(--primary)]" /><span className="tabular-nums">{activeTask.defaultMinutesPerProduct.toLocaleString('vi-VN')} phút/SP</span></div>
                     </div>
                     {tasksForPosition.length > 1 && (
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] font-semibold text-[var(--ink-muted)] mr-1">Đổi công việc:</span>
-                        {tasksForPosition.map((t) => <button key={t.fullTaskCode} type="button" aria-pressed={activeTaskCode === t.fullTaskCode} onClick={() => setActiveTaskCode(t.fullTaskCode)} className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border cursor-pointer transition-colors ${activeTaskCode === t.fullTaskCode ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-[var(--surface-secondary)] text-[var(--foreground)] border-[var(--border-subtle)] hover:border-[var(--primary)]'}`}>{t.fullTaskCode}</button>)}
+                        <span className="text-[11px] font-medium text-[var(--ink-muted)]">Đổi việc:</span>
+                        {tasksForPosition.map((t) => <button key={t.fullTaskCode} type="button" aria-pressed={activeTaskCode === t.fullTaskCode} onClick={() => setActiveTaskCode(t.fullTaskCode)} className={`px-2 py-0.5 rounded-md text-xs font-mono font-semibold border cursor-pointer ${activeTaskCode === t.fullTaskCode ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--foreground)] border-[#cbd5e1]'}`}>{t.fullTaskCode}</button>)}
                       </div>
                     )}
                   </div>
                 )}
-                <div className="inline-flex rounded-xl bg-[var(--surface-secondary)] p-1 border border-[var(--border-subtle)]">
-                  <button type="button" onClick={() => setInputMode('live')} className={`inline-flex items-center gap-1.5 min-h-[38px] px-4 rounded-lg text-xs sm:text-sm font-bold cursor-pointer transition-colors ${inputMode === 'live' ? 'bg-[var(--primary)] text-white shadow-2xs' : 'text-[var(--foreground)] hover:text-[var(--primary)]'}`}><Timer className="w-4 h-4" /><span>Đo trực tiếp</span></button>
-                  <button type="button" onClick={() => setInputMode('manual')} className={`inline-flex items-center gap-1.5 min-h-[38px] px-4 rounded-lg text-xs sm:text-sm font-bold cursor-pointer transition-colors ${inputMode === 'manual' ? 'bg-[var(--primary)] text-white shadow-2xs' : 'text-[var(--foreground)] hover:text-[var(--primary)]'}`}><Edit3 className="w-4 h-4" /><span>Nhập thủ công</span></button>
+                <div className="inline-flex rounded-lg bg-[var(--surface-secondary)] p-1 border border-[var(--border-subtle)]">
+                  <button type="button" onClick={() => setInputMode('live')} className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-semibold cursor-pointer ${inputMode === 'live' ? 'bg-[var(--primary)] text-white shadow-2xs' : 'text-[var(--foreground)]'}`}><Timer className="w-3.5 h-3.5" /><span>Đo trực tiếp</span></button>
+                  <button type="button" onClick={() => setInputMode('manual')} className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-semibold cursor-pointer ${inputMode === 'manual' ? 'bg-[var(--primary)] text-white shadow-2xs' : 'text-[var(--foreground)]'}`}><Edit3 className="w-3.5 h-3.5" /><span>Nhập thủ công</span></button>
                 </div>
-                <div className={inputMode === 'live' ? 'rounded-2xl bg-[var(--surface-tint)]/80 border border-[var(--primary)]/15 p-5 grid grid-cols-1 md:grid-cols-12 items-center gap-4' : 'sr-only'}>
-                  <div className="md:col-span-5 text-center space-y-1"><div className="text-xs font-semibold text-[var(--ink-muted)]">Đồng hồ đo (đo trực tiếp)</div><div className="text-3xl sm:text-4xl font-extrabold font-mono text-[var(--foreground)] tracking-wider tabular-nums">{formatTimer(elapsedSec)}</div></div>
-                  <div className="md:col-span-3 md:border-l md:border-[var(--border-subtle)] md:pl-5 space-y-1"><label htmlFor="live-prod-count" className="block text-xs font-semibold text-[var(--ink-muted)]">Số sản phẩm</label><input id="live-prod-count" type="number" min={1} value={productCountInput} onChange={(e) => setProductCountInput(Math.max(1, parseInt(e.target.value || '1', 10)))} className="w-full min-h-[42px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-3 text-sm font-bold text-[var(--foreground)]" /></div>
-                  <div className="md:col-span-4 flex flex-wrap items-center justify-end gap-2">
-                    <button id="task-3-timer" type="button" onClick={() => setRunning(!running)} className="flex-1 sm:flex-initial justify-center inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-[var(--primary)] text-white text-sm font-bold cursor-pointer shadow-2xs">{running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}<span>{running ? 'Tạm dừng' : 'Bắt đầu đo'}</span></button>
-                    <button type="button" onClick={handleFinishLiveTimer} className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-[var(--ok)] text-white text-xs sm:text-sm font-bold cursor-pointer"><CheckCircle2 className="w-4 h-4" /><span>Ghi nhận</span></button>
+                <div className={inputMode === 'live' ? 'rounded-xl bg-[var(--surface-tint)]/70 border border-[var(--primary)]/20 p-4 grid grid-cols-1 md:grid-cols-12 items-center gap-3' : 'sr-only'}>
+                  <div className="md:col-span-5 text-center space-y-0.5"><div className="text-xs font-medium text-[var(--ink-muted)]">Đồng hồ đo</div><div className="text-3xl font-semibold font-mono text-[var(--foreground)] tracking-wider tabular-nums">{formatTimer(elapsedSec)}</div></div>
+                  <div className="md:col-span-3 md:border-l md:border-[var(--border-subtle)] md:pl-4 space-y-1"><label htmlFor="live-prod-count" className="block text-xs font-medium text-[var(--ink-muted)]">Số sản phẩm</label><input id="live-prod-count" type="number" min={1} value={productCountInput} onChange={(e) => setProductCountInput(Math.max(1, parseInt(e.target.value || '1', 10)))} className="w-full h-10 rounded-lg border border-[#cbd5e1] bg-white px-3 text-sm font-semibold tabular-nums" /></div>
+                  <div className="md:col-span-4 flex items-center justify-end gap-2">
+                    <button id="task-3-timer" type="button" onClick={() => setRunning(!running)} className="h-10 px-4 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold cursor-pointer inline-flex items-center gap-1.5">{running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}<span>{running ? 'Tạm dừng' : 'Bắt đầu'}</span></button>
+                    <button type="button" onClick={handleFinishLiveTimer} className="h-10 px-4 rounded-lg bg-[var(--ok)] text-white text-xs font-semibold cursor-pointer inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /><span>Ghi nhận</span></button>
                   </div>
                 </div>
-                <form onSubmit={handleAddManualSession} className={inputMode === 'manual' ? 'rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)] p-4 grid grid-cols-2 sm:grid-cols-5 gap-3 items-end' : 'sr-only'}>
-                  <div><label className="block text-xs font-semibold text-[var(--ink-muted)] mb-1">Ngày thực hiện</label><input type="date" value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="w-full min-h-[42px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-2.5 text-xs sm:text-sm" /></div>
-                  <div><label htmlFor="task-3-manual" className="block text-xs font-semibold text-[var(--ink-muted)] mb-1">Giờ bắt đầu</label><input id="task-3-manual" type="time" value={manualStart} onChange={(e) => setManualStart(e.target.value)} className="w-full min-h-[42px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-2.5 text-xs sm:text-sm" /></div>
-                  <div><label className="block text-xs font-semibold text-[var(--ink-muted)] mb-1">Giờ kết thúc</label><input type="time" value={manualEnd} onChange={(e) => setManualEnd(e.target.value)} className="w-full min-h-[42px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-2.5 text-xs sm:text-sm" /></div>
-                  <div><label className="block text-xs font-semibold text-[var(--ink-muted)] mb-1">Số sản phẩm</label><input type="number" min={1} value={manualProducts} onChange={(e) => setManualProducts(Math.max(1, parseInt(e.target.value || '1', 10)))} className="w-full min-h-[42px] rounded-xl border border-[var(--border)] bg-[var(--sheet)] px-2.5 text-xs sm:text-sm font-bold" /></div>
-                  <button type="submit" className="col-span-2 sm:col-span-1 min-h-[42px] rounded-xl bg-[var(--primary)] text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-1.5 cursor-pointer"><Plus className="w-4 h-4" /><span>Thêm bản ghi</span></button>
+                <form onSubmit={handleAddManualSession} className={inputMode === 'manual' ? 'rounded-xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)] p-3.5 grid grid-cols-2 sm:grid-cols-5 gap-2.5 items-end' : 'sr-only'}>
+                  <div><label className="block text-xs font-medium text-[var(--ink-muted)] mb-1">Ngày thực hiện</label><input type="date" value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="w-full h-10 rounded-lg border border-[#cbd5e1] bg-white px-2.5 text-xs" /></div>
+                  <div><label htmlFor="task-3-manual" className="block text-xs font-medium text-[var(--ink-muted)] mb-1">Giờ bắt đầu</label><input id="task-3-manual" type="time" value={manualStart} onChange={(e) => setManualStart(e.target.value)} className="w-full h-10 rounded-lg border border-[#cbd5e1] bg-white px-2.5 text-xs" /></div>
+                  <div><label className="block text-xs font-medium text-[var(--ink-muted)] mb-1">Giờ kết thúc</label><input type="time" value={manualEnd} onChange={(e) => setManualEnd(e.target.value)} className="w-full h-10 rounded-lg border border-[#cbd5e1] bg-white px-2.5 text-xs" /></div>
+                  <div><label className="block text-xs font-medium text-[var(--ink-muted)] mb-1">Số sản phẩm</label><input type="number" min={1} value={manualProducts} onChange={(e) => setManualProducts(Math.max(1, parseInt(e.target.value || '1', 10)))} className="w-full h-10 rounded-lg border border-[#cbd5e1] bg-white px-2.5 text-xs font-semibold tabular-nums" /></div>
+                  <button type="submit" className="col-span-2 sm:col-span-1 h-10 rounded-lg bg-[var(--primary)] text-white font-semibold text-xs inline-flex items-center justify-center gap-1.5 cursor-pointer"><Plus className="w-4 h-4" /><span>Thêm</span></button>
                 </form>
-                <div className="space-y-3 pt-1">
-                  <div className="section-eyebrow"><ClipboardList className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Nhật ký định mức B1 — {sessions.length} bản ghi</span></div>
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[var(--foreground)]"><div className="flex items-center gap-1.5"><ClipboardList className="w-4 h-4 text-[var(--primary)]" /><span>Nhật ký định mức B1 — {sessions.length} bản ghi</span></div></div>
                   {sessions.length === 0 ? (
-                    <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-5 flex items-center justify-center gap-3.5"><div className="w-10 h-10 rounded-xl bg-[var(--surface-tint)] text-[var(--primary)] flex items-center justify-center shrink-0"><ClipboardList className="w-5 h-5" /></div><div className="space-y-0.5"><div className="text-sm font-bold text-[var(--foreground)]">Chưa có bản ghi đo định mức B1</div><p className="text-xs text-[var(--ink-muted)]">Thực hiện đo trực tiếp hoặc nhập thủ công để tạo bản ghi thời gian.</p></div></div>
+                    <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 text-center text-xs text-[var(--ink-muted)]">Chưa có bản ghi đo định mức B1 nào.</div>
                   ) : (
-                    <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)]">
+                    <div className="overflow-x-auto rounded-lg border border-[var(--border-subtle)] max-h-60">
                       <table className="w-full text-xs border-collapse">
-                        <thead><tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)]"><th className="py-2.5 px-3 text-left">Mã CV</th><th className="py-2.5 px-3 text-left">Lượt</th><th className="py-2.5 px-3 text-left">Thời gian</th><th className="py-2.5 px-3 text-right">Phút</th><th className="py-2.5 px-3 text-right">SP</th><th className="py-2.5 px-3 text-right">Phút/SP</th><th className="py-2.5 px-3 text-center">Xóa</th></tr></thead>
-                        <tbody className="divide-y divide-[var(--border-subtle)] bg-[var(--sheet)]">
-                          {sessions.map((s) => (<tr key={s.id}><td className="py-2 px-3 font-mono font-bold text-[var(--primary)]">{s.taskCode}</td><td className="py-2 px-3 tabular-nums">Lần {s.runNumber}</td><td className="py-2 px-3">{s.startTime} – {s.endTime}</td><td className="py-2 px-3 text-right tabular-nums">{s.durationMinutes}</td><td className="py-2 px-3 text-right tabular-nums">{s.productCount}</td><td className="py-2 px-3 text-right font-extrabold text-[var(--ok)] tabular-nums">{s.minutesPerProduct}</td><td className="py-2 px-3 text-center"><button type="button" onClick={() => commitSessions(sessions.filter((x) => x.id !== s.id))} className="text-[var(--fix)] hover:opacity-80 cursor-pointer"><Trash2 className="w-3.5 h-3.5 inline" /></button></td></tr>))}
+                        <thead className="sticky top-0 z-10"><tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)]"><th className="py-2 px-3 text-left">Mã CV</th><th className="py-2 px-3 text-left">Lượt</th><th className="py-2 px-3 text-left">Thời gian</th><th className="py-2 px-3 text-right">Phút</th><th className="py-2 px-3 text-right">SP</th><th className="py-2 px-3 text-right">Phút/SP</th><th className="py-2 px-3 text-center">Xóa</th></tr></thead>
+                        <tbody className="divide-y divide-[var(--border-subtle)] bg-white">
+                          {sessions.map((s) => (<tr key={s.id}><td className="py-1.5 px-3 font-mono font-medium text-[var(--primary)]">{s.taskCode}</td><td className="py-1.5 px-3 tabular-nums">Lần {s.runNumber}</td><td className="py-1.5 px-3">{s.startTime} – {s.endTime}</td><td className="py-1.5 px-3 text-right tabular-nums">{s.durationMinutes}</td><td className="py-1.5 px-3 text-right tabular-nums">{s.productCount}</td><td className="py-1.5 px-3 text-right font-semibold text-[var(--ok)] tabular-nums">{s.minutesPerProduct}</td><td className="py-1.5 px-3 text-center"><button type="button" onClick={() => commitSessions(sessions.filter((x) => x.id !== s.id))} aria-label={`Xóa bản ghi ${s.taskCode}`} className="text-[var(--fix)] hover:opacity-80 cursor-pointer"><Trash2 className="w-3.5 h-3.5 inline" /></button></td></tr>))}
                         </tbody>
                       </table>
                     </div>
                   )}
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)]">
-                    <Link href="/tao-tep?step=2" className="text-xs sm:text-sm font-semibold text-[var(--primary)] hover:underline">← Quay lại Bước 2 (Công việc &amp; sản phẩm A2)</Link>
-                    <button type="button" onClick={() => handleSwitchStep(4)} className="inline-flex items-center gap-1.5 min-h-[42px] px-5 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold cursor-pointer shadow-2xs"><span>Tiếp tục sang Bước 4: Tác động CĐS, tự chủ (B2_CT → B2)</span><ArrowRight className="w-4 h-4" /></button>
+                    <Link href="/tao-tep?step=2" className="text-xs font-medium text-[var(--primary)] hover:underline">← Quay lại Bước 2 (A2)</Link>
+                    <button type="button" onClick={() => handleSwitchStep(4)} className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold cursor-pointer"><span>Sang Bước 4: Tác động CĐS (B2_CT → B2)</span><ArrowRight className="w-4 h-4" /></button>
                   </div>
                 </div>
               </>
             ) : (
-              <div className="space-y-4">
-                <div className="rounded-xl border border-[var(--primary)]/25 bg-[var(--surface-tint)]/70 p-4 text-xs sm:text-sm text-[var(--foreground)]">
-                  <strong>Hướng dẫn Bước 4 (Biểu 4. B2_CT_TacDong → 5. B2_ThayDoi):</strong> Kê khai mức độ ứng dụng chuyển đổi số, phân cấp tự chủ hoặc thuê dịch vụ đối với từng công việc của vị trí <strong>[{unit.code}-{selectedVtvlSuffix}]</strong> để tự động điều chỉnh định mức thời gian thực hiện.
-                </div>
-                <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)]">
+              <div className="space-y-3">
+                <div className="overflow-x-auto rounded-lg border border-[var(--border-subtle)]">
                   <table className="w-full text-xs border-collapse">
-                    <thead><tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)]"><th className="py-2.5 px-3 text-left">Mã &amp; Tên công việc (A2)</th><th className="py-2.5 px-3 text-left">Yếu tố tác động (B2_CT)</th><th className="py-2.5 px-3 text-left">Mức độ số hóa</th><th className="py-2.5 px-3 text-right">Điều chỉnh (%)</th><th className="py-2.5 px-3 text-right">Định mức mới (B2)</th><th className="py-2.5 px-3 text-left">Phần mềm / Minh chứng</th></tr></thead>
-                    <tbody className="divide-y divide-[var(--border-subtle)] bg-[var(--sheet)]">
+                    <thead className="sticky top-0 z-10"><tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)]"><th className="py-2 px-3 text-left">Mã &amp; Tên công việc (A2)</th><th className="py-2 px-3 text-left">Yếu tố tác động (B2_CT)</th><th className="py-2 px-3 text-left">Mức độ số hóa</th><th className="py-2 px-3 text-right">Điều chỉnh (%)</th><th className="py-2 px-3 text-right">Định mức mới (B2)</th><th className="py-2 px-3 text-left">Phần mềm / Minh chứng</th></tr></thead>
+                    <tbody className="divide-y divide-[var(--border-subtle)] bg-white">
                       {tasksForPosition.map((t) => {
                         const row = b2Impacts[t.fullTaskCode] || { factor: 'Số hóa', digitalLevel: 'Một phần', adjustPct: -10, note: 'Hệ thống phần mềm quản trị HCM-UTE' };
                         const newMinutes = Math.max(1, Math.round(t.defaultMinutesPerProduct * (1 + row.adjustPct / 100)));
                         const updateRow = (patch: Partial<typeof row>) => setB2Impacts((p) => ({ ...p, [t.fullTaskCode]: { ...row, ...patch } }));
                         return (
                           <tr key={t.fullTaskCode}>
-                            <td className="py-2.5 px-3"><strong className="font-mono text-[var(--primary)] block">{t.fullTaskCode}</strong><span>{t.taskName}</span></td>
-                            <td className="py-2.5 px-3"><select value={row.factor} onChange={(e) => updateRow({ factor: e.target.value })} className="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] px-2 py-1 text-xs font-semibold"><option>Số hóa</option><option>Cải tiến quy trình</option><option>Thuê dịch vụ/đặt hàng</option><option>Tự chủ</option><option>Xã hội hóa</option><option>Công việc mới phát sinh</option></select></td>
-                            <td className="py-2.5 px-3"><select value={row.digitalLevel} onChange={(e) => updateRow({ digitalLevel: e.target.value })} className="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] px-2 py-1 text-xs font-semibold"><option>Toàn trình</option><option>Một phần</option><option>Chưa số hóa</option></select></td>
-                            <td className="py-2.5 px-3 text-right"><select value={row.adjustPct} onChange={(e) => updateRow({ adjustPct: Number(e.target.value) })} className="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] px-2 py-1 text-xs font-bold tabular-nums"><option value={-30}>-30%</option><option value={-20}>-20%</option><option value={-15}>-15%</option><option value={-10}>-10%</option><option value={0}>0% (Giữ nguyên)</option><option value={10}>+10%</option></select></td>
-                            <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--ok)] tabular-nums">{newMinutes} phút/SP</td>
-                            <td className="py-2.5 px-3"><input type="text" value={row.note} onChange={(e) => updateRow({ note: e.target.value })} className="w-full min-w-[160px] rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] px-2 py-1 text-xs" /></td>
+                            <td className="py-2 px-3"><span className="font-mono font-medium text-[var(--primary)] block">{t.fullTaskCode}</span><span>{t.taskName}</span></td>
+                            <td className="py-2 px-3"><select value={row.factor} onChange={(e) => updateRow({ factor: e.target.value })} className="h-8 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-medium"><option>Số hóa</option><option>Cải tiến quy trình</option><option>Thuê dịch vụ/đặt hàng</option><option>Tự chủ</option><option>Xã hội hóa</option><option>Công việc mới phát sinh</option></select></td>
+                            <td className="py-2 px-3"><select value={row.digitalLevel} onChange={(e) => updateRow({ digitalLevel: e.target.value })} className="h-8 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-medium"><option>Toàn trình</option><option>Một phần</option><option>Chưa số hóa</option></select></td>
+                            <td className="py-2 px-3 text-right"><select value={row.adjustPct} onChange={(e) => updateRow({ adjustPct: Number(e.target.value) })} className="h-8 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-medium tabular-nums"><option value={-30}>-30%</option><option value={-20}>-20%</option><option value={-15}>-15%</option><option value={-10}>-10%</option><option value={0}>0%</option><option value={10}>+10%</option></select></td>
+                            <td className="py-2 px-3 text-right font-mono font-semibold text-[var(--ok)] tabular-nums">{newMinutes} phút/SP</td>
+                            <td className="py-2 px-3"><input type="text" value={row.note} onChange={(e) => updateRow({ note: e.target.value })} className="w-full min-w-[140px] h-8 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-normal" /></td>
                           </tr>
                         );
                       })}
@@ -274,10 +263,10 @@ export default function BamGioPage() {
                   </table>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)]">
-                  <button type="button" onClick={() => handleSwitchStep(3)} className="text-xs sm:text-sm font-semibold text-[var(--primary)] hover:underline cursor-pointer text-left">← Quay lại Bước 3 (Đo thời gian B1)</button>
+                  <button type="button" onClick={() => handleSwitchStep(3)} className="text-xs font-medium text-[var(--primary)] hover:underline cursor-pointer text-left">← Quay lại Bước 3 (B1)</button>
                   <div className="flex flex-wrap items-center gap-2">
-                    <button id="task-3-export" type="button" onClick={handleExport} className="inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl border border-[var(--border)] bg-[var(--sheet)] hover:border-[var(--primary)] text-[var(--primary)] font-bold text-xs sm:text-sm cursor-pointer"><Download className="w-4 h-4 shrink-0" /><span>Xuất phiếu khảo sát B1–B2 [{unit.code}] (.xlsx)</span></button>
-                    <Link href="/tao-tep?step=5" className="btn-touch inline-flex items-center gap-1.5 min-h-[42px] px-4 rounded-xl bg-[var(--primary)] text-white text-xs sm:text-sm font-bold shadow-2xs"><span>Sang Bước 5: Danh mục VTVL &amp; Mô tả (C1, C2)</span><ArrowRight className="w-4 h-4" /></Link>
+                    <button id="task-3-export" type="button" onClick={handleExport} className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg border border-[#cbd5e1] bg-white text-[var(--primary)] font-medium text-xs cursor-pointer"><Download className="w-4 h-4 shrink-0" /><span>Xuất phiếu khảo sát B1–B2</span></button>
+                    <Link href="/tao-tep?step=5" className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold"><span>Sang Bước 5: C1, C2</span><ArrowRight className="w-4 h-4" /></Link>
                   </div>
                 </div>
               </div>

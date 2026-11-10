@@ -93,20 +93,20 @@ export function AdminSessionControlTab() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Khối 1: Phiên làm việc hiện hành */}
-      <div className="bg-white rounded-2xl border border-[#cbd5e1] p-5 shadow-2xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#cbd5e1]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#004776]">
-              <UserCheck className="w-5 h-5" />
+      <div className="p-4 sm:p-5 border-b border-[#e2e8f0]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[var(--surface-tint)] border border-[var(--primary)]/20 flex items-center justify-center text-[#004776]">
+              <UserCheck className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-[#004776]">
+              <h2 className="text-sm font-semibold text-[#004776]">
                 Phiên làm việc hiện tại trên trình duyệt (Active Session)
               </h2>
               <p className="text-xs text-[#64748b]">
-                Thông tin tài khoản đang gắn kết với các thao tác nhập liệu bảng tính
+                Gắn kết với các thao tác nhập liệu bảng tính cục bộ
               </p>
             </div>
           </div>
@@ -116,7 +116,7 @@ export function AdminSessionControlTab() {
               <button
                 type="button"
                 onClick={handleClearDraftData}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors cursor-pointer"
                 title="Xóa bản nháp cục bộ để nạp lại từ đầu"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -126,7 +126,7 @@ export function AdminSessionControlTab() {
               <button
                 type="button"
                 onClick={handleLogoutCurrentSession}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-[var(--fix)] bg-[var(--fix-soft)] hover:opacity-90 border border-[var(--fix)]/30 rounded-lg transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Rời phiên</span>
@@ -136,79 +136,76 @@ export function AdminSessionControlTab() {
         </div>
 
         {currentSession ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-4 text-xs">
-            <div className="p-3 bg-[#f8fafc] rounded-xl border border-[#cbd5e1]">
-              <span className="text-[#64748b] block mb-1">Email công vụ:</span>
-              <strong className="text-[#004776] text-sm break-all">{currentSession.email}</strong>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-3 text-xs">
+            <div className="p-3 bg-[#f8fafc] rounded-lg border border-[#e2e8f0]">
+              <span className="text-[#64748b] block mb-0.5">Email công vụ:</span>
+              <strong className="text-[#004776] text-xs font-semibold break-all">{currentSession.email}</strong>
             </div>
 
-            <div className="p-3 bg-[#f8fafc] rounded-xl border border-[#cbd5e1]">
-              <span className="text-[#64748b] block mb-1">Đơn vị công tác:</span>
+            <div className="p-3 bg-[#f8fafc] rounded-lg border border-[#e2e8f0]">
+              <span className="text-[#64748b] block mb-0.5">Đơn vị công tác:</span>
               <div className="flex items-center gap-1.5">
-                <span className="px-1.5 py-0.5 rounded bg-[#004776]/10 text-[#004776] font-bold">
+                <span className="px-1.5 py-0.5 rounded bg-[#004776]/10 text-[#004776] font-semibold text-[11px]">
                   {currentSession.unitCode}
                 </span>
-                <span className="font-semibold text-[#004776] truncate" title={currentSession.unitNameVi}>
+                <span className="font-medium text-[#004776] truncate" title={currentSession.unitNameVi}>
                   {currentSession.unitNameVi}
                 </span>
               </div>
             </div>
 
-            <div className="p-3 bg-[#f8fafc] rounded-xl border border-[#cbd5e1]">
-              <span className="text-[#64748b] block mb-1">Chức vụ người điền:</span>
-              <strong className="text-[#004776]">{currentSession.title}</strong>
+            <div className="p-3 bg-[#f8fafc] rounded-lg border border-[#e2e8f0]">
+              <span className="text-[#64748b] block mb-0.5">Chức vụ:</span>
+              <strong className="text-[#004776] font-medium">{currentSession.title}</strong>
             </div>
 
-            <div className="p-3 bg-[#f8fafc] rounded-xl border border-[#cbd5e1]">
-              <span className="text-[#64748b] block mb-1">Hoạt động lần cuối:</span>
-              <strong className="text-emerald-700">{currentSession.lastActiveAt || currentSession.startedAt}</strong>
+            <div className="p-3 bg-[#f8fafc] rounded-lg border border-[#e2e8f0]">
+              <span className="text-[#64748b] block mb-0.5">Hoạt động lần cuối:</span>
+              <strong className="text-emerald-700 font-medium">{currentSession.lastActiveAt || currentSession.startedAt}</strong>
             </div>
           </div>
         ) : (
           <div className="py-6 text-center text-[#64748b]">
-            <p className="font-semibold text-xs text-[#004776]">Chưa có phiên làm việc nào được kích hoạt.</p>
-            <p className="text-[11px] text-[#64748b] mt-0.5">
-              Bạn có thể sử dụng mẫu phía dưới để tạo và kích hoạt phiên ngay.
-            </p>
+            <p className="font-medium text-xs text-[#004776]">Chưa có phiên làm việc nào được kích hoạt.</p>
           </div>
         )}
       </div>
 
       {/* Khối 2: Thiết lập hoặc Kích hoạt phiên mới */}
-      <div className="bg-white rounded-2xl border border-[#cbd5e1] p-5 shadow-2xs">
-        <div className="flex items-center gap-2.5 pb-3 border-b border-[#cbd5e1]">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
-            <PlusCircle className="w-5 h-5" />
+      <div className="p-4 sm:p-5 border-b border-[#e2e8f0]">
+        <div className="flex items-center gap-2 pb-3 border-b border-[#f1f5f9]">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
+            <PlusCircle className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-[#004776]">
-              Thiết lập / Chuyển đổi phiên làm việc (Impersonate Session)
+            <h2 className="text-sm font-semibold text-[#004776]">
+              Thiết lập / Chuyển đổi phiên làm việc
             </h2>
             <p className="text-xs text-[#64748b]">
-              Chủ động chỉ định email, đơn vị và chức vụ để kiểm tra luồng thao tác của đơn vị đó
+              Chỉ định email, đơn vị và chức vụ để kiểm tra luồng thao tác của đơn vị đó
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleCreateAndActivate} className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <form onSubmit={handleCreateAndActivate} className="pt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="space-y-1">
-            <label className="block text-xs font-bold text-[#004776]">Email công vụ:</label>
+            <label className="block text-xs font-medium text-[#004776]">Email công vụ:</label>
             <input
               type="email"
               required
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder="tcns@hcmute.edu.vn"
-              className="w-full px-3 py-2 text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
+              className="w-full h-10 px-3 text-xs bg-white border border-[#cbd5e1] rounded-lg text-[#004776] font-normal focus:ring-2 focus:ring-[#004776]/20 focus:outline-none"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-bold text-[#004776]">Đơn vị công tác:</label>
+            <label className="block text-xs font-medium text-[#004776]">Đơn vị công tác:</label>
             <select
               value={newUnitCode}
               onChange={(e) => setNewUnitCode(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-semibold focus:ring-2 focus:ring-[#004776] focus:outline-none"
+              className="w-full h-10 px-3 text-xs bg-white border border-[#cbd5e1] rounded-lg text-[#004776] font-normal focus:ring-2 focus:ring-[#004776]/20 focus:outline-none"
             >
               {availableUnits.map((u) => (
                 <option key={u.code} value={u.code}>
@@ -219,12 +216,12 @@ export function AdminSessionControlTab() {
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-bold text-[#004776]">Chức vụ người điền:</label>
+            <label className="block text-xs font-medium text-[#004776]">Chức vụ người điền:</label>
             <div className="flex gap-2">
               <select
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
+                className="w-full h-10 px-3 text-xs bg-white border border-[#cbd5e1] rounded-lg text-[#004776] font-normal focus:ring-2 focus:ring-[#004776]/20 focus:outline-none"
               >
                 {PRESET_TITLES.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -232,7 +229,7 @@ export function AdminSessionControlTab() {
               </select>
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#004776] hover:bg-[#00385c] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shrink-0 shadow-xs"
+                className="inline-flex items-center gap-1.5 h-10 px-4 bg-[#004776] hover:bg-[#00385c] text-white font-medium rounded-lg text-xs transition-colors cursor-pointer shrink-0 shadow-2xs"
               >
                 <span>Kích hoạt</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -243,7 +240,9 @@ export function AdminSessionControlTab() {
       </div>
 
       {/* Khối 3: Nhật ký hoạt động */}
-      <AdminActivityLogsCard logs={activityLogs} onClear={handleClearActivityLogs} />
+      <div className="p-4 sm:p-5">
+        <AdminActivityLogsCard logs={activityLogs} onClear={handleClearActivityLogs} />
+      </div>
     </div>
   );
 }
