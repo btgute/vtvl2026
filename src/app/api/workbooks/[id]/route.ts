@@ -3,8 +3,10 @@ import {
   getWorkbookById,
   saveServerWorkbook,
   deleteServerWorkbook,
-  normalizeEmail
+  normalizeEmail,
+  syncServerWorkbooksFromSupabase
 } from '@/services/storage/server-workbook-store';
+import { getServerAdminAuth } from '@/services/storage/server-admin-auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -13,16 +15,21 @@ interface RouteContext {
 export async function GET(_req: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const workbook = getWorkbookById(id);
+    let workbook = getWorkbookById(id);
 
     if (!workbook) {
-      return NextResponse.json({ error: 'Không tìm thấy hồ sơ.' }, { status: 404 });
+      await syncServerWorkbooksFromSupabase();
+      workbook = getWorkbookById(id);
+    }
+
+    if (!workbook) {
+      return NextResponse.json({ error: 'Không tìm thấy hồ sơ.', code: 'WORKBOOK_NOT_FOUND' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, workbook });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Lỗi hệ thống';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: msg, code: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
   }
 }
 
@@ -41,9 +48,41 @@ export async function PUT(req: Request, context: RouteContext) {
 
     if (!data) {
       return NextResponse.json(
-        { error: 'Thiếu dữ liệu bảng biểu.' },
+        { error: 'Thiếu dữ liệu bảng biểu.', code: 'MISSING_DATA' },
         { status: 400 }
       );
+    }
+
+    // Kiểm tra bảo mật máy chủ độc lập cho Biểu C1:
+    let existingWb = getWorkbookById(id);
+    if (!existingWb) {
+      await syncServerWorkbooksFromSupabase();
+      existingWb = getWorkbookById(id);
+    }
+
+    if (!existingWb) {
+      return NextResponse.json({ error: 'Không tìm thấy hồ sơ để cập nhật.', code: 'WORKBOOK_NOT_FOUND' }, { status: 404 });
+    }
+
+    if (existingWb?.data?.C1 && data.C1) {
+      const existingC1 = existingWb.data.C1;
+      const newC1 = data.C1;
+      const isC1Changed =
+        existingC1.length !== newC1.length ||
+        existingC1.some((r, i) => r.id !== newC1[i]?.id || r.maVtvl !== newC1[i]?.maVtvl);
+
+      if (isC1Changed) {
+        const isAuth = await getServerAdminAuth();
+        if (!isAuth) {
+          return NextResponse.json(
+            {
+              error: 'Chỉ Quản trị viên hệ thống có quyền sửa đổi cấu trúc danh mục VTVL tại Biểu C1.',
+              code: 'FORBIDDEN_C1_CHANGE'
+            },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     const normEmail = participant?.email ? normalizeEmail(participant.email) : 'tcns@hcmute.edu.vn';
@@ -62,6 +101,7 @@ export async function PUT(req: Request, context: RouteContext) {
       return NextResponse.json(
         {
           error: 'Xung đột phiên bản dữ liệu máy chủ.',
+          code: 'REVISION_CONFLICT',
           conflict: true,
           serverRevision: result.currentRevision,
           currentServerWorkbook: result.serverWorkbook
@@ -76,17 +116,25 @@ export async function PUT(req: Request, context: RouteContext) {
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Lỗi hệ thống';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: msg, code: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
   }
 }
 
 export async function DELETE(_req: Request, context: RouteContext) {
+  const isAuth = await getServerAdminAuth();
+  if (!isAuth) {
+    return NextResponse.json(
+      { error: 'Yêu cầu quyền Quản trị viên để xóa hồ sơ.', code: 'UNAUTHORIZED_ADMIN' },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id } = await context.params;
     const ok = deleteServerWorkbook(id);
     return NextResponse.json({ success: ok });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Lỗi hệ thống';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: msg, code: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
   }
 }

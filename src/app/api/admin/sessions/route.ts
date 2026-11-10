@@ -1,22 +1,39 @@
 import { NextResponse } from 'next/server';
 import { getServerAdminAuth } from '@/services/storage/server-admin-auth';
-import { getAllActiveServerWorkbooks, deleteServerWorkbook } from '@/services/storage/server-workbook-store';
+import {
+  getAllActiveServerWorkbooks,
+  deleteServerWorkbook,
+  syncServerWorkbooksFromSupabase
+} from '@/services/storage/server-workbook-store';
 
 export async function GET() {
   const isAuth = await getServerAdminAuth();
   if (!isAuth) {
     return NextResponse.json(
-      { error: 'Yêu cầu quyền Quản trị viên để truy cập dữ liệu này.' },
+      { error: 'Yêu cầu quyền Quản trị viên để truy cập dữ liệu này.', code: 'UNAUTHORIZED_ADMIN' },
       { status: 401 }
     );
   }
 
+  await syncServerWorkbooksFromSupabase();
   const workbooks = getAllActiveServerWorkbooks();
   const summary = workbooks.map((w) => {
     const latestParticipant = w.participants[w.participants.length - 1] || {
       email: 'tcns@hcmute.edu.vn',
       roleLabel: 'Chuyên viên'
     };
+
+    let totalRows = 0;
+    let populatedSheetsCount = 0;
+    if (w.data) {
+      for (const sheetKey of Object.keys(w.data)) {
+        const rows = (w.data as Record<string, any[]>)[sheetKey];
+        if (Array.isArray(rows) && rows.length > 0) {
+          totalRows += rows.length;
+          populatedSheetsCount++;
+        }
+      }
+    }
 
     return {
       id: w.id,
@@ -29,6 +46,15 @@ export async function GET() {
       currentRevision: w.currentRevision,
       touchedCells: w.touchedCells || [],
       revisionCount: w.revisions?.length || 1,
+      revisions: (w.revisions || []).map((r) => ({
+        revision: r.revision,
+        actorEmail: r.actorEmail,
+        actorTitle: r.actorTitle,
+        changeSummary: r.changeSummary,
+        createdAt: r.createdAt
+      })),
+      totalRows,
+      populatedSheetsCount,
       status: w.status
     };
   });
@@ -40,7 +66,7 @@ export async function DELETE(req: Request) {
   const isAuth = await getServerAdminAuth();
   if (!isAuth) {
     return NextResponse.json(
-      { error: 'Yêu cầu quyền Quản trị viên để xóa hồ sơ.' },
+      { error: 'Yêu cầu quyền Quản trị viên để xóa hồ sơ.', code: 'UNAUTHORIZED_ADMIN' },
       { status: 401 }
     );
   }
@@ -57,4 +83,3 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: 'Lỗi khi xóa hồ sơ.' }, { status: 500 });
   }
 }
-

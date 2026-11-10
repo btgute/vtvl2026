@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import {
   getAllActiveServerWorkbooks,
   getOrCreateWorkbook,
-  normalizeEmail
+  normalizeEmail,
+  syncServerWorkbooksFromSupabase
 } from '@/services/storage/server-workbook-store';
 
 export async function GET() {
   try {
+    await syncServerWorkbooksFromSupabase();
     const list = getAllActiveServerWorkbooks();
     const summary = list.map((w) => ({
       id: w.id,

@@ -264,7 +264,8 @@ runTest('9. Kiểm tra chuẩn hóa Mã nhiệm vụ ([MÃ_ĐV].NVxx), Mã công
   assert.ok(formulas.includes('THIẾU BIẾN ĐỘNG (NHẬP 0 NẾU KHÔNG ĐỔI)'), 'DU_BAO và D2 phải bắt buộc số nguyên và cảnh báo THIẾU BIẾN ĐỘNG (NHẬP 0 NẾU KHÔNG ĐỔI)');
 
   const lockHook = fs.readFileSync(path.join(root, 'src/components/excel-grid/useC1AdminLock.ts'), 'utf8');
-  assert.ok(lockHook.includes('0a5de87db3d6c7d52645c1581269a880b1bbc613abc8e4c8e0f51c99753f8909'), 'useC1AdminLock phải bảo vệ C1 bằng mã băm SHA-256 bảo mật');
+  assert.ok(lockHook.includes('/api/admin/c1-lock'), 'useC1AdminLock phải ủy quyền kiểm tra mật khẩu cho máy chủ /api/admin/c1-lock');
+  assert.ok(!lockHook.includes('0a5de87db3d6c7d52645c1581269a880b1bbc613abc8e4c8e0f51c99753f8909'), 'useC1AdminLock không được lưu mã băm SHA-256 ở client bundle');
 });
 
 // 10. Kiểm tra Bộ máy kiểm soát chất lượng dữ liệu (Data Quality Checker / vtvl-audit-engine)

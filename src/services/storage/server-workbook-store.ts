@@ -1,6 +1,7 @@
 import { ExcelSheetKey, GenericGridRow } from '@/components/excel-grid/excel-grid-types';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
 import { buildDefaultGridWorkbook } from '@/components/excel-grid/excel-grid-defaults';
+import { fetchWorkbooksFromSupabase, persistWorkbookToSupabase, deleteWorkbookFromSupabase } from './server-supabase-store';
 import fs from 'fs';
 import path from 'path';
 
@@ -52,7 +53,6 @@ export function normalizeEmail(raw: string): string {
   return e;
 }
 
-// Đường dẫn lưu trữ dữ liệu bền vững phía máy chủ
 const DATA_DIR = process.env.VERCEL ? '/tmp/vtvl_data' : path.join(process.cwd(), '.data');
 const STORE_FILE = path.join(DATA_DIR, 'server_workbooks.json');
 let memoryWorkbooks: Map<string, ServerWorkbook> | null = null;
@@ -70,7 +70,7 @@ function loadStore(): Map<string, ServerWorkbook> {
       const list: ServerWorkbook[] = JSON.parse(fs.readFileSync(STORE_FILE, 'utf8'));
       list.forEach((wb) => memoryWorkbooks!.set(wb.id, wb));
     }
-  } catch { /* ignore fallback */ }
+  } catch { /* ignore */ }
   return memoryWorkbooks;
 }
 
@@ -79,6 +79,21 @@ function persistStore(): void {
   try {
     ensureDataDir();
     fs.writeFileSync(STORE_FILE, JSON.stringify(Array.from(memoryWorkbooks.values()), null, 2), 'utf8');
+  } catch { /* ignore */ }
+}
+
+export async function syncServerWorkbooksFromSupabase(): Promise<void> {
+  const store = loadStore();
+  try {
+    const supaWorkbooks = await fetchWorkbooksFromSupabase();
+    for (const sw of supaWorkbooks) {
+      if (!sw.id) continue;
+      const local = store.get(sw.id);
+      if (!local || (sw.currentRevision && sw.currentRevision >= local.currentRevision)) {
+        store.set(sw.id, sw);
+      }
+    }
+    persistStore();
   } catch { /* ignore */ }
 }
 
@@ -99,16 +114,12 @@ export function getOrCreateWorkbook(
     if (!p) {
       existing.participants.push({
         id: `part_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        sessionId: `sess_${Date.now()}`,
-        workbookId: existing.id,
-        displayName: roleLabel,
-        email,
-        emailNormalized: normEmail,
-        roleLabel,
-        startedAt: now,
-        updatedAt: now
+        sessionId: `sess_${Date.now()}`, workbookId: existing.id,
+        displayName: roleLabel, email, emailNormalized: normEmail,
+        roleLabel, startedAt: now, updatedAt: now
       });
       persistStore();
+      persistWorkbookToSupabase(existing).catch(() => {});
     }
     return existing;
   }
@@ -117,40 +128,23 @@ export function getOrCreateWorkbook(
   const id = `wb_${unitId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
   const defaultData = buildDefaultGridWorkbook(unitId);
   const newWorkbook: ServerWorkbook = {
-    id,
-    unitId,
-    unitNameVi: unit.nameVi,
-    reportingPeriod,
-    status: 'draft',
-    currentRevision: 1,
-    data: defaultData,
-    touchedCells: [],
-    createdAt: now,
-    updatedAt: now,
+    id, unitId, unitNameVi: unit.nameVi, reportingPeriod, status: 'draft',
+    currentRevision: 1, data: defaultData, touchedCells: [],
+    createdAt: now, updatedAt: now,
     participants: [{
-      id: `part_${Date.now()}`,
-      sessionId: `sess_${Date.now()}`,
-      workbookId: id,
-      displayName: roleLabel,
-      email,
-      emailNormalized: normEmail,
-      roleLabel,
-      startedAt: now,
-      updatedAt: now
+      id: `part_${Date.now()}`, sessionId: `sess_${Date.now()}`, workbookId: id,
+      displayName: roleLabel, email, emailNormalized: normEmail,
+      roleLabel, startedAt: now, updatedAt: now
     }],
     revisions: [{
-      id: `rev_${id}_1`,
-      workbookId: id,
-      revision: 1,
-      data: defaultData,
-      actorEmail: normEmail,
-      actorTitle: roleLabel,
-      changeSummary: 'Khởi tạo hồ sơ ban đầu',
+      id: `rev_${id}_1`, workbookId: id, revision: 1, data: defaultData,
+      actorEmail: normEmail, actorTitle: roleLabel, changeSummary: 'Khởi tạo hồ sơ ban đầu',
       createdAt: now
     }]
   };
   store.set(id, newWorkbook);
   persistStore();
+  persistWorkbookToSupabase(newWorkbook).catch(() => {});
   return newWorkbook;
 }
 
@@ -192,14 +186,8 @@ export function saveServerWorkbook(params: {
   const wb = store.get(params.workbookId);
   if (!wb || wb.isDeleted) return { success: false };
 
-  // Khóa lạc quan (Optimistic Concurrency Check)
   if (params.baseRevision > 0 && wb.currentRevision !== params.baseRevision) {
-    return {
-      success: false,
-      conflict: true,
-      currentRevision: wb.currentRevision,
-      serverWorkbook: wb
-    };
+    return { success: false, conflict: true, currentRevision: wb.currentRevision, serverWorkbook: wb };
   }
 
   const now = new Date().toLocaleString('vi-VN');
@@ -211,7 +199,6 @@ export function saveServerWorkbook(params: {
   wb.updatedAt = now;
   if (params.touchedCells) wb.touchedCells = params.touchedCells;
 
-  // Cập nhật participant
   let p = wb.participants.find((x) => x.emailNormalized === normEmail);
   if (!p) {
     p = {
@@ -231,7 +218,6 @@ export function saveServerWorkbook(params: {
     if (params.actorTitle) p.roleLabel = params.actorTitle;
   }
 
-  // Ghi nhận revision (giữ tối đa 15 revision gần nhất)
   const revItem: ServerRevision = {
     id: `rev_${wb.id}_${nextRev}`,
     workbookId: wb.id,
@@ -246,6 +232,7 @@ export function saveServerWorkbook(params: {
   if (wb.revisions.length > 15) wb.revisions = wb.revisions.slice(0, 15);
 
   persistStore();
+  persistWorkbookToSupabase(wb).catch(() => {});
   return { success: true, currentRevision: nextRev, serverWorkbook: wb };
 }
 
@@ -279,6 +266,7 @@ export function rollbackServerWorkbookRevision(
   });
 
   persistStore();
+  persistWorkbookToSupabase(wb).catch(() => {});
   return { success: true, currentRevision: nextRev };
 }
 
@@ -288,5 +276,6 @@ export function deleteServerWorkbook(workbookId: string): boolean {
   if (!wb) return false;
   wb.isDeleted = true;
   persistStore();
+  deleteWorkbookFromSupabase(wb.unitId).catch(() => {});
   return true;
 }

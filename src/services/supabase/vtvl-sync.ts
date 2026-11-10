@@ -49,19 +49,23 @@ export async function syncActivityToSupabase(
   actorEmail?: string,
   actorTitle?: string
 ): Promise<boolean> {
-  const actorTag = actorEmail || actorTitle ? ` [Người thực hiện: ${actorTitle || 'Chưa rõ chức vụ'} — ${actorEmail || 'Chưa rõ email'}]` : '';
-  const fullDetail = `${detail}${actorTag}`;
-  const okWithCols = await postRest('s_nhat_ky', {
-    ma_don_vi: unitCode,
-    ten_don_vi: unitName,
-    hanh_dong: action,
-    chi_tiet: fullDetail,
-    email_nguoi_thuc_hien: actorEmail || null,
-    chuc_vu_nguoi_thuc_hien: actorTitle || null,
-    phien_ban: 'v1'
-  });
-  if (okWithCols) return true;
-  return postRest('s_nhat_ky', { ma_don_vi: unitCode, ten_don_vi: unitName, hanh_dong: action, chi_tiet: fullDetail, phien_ban: 'v1' });
+  try {
+    const res = await fetch('/api/audit-logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        unitCode,
+        unitName,
+        action,
+        details: detail,
+        actorEmail,
+        actorTitle
+      })
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 export async function seedMasterCatalogsToSupabase(): Promise<boolean> {

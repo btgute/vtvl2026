@@ -43,7 +43,8 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
       { colLetter: 'H', field: 'nguoiPp1', headerName: 'Người PP1', width: '90px' },
       { colLetter: 'J', field: 'nguoiCanBoTri', headerName: 'Người cần bố trí', width: '130px', isFormula: true, formulaHint: '=ROUNDUP(G,0)' },
       { colLetter: 'K', field: 'nguonGiaiTrinh', headerName: 'Nguồn / Giải trình', width: '220px' },
-      { colLetter: 'M', field: 'canhBao', headerName: 'Cảnh báo C3', width: '100px', type: 'status' }
+      { colLetter: 'M', field: 'canhBao', headerName: 'Cảnh báo C3', width: '100px', type: 'status' },
+      { colLetter: 'N', field: 'trangThai', headerName: 'Trạng thái', width: '150px', type: 'select', selectOptions: ['Tính thử', 'Chưa đủ dữ liệu', 'Đã kiểm chứng', 'Không áp dụng'] }
     ]
   },
   D1: {
@@ -85,7 +86,8 @@ export const EVAL_EXCEL_SHEET_METAS: Record<
       { colLetter: 'E', field: 'bienCheGiao', headerName: 'Biên chế được giao', width: '130px', type: 'number' },
       { colLetter: 'G', field: 'deNghiDieuChinh', headerName: 'Đề nghị điều chỉnh (0 nếu không đổi)', width: '160px', type: 'number' },
       { colLetter: 'H', field: 'nguonGiaiTrinh', headerName: 'Nguồn / Giải trình', width: '220px' },
-      { colLetter: 'J', field: 'canhBao', headerName: 'Cảnh báo D2', width: '180px', type: 'status' }
+      { colLetter: 'J', field: 'canhBao', headerName: 'Cảnh báo D2', width: '180px', type: 'status' },
+      { colLetter: 'K', field: 'trangThai', headerName: 'Trạng thái', width: '180px', type: 'select', selectOptions: ['Đang xây dựng', 'Đã hoàn thành ở đơn vị', 'Đã thẩm định', 'Đã được quyết định'] }
     ]
   },
   DM_SP: {

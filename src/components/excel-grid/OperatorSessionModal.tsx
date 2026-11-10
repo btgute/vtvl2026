@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
@@ -11,19 +10,17 @@ import {
 } from '@/services/telemetry/operator-session';
 import {
   UserCheck, Building2, Briefcase, Mail, History,
-  ArrowRight, X, ChevronDown, Sparkles
+  ArrowRight, X, ChevronDown, Sparkles, AlertCircle
 } from 'lucide-react';
 import {
   OperatorServerWorkbookPicker,
   ServerLookupItem
 } from './OperatorServerWorkbookPicker';
-
 const COMMON_TITLES = [
   'Trưởng phòng', 'Phó Trưởng phòng', 'Trưởng khoa', 'Phó Trưởng khoa',
   'Trưởng bộ môn / Giám đốc trung tâm', 'Chuyên viên', 'Giảng viên',
   'Thư ký khoa / Trợ lý đào tạo', 'Nhân viên', 'Khác (tự nhập)'
 ];
-
 interface OperatorSessionModalProps {
   isOpen: boolean;
   currentSession: OperatorSession | null;
@@ -31,7 +28,6 @@ interface OperatorSessionModalProps {
   onSubmit: (email: string, unitCode: string, title: string, workbookId?: string) => void;
   onClose?: () => void;
 }
-
 export function OperatorSessionModal({
   isOpen, currentSession, defaultUnitCode = 'TCNS', onSubmit, onClose
 }: OperatorSessionModalProps) {
@@ -44,7 +40,7 @@ export function OperatorSessionModal({
   const [serverWorkbooks, setServerWorkbooks] = useState<ServerLookupItem[]>([]);
   const [selectedWorkbookId, setSelectedWorkbookId] = useState<string | undefined>(undefined);
   const [isSearching, setIsSearching] = useState(false);
-
+  const [lookupError, setLookupError] = useState<{ code: string; message: string } | null>(null);
   useEffect(() => {
     if (isOpen) {
       setHistorySessions(getAllEmailSessions());
@@ -59,14 +55,15 @@ export function OperatorSessionModal({
       }
     }
   }, [isOpen, currentSession, defaultUnitCode]);
-
   const lookupServerWorkbooks = useCallback(async (queryEmail: string) => {
     const norm = normalizeEmail(queryEmail);
     if (!norm || norm.length < 4) {
       setServerWorkbooks([]);
+      setLookupError(null);
       return;
     }
     setIsSearching(true);
+    setLookupError(null);
     try {
       const res = await fetch(`/api/workbooks/lookup?email=${encodeURIComponent(norm)}`);
       if (res.ok) {
@@ -76,19 +73,30 @@ export function OperatorSessionModal({
           setUnitCode(json.workbooks[0].unitCode);
           setSelectedWorkbookId(json.workbooks[0].id);
         }
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        setLookupError({
+          code: errJson.code || `HTTP_${res.status}`,
+          message: errJson.error || 'Lỗi khi tra cứu hồ sơ trên máy chủ.'
+        });
+        setServerWorkbooks([]);
       }
-    } catch { /* offline */ } finally {
+    } catch {
+      setLookupError({
+        code: 'NETWORK_ERROR',
+        message: 'Lỗi kết nối mạng đến máy chủ tra cứu hồ sơ.'
+      });
+      setServerWorkbooks([]);
+    } finally {
       setIsSearching(false);
     }
   }, []);
-
   useEffect(() => {
     const timer = setTimeout(() => {
       if (email.trim()) lookupServerWorkbooks(email.trim());
     }, 400);
     return () => clearTimeout(timer);
   }, [email, lookupServerWorkbooks]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalEmail = normalizeEmail(email);
@@ -99,9 +107,7 @@ export function OperatorSessionModal({
       router.push('/bang-tinh');
     }
   };
-
   if (!isOpen) return null;
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
@@ -138,7 +144,6 @@ export function OperatorSessionModal({
             </button>
           )}
         </div>
-
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {historySessions.length > 0 && !currentSession && (
             <div className="p-3 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] space-y-1.5">
@@ -161,7 +166,6 @@ export function OperatorSessionModal({
               </div>
             </div>
           )}
-
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-[#004776]">
               Email người thực hiện <span className="text-red-500">*</span>
@@ -181,22 +185,34 @@ export function OperatorSessionModal({
                 className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#cbd5e1] rounded-xl text-xs sm:text-sm font-semibold text-[#004776] focus:ring-2 focus:ring-[#004776] focus:border-[#004776] outline-none shadow-2xs transition-all"
               />
             </div>
-
+            {lookupError && (
+              <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center justify-between gap-2 mt-1">
+                <div className="flex items-center gap-1.5 font-semibold">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+                  <span>{lookupError.message}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => lookupServerWorkbooks(email)}
+                  className="text-[11px] font-bold text-red-800 underline cursor-pointer shrink-0"
+                >
+                  Thử lại
+                </button>
+              </div>
+            )}
             <OperatorServerWorkbookPicker
               workbooks={serverWorkbooks}
               selectedWorkbookId={selectedWorkbookId}
               currentUnitCode={unitCode}
               onSelect={(w) => { setUnitCode(w.unitCode); setSelectedWorkbookId(w.id); }}
             />
-
-            {!isSearching && email.trim().length >= 5 && serverWorkbooks.length === 0 && (
+            {!isSearching && !lookupError && email.trim().length >= 5 && serverWorkbooks.length === 0 && (
               <p className="text-[11px] text-[#64748b] bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1 mt-1 font-medium">
                 <Sparkles className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                 <span>Chưa có hồ sơ máy chủ cho email này. Bạn có thể chọn đơn vị bên dưới để tạo phiên mới.</span>
               </p>
             )}
           </div>
-
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-[#004776]">
               Đơn vị công tác <span className="text-red-500">*</span>
@@ -223,7 +239,6 @@ export function OperatorSessionModal({
               </div>
             </div>
           </div>
-
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-[#004776]">
               Chức vụ người điền <span className="text-red-500">*</span>
@@ -256,7 +271,6 @@ export function OperatorSessionModal({
               />
             )}
           </div>
-
           <div className="pt-2 flex items-center justify-end gap-2.5">
             {onClose && (
               <button

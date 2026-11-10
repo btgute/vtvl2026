@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import {
   findWorkbooksByEmail,
-  normalizeEmail
+  normalizeEmail,
+  syncServerWorkbooksFromSupabase
 } from '@/services/storage/server-workbook-store';
 
 export async function GET(req: Request) {
@@ -18,6 +19,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ workbooks: [], total: 0 });
     }
 
+    await syncServerWorkbooksFromSupabase();
     let results = findWorkbooksByEmail(normEmail);
 
     const unitCode = url.searchParams.get('unitCode');

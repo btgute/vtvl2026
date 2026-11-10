@@ -2,20 +2,21 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  FileSpreadsheet, UserCheck, Building2, ShieldCheck, RefreshCw
+  FileSpreadsheet, UserCheck, Building2, ShieldCheck, RefreshCw, AlertCircle
 } from 'lucide-react';
 import { AdminAuthGate } from '@/components/admin/AdminAuthGate';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSessionsTab } from '@/components/admin/AdminSessionsTab';
 import { AdminSessionControlTab } from '@/components/admin/AdminSessionControlTab';
 import { AdminUnitsTab } from '@/components/admin/AdminUnitsTab';
-import { getAllEmailSessions, getCurrentOperatorSession } from '@/services/telemetry/operator-session';
+import { getCurrentOperatorSession } from '@/services/telemetry/operator-session';
 import { getAdminUnits } from '@/services/units/unit-management';
 
 type AdminTabKey = 'sessions' | 'session-control' | 'units';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<AdminTabKey>('sessions');
 
   const [sessionCount, setSessionCount] = useState(0);
@@ -24,50 +25,48 @@ export default function AdminPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const checkAuthAndLoadStats = useCallback(async () => {
-    if (typeof window === 'undefined') return;
-
     try {
       const authRes = await fetch('/api/admin/auth');
-      const authJson = await authRes.json().catch(() => ({}));
-      const isAuth = authRes.ok && authJson.authenticated;
-
-      if (!isAuth && sessionStorage.getItem('hcmute_vtvl_admin_auth') !== 'true') {
+      if (!authRes.ok) {
         setIsAuthenticated(false);
+        setAuthError(null);
+        return;
+      }
+
+      const authJson = await authRes.json();
+      if (!authJson.authenticated) {
+        setIsAuthenticated(false);
+        setAuthError(null);
         return;
       }
 
       setIsAuthenticated(true);
+      setAuthError(null);
+
       const cur = getCurrentOperatorSession();
       setActiveUnitCode(cur ? `[${cur.unitCode}] ${cur.email}` : 'Chưa kích hoạt');
       setUnitCount(getAdminUnits().length);
 
-      // Lấy số lượng phiên từ Server API
+      // Số lượng hồ sơ thực tế chỉ lấy từ máy chủ, không lấy fallback localStorage
       const sessRes = await fetch('/api/admin/sessions');
       if (sessRes.ok) {
         const sessJson = await sessRes.json();
-        const serverTotal = sessJson.total || 0;
-        const localTotal = getAllEmailSessions().length;
-        setSessionCount(Math.max(serverTotal, localTotal));
+        setSessionCount(sessJson.total || 0);
       } else {
-        setSessionCount(getAllEmailSessions().length);
+        setSessionCount(0);
       }
     } catch {
-      const localAuth = sessionStorage.getItem('hcmute_vtvl_admin_auth') === 'true';
-      setIsAuthenticated(localAuth);
-      if (localAuth) {
-        setSessionCount(getAllEmailSessions().length);
-      }
+      setIsAuthenticated(false);
+      setAuthError('Không thể xác minh quyền quản trị do lỗi kết nối mạng.');
     }
   }, []);
 
   useEffect(() => {
     checkAuthAndLoadStats();
     const handleUpdate = () => checkAuthAndLoadStats();
-    window.addEventListener('vtvl-email-sessions-updated', handleUpdate);
     window.addEventListener('vtvl-operator-changed', handleUpdate);
     window.addEventListener('vtvl-units-updated', handleUpdate);
     return () => {
-      window.removeEventListener('vtvl-email-sessions-updated', handleUpdate);
       window.removeEventListener('vtvl-operator-changed', handleUpdate);
       window.removeEventListener('vtvl-units-updated', handleUpdate);
     };
@@ -83,10 +82,8 @@ export default function AdminPage() {
     try {
       await fetch('/api/admin/auth', { method: 'DELETE' });
     } catch { /* ignore */ }
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('hcmute_vtvl_admin_auth');
-    }
     setIsAuthenticated(false);
+    setSessionCount(0);
   };
 
   if (isAuthenticated === null) {
@@ -94,7 +91,30 @@ export default function AdminPage() {
       <main className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
         <div className="flex items-center gap-2 text-xs font-semibold text-[#004776]">
           <ShieldCheck className="w-5 h-5 animate-spin text-[#004776]" />
-          <span>Đang kiểm tra quyền Quản trị viên...</span>
+          <span>Đang xác minh quyền Quản trị viên máy chủ...</span>
+        </div>
+      </main>
+    );
+  }
+
+  if (authError) {
+    return (
+      <main className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-3xl p-6 border border-red-200 shadow-xl text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto border border-red-200">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[#004776]">Không thể xác minh quyền quản trị</h3>
+            <p className="text-xs text-[#64748b] mt-1">{authError}</p>
+          </div>
+          <button
+            type="button"
+            onClick={checkAuthAndLoadStats}
+            className="w-full py-2.5 px-4 bg-[#004776] hover:bg-[#00385c] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs"
+          >
+            Thử lại
+          </button>
         </div>
       </main>
     );
@@ -115,7 +135,7 @@ export default function AdminPage() {
           <AdminHeader onLogout={handleLogout} />
         </div>
 
-        {/* 3 Thẻ thống kê nhanh KPI */}
+        {/* 3 Thẻ thống kê KPI */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           <div className="bg-white rounded-2xl border border-[#cbd5e1] p-4 shadow-2xs flex items-center justify-between">
             <div className="flex items-center gap-3.5">
@@ -123,7 +143,7 @@ export default function AdminPage() {
                 <FileSpreadsheet className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <span className="text-[11px] text-[#64748b] block font-medium">Phiên &amp; Bảng biểu máy chủ</span>
+                <span className="text-[11px] text-[#64748b] block font-medium">Hồ sơ lưu trên máy chủ</span>
                 <strong className="text-lg font-bold text-[#004776]">{sessionCount} hồ sơ</strong>
               </div>
             </div>
@@ -185,7 +205,7 @@ export default function AdminPage() {
             }`}
           >
             <UserCheck className="w-4 h-4" />
-            <span>2. Quản trị phiên đăng nhập</span>
+            <span>2. Quản trị phiên làm việc</span>
           </button>
 
           <button

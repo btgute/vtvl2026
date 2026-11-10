@@ -102,7 +102,9 @@ export const CORE_EXCEL_SHEET_METAS: Record<
       { colLetter: 'D', field: 'gioGiam', headerName: 'Giờ giảm (SUMIFS)', width: '130px', isFormula: true, formulaHint: '=SUMIFS(B2_CT!F,A,B2_CT!A)' },
       { colLetter: 'E', field: 'gioMoi', headerName: 'Giờ việc mới', width: '110px', type: 'number' },
       { colLetter: 'F', field: 'gioSauTacDong', headerName: 'Giờ sau tác động', width: '140px', isFormula: true, formulaHint: '=ROUND(C+D+E,2)' },
-      { colLetter: 'G', field: 'tyLeThayDoi', headerName: 'Tỷ lệ thay đổi', width: '110px', isFormula: true, formulaHint: '=ROUND(D/C*100,1)&"%"' }
+      { colLetter: 'G', field: 'tyLeThayDoi', headerName: 'Tỷ lệ thay đổi', width: '110px', isFormula: true, formulaHint: '=ROUND(D/C*100,1)&"%"' },
+      { colLetter: 'H', field: 'trangThai', headerName: 'Trạng thái', width: '150px', type: 'select', selectOptions: ['Đã kiểm chứng', 'Chưa kiểm chứng', 'Ước lượng tham khảo'] },
+      { colLetter: 'I', field: 'doiChieuTrung', headerName: 'Đối chiếu trùng/phạm vi', width: '160px', type: 'select', selectOptions: ['Đã đối chiếu', 'Chờ đối chiếu'] }
     ]
   },
   C1: {

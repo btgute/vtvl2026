@@ -32,9 +32,6 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
       });
 
       if (res.ok) {
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('hcmute_vtvl_admin_auth', 'true');
-        }
         onSuccess();
       } else {
         const data = await res.json().catch(() => ({}));

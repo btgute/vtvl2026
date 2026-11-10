@@ -106,7 +106,9 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
       gioGiam: varHours,
       gioMoi: 0,
       gioSauTacDong: Math.max(0, b1Hours + varHours),
-      tyLeThayDoi: b1Hours > 0 ? `${Math.round((varHours / b1Hours) * 100)}%` : '0%'
+      tyLeThayDoi: b1Hours > 0 ? `${Math.round((varHours / b1Hours) * 100)}%` : '0%',
+      trangThai: 'Đã kiểm chứng',
+      doiChieuTrung: 'Đã đối chiếu'
     };
   });
 
@@ -165,6 +167,7 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
       nguoiQuyDoi: isQl ? '' : fteCalc,
       nguoiPp1: isQl ? qlPeople : 0,
       nguoiCanBoTri: requiredPeople,
+      trangThai: 'Đã kiểm chứng',
       nguonGiaiTrinh: isQl
         ? 'Định biên theo PP1; QĐ 2266, PL18 và BMTCV&KNL'
         : 'Kết quả đo lường khối lượng công việc tại Biểu B1 kỳ 01/10/2025–30/9/2026; quỹ giờ chuẩn 1.904 giờ theo C1',
@@ -202,6 +205,7 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
       soNguoiCoTheBoTri: currentPeople,
       bienCheGiao: currentPeople,
       deNghiDieuChinh: targetPeople - currentPeople,
+      trangThai: 'Đã hoàn thành ở đơn vị',
       nguonGiaiTrinh: 'Phương án cân đối nhân sự 2027',
       canhBao: 'ĐẠT'
     };

@@ -91,8 +91,9 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
   const {
     session, isModalOpen, touchedCells,
-    currentRevision, syncStatus, lastSyncedAt,
-    markCellTouched, submitSession, updateSessionUnit, switchSession, closeModal, persistDataForSession
+    currentRevision, syncStatus, dataSource, apiError, lastSyncedAt,
+    markCellTouched, submitSession, updateSessionUnit, switchSession,
+    closeModal, persistDataForSession, retrySync
   } = useOperatorSession();
 
   const {
@@ -175,16 +176,10 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
       />
 
       <SyncStatusBar
-        session={session}
-        unitNameVi={currentUnit.nameVi}
-        revision={currentRevision}
-        syncStatus={syncStatus}
-        lastSyncedAt={lastSyncedAt}
-        onSaveNow={() => {
-          handleSave();
-          persistDataForSession(data, true);
-        }}
-        onSwitchSession={switchSession}
+        session={session} unitNameVi={currentUnit.nameVi} revision={currentRevision}
+        syncStatus={syncStatus} dataSource={dataSource} apiError={apiError}
+        lastSyncedAt={lastSyncedAt} onSwitchSession={switchSession} onRetry={retrySync}
+        onSaveNow={() => { handleSave(); persistDataForSession(data, true); }}
       />
 
       {/* Dải 15 sheet cuộn ngang */}
