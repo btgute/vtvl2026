@@ -18,7 +18,7 @@ export function AdminHeader({ onLogout }: AdminHeaderProps) {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-bold text-[#004776] tracking-tight truncate">
-              Trung tâm Quản trị VTVL 360
+              Trung tâm Quản trị VTVL
             </h1>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">
               Quyền Admin
