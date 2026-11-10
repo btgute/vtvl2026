@@ -155,6 +155,29 @@ export async function persistWorkbookToSupabase(wb: ServerWorkbook): Promise<boo
   }
 }
 
+export async function postServerRest(
+  table: string,
+  payload: unknown,
+  upsertConflictCol?: string
+): Promise<boolean> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+  const query = upsertConflictCol ? `?on_conflict=${encodeURIComponent(upsertConflictCol)}` : '';
+  const url = `${SUPABASE_URL}/rest/v1/${table}${query}`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        ...getHeaders(),
+        Prefer: upsertConflictCol ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function deleteWorkbookFromSupabase(unitId: string): Promise<boolean> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return false;
   try {
