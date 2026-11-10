@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShieldAlert, KeyRound, ArrowLeft, Unlock, AlertCircle, ShieldCheck } from 'lucide-react';
+import { ShieldAlert, KeyRound, ArrowLeft, Unlock, AlertCircle } from 'lucide-react';
 
 interface AdminAuthGateProps {
   onSuccess: () => void;
@@ -54,9 +54,6 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
           <h2 className="text-lg font-bold text-white tracking-tight">
             Cổng xác thực Quản trị viên
           </h2>
-          <p className="text-xs text-white/80 mt-1">
-            Khu vực giới hạn dành riêng cho Ban Quản trị &amp; Phòng TCNS
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -85,13 +82,6 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
                 <span>{error}</span>
               </p>
             )}
-          </div>
-
-          <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl text-[11px] text-[#004776] flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Bảo mật máy chủ:</span> Mật khẩu quản trị được xác thực qua token ký mã học an toàn, phiên làm việc được bảo vệ bằng cookie HttpOnly.
-            </div>
           </div>
 
           <div className="pt-2 flex flex-col gap-2">
