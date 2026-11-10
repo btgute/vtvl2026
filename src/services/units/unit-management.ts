@@ -122,3 +122,4 @@ export function subscribeToUnitsChange(callback: (units: HcmuteUnit[]) => void):
     window.removeEventListener(UNITS_UPDATED_EVENT, handler);
   };
 }
+

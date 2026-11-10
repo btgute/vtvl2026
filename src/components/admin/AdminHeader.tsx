@@ -51,3 +51,4 @@ export function AdminHeader({ onLogout }: AdminHeaderProps) {
     </div>
   );
 }
+

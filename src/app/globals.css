@@ -12,11 +12,15 @@
   --surface-secondary: #f7f9fc;
   --surface-tint: #eef5ff;
   --foreground: rgb(0, 71, 118);
-  --ink-muted: #2b4c66;
+  --ink-muted: #20446c;
   --ink-subtle: #476885;
   --primary: #005fa3;
+  --primary-action: #006cee;
   --primary-deep: #004776;
   --primary-foreground: #ffffff;
+  --secondary-slink: #e1edf8;
+  --accent-slink: #e3ecf6;
+  --border-slink: #e1eaefe7;
   --accent-red: #c81e1e;
   --border: #c5d4e3;
   --border-subtle: #e2eaf2;
@@ -259,37 +263,21 @@ a.btn-touch {
   border-top: 1px solid rgba(136, 172, 201, 0.14);
 }
 
-/* Phản hồi ngắn 1–2 giây khi dòng hoặc thẻ VTVL vừa lưu thành công (không làm nhảy chiều cao) */
+/* Phản hồi ngắn 1–2 giây khi dòng hoặc thẻ vừa lưu thành công */
 .vtvl-row-saved {
   background-color: var(--ok-soft) !important;
   border-color: var(--ok) !important;
   transition: background-color 180ms ease-out, border-color 180ms ease-out;
 }
-
 *:focus-visible {
-  outline: 2px solid var(--primary) !important;
+  outline: 2px solid var(--primary-action, var(--primary)) !important;
   outline-offset: 2px !important;
 }
-
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Ẩn thanh cuộn mặc định của trình duyệt để các tab sheet gọn gàng, cuộn êm */
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
-}
-
+.tabular-nums { font-variant-numeric: tabular-nums; }
+.no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+.no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

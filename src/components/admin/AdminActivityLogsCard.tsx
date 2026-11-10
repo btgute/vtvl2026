@@ -76,3 +76,4 @@ export function AdminActivityLogsCard({ logs, onClear }: AdminActivityLogsCardPr
     </div>
   );
 }
+
