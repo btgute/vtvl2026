@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { X, FileSpreadsheet, Download, Table2, Layers, Calendar, User, Building } from 'lucide-react';
+import { X, FileSpreadsheet, Download, Table2, Calendar, User, Building } from 'lucide-react';
 import { EmailSessionRecord, loadSessionData } from '@/services/telemetry/operator-session';
-import { EXCEL_NATURAL_SHEET_ORDER, ExcelSheetKey } from '@/components/excel-grid/excel-grid-types';
+import { EXCEL_NATURAL_SHEET_ORDER, ExcelSheetKey, GenericGridRow } from '@/components/excel-grid/excel-grid-types';
 import { EXCEL_SHEET_METAS } from '@/components/excel-grid/excel-sheet-metas';
+import { buildDefaultGridWorkbook } from '@/components/excel-grid/excel-grid-defaults';
 import { exportUserWorkbookToExcel } from '@/services/excel-export/user-workbook-exporter';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
-import { UnitGroupKind } from '@/types/vtvl';
 
 interface AdminSheetDataModalProps {
   session: EmailSessionRecord | null;
@@ -18,14 +18,27 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
   const [selectedSheet, setSelectedSheet] = useState<ExcelSheetKey>('A1');
   const [isExporting, setIsExporting] = useState(false);
 
+  const unitName = useMemo(() => {
+    if (!session) return '';
+    if (session.unitNameVi) return session.unitNameVi;
+    try { return findHcmuteUnit(session.unitCode).nameVi; } catch { return session.unitCode; }
+  }, [session]);
+
+  const fullData = useMemo(() => {
+    if (!session) return {} as Record<ExcelSheetKey, GenericGridRow[]>;
+    const defaultData = buildDefaultGridWorkbook(session.unitCode);
+    if (session.data && typeof session.data === 'object' && Object.keys(session.data).length > 0) {
+      return { ...defaultData, ...session.data };
+    }
+    const local = loadSessionData(session.email, session.unitCode);
+    return { ...defaultData, ...local };
+  }, [session]);
+
   if (!session) return null;
 
   const currentSheetMeta = EXCEL_SHEET_METAS[selectedSheet];
-  const fullData = useMemo(() => {
-    if (session.data && Object.keys(session.data).length > 0) return session.data;
-    return loadSessionData(session.email, session.unitCode);
-  }, [session]);
-  const sheetRows = fullData[selectedSheet] || [];
+  const rawRows = fullData[selectedSheet];
+  const sheetRows: GenericGridRow[] = Array.isArray(rawRows) ? rawRows : [];
   const columns = currentSheetMeta?.columns || [];
 
   const handleExport = async () => {
@@ -33,7 +46,7 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
     try {
       exportUserWorkbookToExcel({
         unitCode: session.unitCode,
-        unitNameVi: session.unitNameVi,
+        unitNameVi: unitName,
         operatorEmail: session.email,
         data: fullData
       });
@@ -69,17 +82,17 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
               <div className="flex flex-wrap items-center gap-3 text-xs text-white/80 mt-0.5">
                 <span className="flex items-center gap-1">
                   <User className="w-3.5 h-3.5" />
-                  {session.email} ({session.title})
+                  {session.email} ({session.title || 'Người thực hiện'})
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Building className="w-3.5 h-3.5" />
-                  {session.unitNameVi}
+                  {unitName}
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" />
-                  Lưu lúc: {session.lastSavedAt}
+                  Lưu lúc: {session.lastSavedAt || '—'}
                 </span>
               </div>
             </div>
@@ -110,7 +123,8 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
           {EXCEL_NATURAL_SHEET_ORDER.map((key) => {
             const meta = EXCEL_SHEET_METAS[key];
             const isActive = selectedSheet === key;
-            const count = fullData[key]?.length || 0;
+            const rows = fullData[key];
+            const count = Array.isArray(rows) ? rows.length : 0;
             return (
               <button
                 key={key}
@@ -122,7 +136,7 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
                     : 'bg-white text-[#004776] border-[#cbd5e1] hover:bg-[#e2e8f0]'
                 }`}
               >
-                <span>{meta.shortLabel}</span>
+                <span>{meta?.shortLabel || key}</span>
                 <span
                   className={`text-[10px] px-1 rounded-full ${
                     isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-[#64748b]'
@@ -139,9 +153,9 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
         <div className="px-5 py-2.5 bg-slate-50/70 border-b border-[#cbd5e1] flex items-center justify-between text-xs text-[#004776]">
           <div className="font-semibold flex items-center gap-2">
             <span className="px-2 py-0.5 bg-[#004776]/10 font-bold rounded">
-              Biểu {currentSheetMeta.shortLabel}
+              Biểu {currentSheetMeta?.shortLabel || selectedSheet}
             </span>
-            <span>{currentSheetMeta.title}</span>
+            <span>{currentSheetMeta?.title || 'Dữ liệu bảng tính'}</span>
           </div>
           <div className="text-[#64748b]">
             Tổng số dòng: <strong>{sheetRows.length}</strong> · Số cột: <strong>{columns.length}</strong>
@@ -154,7 +168,7 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
             <div className="flex flex-col items-center justify-center p-12 text-center text-[#64748b]">
               <FileSpreadsheet className="w-12 h-12 text-[#cbd5e1] mb-2" />
               <p className="font-semibold text-sm text-[#004776]">
-                Chưa có dữ liệu nhập riêng cho biểu {currentSheetMeta.shortLabel}
+                Chưa có dữ liệu nhập riêng cho biểu {currentSheetMeta?.shortLabel || selectedSheet}
               </p>
               <p className="text-xs text-[#64748b] mt-1">
                 Biểu này đang sử dụng thiết lập định biên ngầm định của Ban Tổ chức Trung ương.
@@ -182,7 +196,7 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
                   <tbody>
                     {sheetRows.map((row, idx) => (
                       <tr
-                        key={row.id || idx}
+                        key={row?.id || idx}
                         className="border-b border-[#cbd5e1]/70 hover:bg-blue-50/40 transition-colors"
                       >
                         <td className="p-2 text-center text-[#64748b] font-medium border-r border-[#cbd5e1] bg-[#f8fafc]/50">
@@ -192,9 +206,9 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
                           <td
                             key={col.field}
                             className="p-2 text-[#004776] border-r border-[#cbd5e1]/70 max-w-xs truncate"
-                            title={String(row[col.field] ?? '')}
+                            title={String(row?.[col.field] ?? '')}
                           >
-                            {String(row[col.field] ?? '') || '—'}
+                            {String(row?.[col.field] ?? '') || '—'}
                           </td>
                         ))}
                       </tr>

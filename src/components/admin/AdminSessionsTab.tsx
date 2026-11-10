@@ -30,6 +30,7 @@ export function AdminSessionsTab() {
   const [search, setSearch] = useState('');
   const [viewingSession, setViewingSession] = useState<EmailSessionRecord | null>(null);
   const [exportingEmail, setExportingEmail] = useState<string | null>(null);
+  const [viewingId, setViewingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<{ code: string; message: string } | null>(null);
 
@@ -97,22 +98,20 @@ export function AdminSessionsTab() {
       }
       const fallbackData = loadSessionData(session.email, session.unitCode);
       exportUserWorkbookToExcel({
-        unitCode: session.unitCode,
-        unitNameVi: session.unitNameVi,
-        reportingPeriod: session.reportingPeriod,
-        operatorEmail: session.email,
+        unitCode: session.unitCode, unitNameVi: session.unitNameVi,
+        reportingPeriod: session.reportingPeriod, operatorEmail: session.email,
         data: fallbackData
       });
     } catch {
       alert('Không thể tạo file Excel cho phiên này, vui lòng thử lại.');
-    } finally {
-      setExportingEmail(null);
-    }
+    } finally { setExportingEmail(null); }
   };
 
   const handleView = async (session: AdminDisplaySession) => {
-    if (session.id) {
-      try {
+    const key = session.id || session.email;
+    setViewingId(key);
+    try {
+      if (session.id) {
         const res = await fetch(`/api/workbooks/${session.id}`);
         if (res.ok) {
           const json = await res.json();
@@ -121,9 +120,9 @@ export function AdminSessionsTab() {
             return;
           }
         }
-      } catch { /* view fallback */ }
-    }
-    setViewingSession(session);
+      }
+      setViewingSession(session);
+    } catch { setViewingSession(session); } finally { setViewingId(null); }
   };
 
   const handleDelete = async (session: AdminDisplaySession) => {
@@ -133,9 +132,7 @@ export function AdminSessionsTab() {
         const res = await fetch(`/api/admin/sessions?id=${session.id}`, { method: 'DELETE' });
         if (res.ok) loadSessions();
         else alert('Không thể xóa hồ sơ máy chủ.');
-      } catch {
-        alert('Lỗi kết nối khi gửi yêu cầu xóa.');
-      }
+      } catch { alert('Lỗi kết nối khi gửi yêu cầu xóa.'); }
     }
   };
 
@@ -244,11 +241,12 @@ export function AdminSessionsTab() {
                         <button
                           type="button"
                           onClick={() => handleView(s)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer"
+                          disabled={viewingId === (s.id || s.email)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                           title="Xem dữ liệu 15 biểu"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Xem</span>
+                          <Eye className={`w-3.5 h-3.5 ${viewingId === (s.id || s.email) ? 'animate-spin' : ''}`} />
+                          <span>{viewingId === (s.id || s.email) ? '...' : 'Xem'}</span>
                         </button>
                         <button
                           type="button"
