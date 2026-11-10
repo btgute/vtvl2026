@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useExcelGridState } from './excel-grid-state';
 import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
 import { ExcelSheetTabs } from './ExcelSheetTabs';
 import { ExcelTableRenderer } from './ExcelTableRenderer';
 import { ExcelOrderSwitcher } from './ExcelOrderSwitcher';
 import { ExcelWorkbookToolbar } from './ExcelWorkbookToolbar';
+import { CompactWorkspaceHeader } from './CompactWorkspaceHeader';
+import { GuidanceDrawerModal } from './GuidanceDrawerModal';
 import { WorkflowSidebar } from '@/components/layout/MilestonesBar';
 import { ExcelSheetKey } from './excel-grid-types';
 import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
@@ -57,6 +59,7 @@ interface ExcelWorkbookViewerProps {
 export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookViewerProps) {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showQualityModal, setShowQualityModal] = useState(false);
+  const [showGuidanceModal, setShowGuidanceModal] = useState(false);
   const [dirtySheets, setDirtySheets] = useState<Set<ExcelSheetKey>>(new Set());
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -73,12 +76,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   };
 
   const markSheetDirty = (sheetKey: ExcelSheetKey) => {
-    setDirtySheets((prev) => {
-      if (prev.has(sheetKey)) return prev;
-      const next = new Set(prev);
-      next.add(sheetKey);
-      return next;
-    });
+    setDirtySheets((prev) => (prev.has(sheetKey) ? prev : new Set(prev).add(sheetKey)));
   };
 
   const clearSheetDirty = (sheetKey: ExcelSheetKey) => {
@@ -101,38 +99,41 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     isExporting, dynamicOptionsMap, isC1Unlocked, unlockC1, lockC1,
     handleUnitChange: gridHandleUnitChange, handleLoadTcnsData, restoreWorkbookData,
     loadFullPl1Catalog, loadRecommendedVtvls, setActiveSheet,
-    updateCell, addRow, splitRow, deleteRow, saveSheetData, saveAndGoNext: gridSaveAndGoNext,
+    updateCell, addRow, splitRow, deleteRow, saveSheetData,
     exportFullWorkbook, goToNextSheet, goToPrevSheet
   } = useExcelGridState(session?.unitCode || initialUnitCode);
 
   const activeMeta = EXCEL_SHEET_METAS[activeSheet];
   const activeRows = data[activeSheet] || [];
 
-  const handleUnitChange = (newUnitCode: string) => {
-    gridHandleUnitChange(newUnitCode);
-    updateSessionUnit(newUnitCode);
-    setDirtySheets(new Set());
-  };
-
-  const handleSessionSubmit = (em: string, uCode: string, tit: string) => {
-    const { restoredData } = submitSession(em, uCode, tit);
-    if (restoredData) {
-      restoreWorkbookData(restoredData, uCode);
-    } else {
-      gridHandleUnitChange(uCode);
-    }
-    setDirtySheets(new Set());
-  };
-
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     saveSheetData(activeSheet);
     persistDataForSession(data);
     clearSheetDirty(activeSheet);
-  };
+  }, [activeSheet, saveSheetData, persistDataForSession, data]);
 
-  const handleSaveAndNext = () => {
+  const handleSaveAndNext = useCallback(() => {
     handleSave();
     goToNextSheet();
+  }, [handleSave, goToNextSheet]);
+
+  // Phím tắt Ctrl + S / Cmd + S
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleSave]);
+
+  const handleSelectSheetSafe = (targetKey: ExcelSheetKey) => {
+    if (dirtySheets.has(activeSheet)) {
+      handleSave();
+    }
+    setActiveSheet(targetKey);
   };
 
   const qualityReport = useMemo(() => {
@@ -141,8 +142,23 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
   return (
     <div className="w-full max-w-full min-w-0 overflow-hidden flex flex-col gap-3">
-      {/* Top action toolbar & Excel order switcher */}
-      <div className="bg-white border border-[#cbd5e1] rounded-2xl p-3 sm:p-4 shadow-2xs w-full max-w-full min-w-0">
+      {/* 1. Header làm việc thu gọn (Compact Workspace Header) */}
+      <CompactWorkspaceHeader
+        activeMeta={activeMeta}
+        currentUnit={currentUnit}
+        activeStep={getStepFromSheet(activeSheet)}
+        activeSheetIndex={activeSheetIndex}
+        totalSheets={currentSheetOrder.length}
+        rowsCount={activeRows.length}
+        isDirty={dirtySheets.has(activeSheet)}
+        lastSaved={lastSaved}
+        fixCount={qualityReport.summary.fixCount}
+        onOpenGuidance={() => setShowGuidanceModal(true)}
+        onOpenQualityModal={() => setShowQualityModal(true)}
+      />
+
+      {/* 2. Action Toolbar & Order Switcher */}
+      <div className="bg-white border border-[#cbd5e1] rounded-2xl p-3 sm:p-3.5 shadow-2xs w-full max-w-full min-w-0">
         <ExcelWorkbookToolbar
           session={session}
           unitCode={unitCode}
@@ -155,14 +171,16 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
           qualityReport={qualityReport}
           isDirty={dirtySheets.has(activeSheet)}
           lastSaved={lastSaved}
+          canNext={activeSheetIndex < currentSheetOrder.length - 1}
           onSwitchSession={switchSession}
-          onUnitChange={handleUnitChange}
+          onUnitChange={(u) => { gridHandleUnitChange(u); updateSessionUnit(u); setDirtySheets(new Set()); }}
           onOpenUnlockModal={() => setShowUnlockModal(true)}
           onLoadRecommendedVtvls={loadRecommendedVtvls}
           onLoadFullPl1Catalog={loadFullPl1Catalog}
           onLoadTcnsData={handleLoadTcnsData}
           onSaveSheet={handleSave}
-          onSelectSheet={setActiveSheet}
+          onSaveAndNext={handleSaveAndNext}
+          onSelectSheet={handleSelectSheetSafe}
           onShowQualityModal={() => setShowQualityModal(true)}
           onExportWorkbook={exportFullWorkbook}
         />
@@ -174,12 +192,12 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         />
       </div>
 
-      {/* Main Workspace: 8-step Workflow Sidebar + 15-Sheet Excel Grid */}
+      {/* 3. Main Workspace: 8-step Workflow Sidebar + 15-Sheet Excel Grid */}
       <div className="flex flex-col lg:flex-row gap-3 items-start w-full max-w-full min-w-0">
         <div className={`w-full shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-72'}`}>
           <WorkflowSidebar
             activeStep={getStepFromSheet(activeSheet)}
-            onSelectStep={(s) => setActiveSheet(getSheetFromStep(s))}
+            onSelectStep={(s) => handleSelectSheetSafe(getSheetFromStep(s))}
             unitCode={unitCode}
             alwaysExpanded={false}
             isCollapsed={isSidebarCollapsed}
@@ -210,18 +228,9 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
               markSheetDirty(activeSheet);
               updateCell(activeSheet, rowId, field, val);
             }}
-            onAddRow={() => {
-              markSheetDirty(activeSheet);
-              addRow(activeSheet);
-            }}
-            onSplitRow={(rowId) => {
-              markSheetDirty(activeSheet);
-              splitRow(activeSheet, rowId);
-            }}
-            onDeleteRow={(rowId) => {
-              markSheetDirty(activeSheet);
-              deleteRow(activeSheet, rowId);
-            }}
+            onAddRow={() => { markSheetDirty(activeSheet); addRow(activeSheet); }}
+            onSplitRow={(rowId) => { markSheetDirty(activeSheet); splitRow(activeSheet, rowId); }}
+            onDeleteRow={(rowId) => { markSheetDirty(activeSheet); deleteRow(activeSheet, rowId); }}
             onSaveSheet={handleSave}
             onSaveAndNext={handleSaveAndNext}
             canNext={activeSheetIndex < currentSheetOrder.length - 1}
@@ -232,7 +241,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
             sheetOrder={currentSheetOrder}
             orderMode={orderMode}
             dirtySheets={dirtySheets}
-            onSelectSheet={setActiveSheet}
+            onSelectSheet={handleSelectSheetSafe}
             onPrev={goToPrevSheet}
             onNext={goToNextSheet}
             canPrev={activeSheetIndex > 0}
@@ -240,6 +249,12 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
           />
         </div>
       </div>
+
+      <GuidanceDrawerModal
+        isOpen={showGuidanceModal}
+        onClose={() => setShowGuidanceModal(false)}
+        meta={activeMeta}
+      />
 
       <C1AdminLockModal
         isOpen={showUnlockModal}
@@ -251,13 +266,19 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         isOpen={showQualityModal}
         onClose={() => setShowQualityModal(false)}
         report={qualityReport}
-        onSelectSheet={setActiveSheet}
+        onSelectSheet={handleSelectSheetSafe}
       />
 
       <OperatorSessionModal
         isOpen={isModalOpen}
         currentSession={session}
-        onSubmit={handleSessionSubmit}
+        defaultUnitCode={unitCode}
+        onSubmit={(em, u, tit) => {
+          const { restoredData } = submitSession(em, u, tit);
+          if (restoredData) restoreWorkbookData(restoredData, u);
+          else gridHandleUnitChange(u);
+          setDirtySheets(new Set());
+        }}
         onClose={closeModal}
       />
     </div>

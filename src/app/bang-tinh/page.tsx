@@ -1,55 +1,16 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ExcelWorkbookViewer } from '@/components/excel-grid/ExcelWorkbookViewer';
-import { FileSpreadsheet, Home, BookOpenCheck } from 'lucide-react';
 
 function BangTinhContent() {
   const searchParams = useSearchParams();
   const unitParam = searchParams.get('unit') || 'TCNS';
 
   return (
-    <div className="w-full max-w-full min-w-0 overflow-hidden px-3 sm:px-6 lg:px-8 xl:px-10 py-3 sm:py-5 space-y-3 sm:space-y-4">
-      {/* Header breadcrumb & title */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-[#cbd5e1] shadow-2xs w-full max-w-full min-w-0">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#004776]/10 text-[#004776]">
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Giao diện bảng tính Excel 15 sheet</span>
-            </span>
-            <span className="text-xs text-[#64748b]">|</span>
-            <span className="text-xs text-[#64748b]">Theo chuẩn Hướng dẫn số 07-HD/BTCTW</span>
-          </div>
-          <h1 className="text-lg sm:text-xl font-extrabold text-[#004776]">
-            Hệ thống Bảng tính Vị trí việc làm trực quan — HCM-UTE
-          </h1>
-          <p className="text-xs text-[#64748b]">
-            Thao tác trực tiếp trên 15 sheet nghiệp vụ.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#004776] bg-[#f0f9ff] hover:bg-[#e0f2fe] border border-[#004776]/30 hover:border-[#004776] rounded-lg transition-colors cursor-pointer"
-          >
-            <Home className="w-4 h-4" />
-            <span>Tổng quan (08 bước)</span>
-          </Link>
-          <Link
-            href="/huong-dan"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#004776] bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-lg transition-colors cursor-pointer"
-          >
-            <BookOpenCheck className="w-4 h-4" />
-            <span>Phụ lục hướng dẫn HD 07</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Main Interactive Excel Workbook */}
+    <div className="w-full max-w-full min-w-0 overflow-hidden px-3 sm:px-6 lg:px-8 xl:px-10 py-3 sm:py-4">
+      {/* Main Interactive Excel Workbook with Integrated Compact Workspace Header */}
       <ExcelWorkbookViewer initialUnitCode={unitParam} />
     </div>
   );
@@ -62,4 +23,3 @@ export default function BangTinhPage() {
     </Suspense>
   );
 }
-

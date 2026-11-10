@@ -5,60 +5,41 @@ import { useRouter } from 'next/navigation';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import {
-  OperatorSession,
-  EmailSessionRecord,
-  getAllEmailSessions,
-  getSessionByEmail
+  OperatorSession, EmailSessionRecord, getAllEmailSessions, getSessionByEmail
 } from '@/services/telemetry/operator-session';
 import {
-  UserCheck,
-  Building2,
-  Briefcase,
-  Mail,
-  History,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  ArrowRight,
-  X
+  UserCheck, Building2, Briefcase, Mail, History, CheckCircle2,
+  ArrowRight, X, Info
 } from 'lucide-react';
 
 const COMMON_TITLES = [
-  'Trưởng phòng',
-  'Phó Trưởng phòng',
-  'Trưởng khoa',
-  'Phó Trưởng khoa',
-  'Trưởng bộ môn / Giám đốc trung tâm',
-  'Chuyên viên',
-  'Giảng viên',
-  'Thư ký khoa / Trợ lý đào tạo',
-  'Nhân viên',
-  'Khác (tự nhập)'
+  'Trưởng phòng', 'Phó Trưởng phòng', 'Trưởng khoa', 'Phó Trưởng khoa',
+  'Trưởng bộ môn / Giám đốc trung tâm', 'Chuyên viên', 'Giảng viên',
+  'Thư ký khoa / Trợ lý đào tạo', 'Nhân viên', 'Khác (tự nhập)'
 ];
 
 interface OperatorSessionModalProps {
   isOpen: boolean;
   currentSession: OperatorSession | null;
+  defaultUnitCode?: string;
   onSubmit: (email: string, unitCode: string, title: string) => void;
   onClose?: () => void;
 }
 
 export function OperatorSessionModal({
-  isOpen,
-  currentSession,
-  onSubmit,
-  onClose
+  isOpen, currentSession, defaultUnitCode = 'TCNS', onSubmit, onClose
 }: OperatorSessionModalProps) {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [unitCode, setUnitCode] = useState('TCNS');
+  const [unitCode, setUnitCode] = useState(defaultUnitCode);
   const [title, setTitle] = useState('Chuyên viên');
   const [customTitle, setCustomTitle] = useState('');
   const [historySessions, setHistorySessions] = useState<EmailSessionRecord[]>([]);
 
   useEffect(() => {
     if (isOpen) {
-      setHistorySessions(getAllEmailSessions());
+      const allHist = getAllEmailSessions();
+      setHistorySessions(allHist);
       if (currentSession) {
         setEmail(currentSession.email);
         setUnitCode(currentSession.unitCode);
@@ -68,9 +49,15 @@ export function OperatorSessionModal({
           setTitle('Khác (tự nhập)');
           setCustomTitle(currentSession.title);
         }
+      } else {
+        setUnitCode(defaultUnitCode);
+        if (allHist.length > 0) {
+          setEmail(allHist[0].email);
+          if (COMMON_TITLES.includes(allHist[0].title)) setTitle(allHist[0].title);
+        }
       }
     }
-  }, [isOpen, currentSession]);
+  }, [isOpen, currentSession, defaultUnitCode]);
 
   const matchedHistory = useMemo(() => {
     if (!email.trim()) return null;
@@ -107,15 +94,15 @@ export function OperatorSessionModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
       role="dialog"
       aria-modal="true"
-      onClick={onClose}
-      onKeyDown={(e) => { if (e.key === 'Escape' && onClose) onClose(); }}
+      onClick={currentSession ? onClose : undefined}
+      onKeyDown={(e) => { if (e.key === 'Escape' && currentSession && onClose) onClose(); }}
       tabIndex={-1}
     >
       <div
         className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header: Xác nhận người thực hiện */}
         <div className="flex items-center justify-between px-6 py-4 bg-linear-to-r from-[#004776] to-[#00385c] text-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
@@ -123,16 +110,18 @@ export function OperatorSessionModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-white">
-                Định danh người thực hiện — HCM-UTE VTVL 360
+                Xác nhận người thực hiện
               </h3>
+              <p className="text-xs text-white/80">
+                Thông tin này được dùng để ghi nhật ký thao tác và lưu vết theo quy định
+              </p>
             </div>
           </div>
-          {onClose && (
+          {currentSession && onClose && (
             <button
               type="button"
               onClick={onClose}
               aria-label="Đóng cửa sổ"
-              title="Đóng cửa sổ"
               className="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -142,22 +131,22 @@ export function OperatorSessionModal({
 
         {/* Content Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Quick history selector if available */}
+          {/* Lịch sử phiên trước */}
           {historySessions.length > 0 && !currentSession && (
-            <div className="p-3 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] space-y-2">
+            <div className="p-3 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#004776]">
                 <History className="w-3.5 h-3.5 text-[#004776]" />
-                <span>Hoặc chọn nhanh phiên làm việc trước:</span>
+                <span>Chọn nhanh phiên làm việc trước:</span>
               </div>
-              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+              <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
                 {historySessions.slice(0, 4).map((h) => (
                   <button
                     key={h.email}
                     type="button"
                     onClick={() => handleSelectHistory(h)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-lg bg-white hover:bg-blue-50 border border-[#cbd5e1] hover:border-[#004776] text-[#004776] transition-all cursor-pointer shadow-2xs"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-lg bg-white hover:bg-blue-50 border border-[#cbd5e1] hover:border-[#004776] text-[#004776] transition-all cursor-pointer shadow-2xs font-medium"
                   >
-                    <span className="font-semibold">{h.email}</span>
+                    <span>{h.email}</span>
                     <span className="text-[#64748b]">({h.unitCode})</span>
                   </button>
                 ))}
@@ -168,7 +157,7 @@ export function OperatorSessionModal({
           {/* Email input */}
           <div className="space-y-1">
             <label className="block text-xs font-bold text-[#004776]">
-              Email người thực hiện <span className="text-red-500">*</span>
+              Email công vụ người thực hiện <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-2.5 w-4 h-4 text-[#64748b]" />
@@ -178,20 +167,18 @@ export function OperatorSessionModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ví dụ: hoavm@hcmute.edu.vn"
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] focus:border-[#004776] outline-hidden text-[#004776] font-medium"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium"
               />
             </div>
             {matchedHistory && (
-              <p className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200 flex items-center gap-1 mt-1">
+              <p className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1 mt-1">
                 <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                <span>
-                  Tìm thấy phiên đã lưu của đơn vị <strong>{matchedHistory.unitNameVi}</strong> ({matchedHistory.lastSavedAt}). Toàn bộ 15 sheet sẽ được tự động khôi phục!
-                </span>
+                <span>Tìm thấy dữ liệu đã lưu của đơn vị <strong>{matchedHistory.unitNameVi}</strong>. Toàn bộ 15 sheet sẽ được tự động khôi phục!</span>
               </p>
             )}
           </div>
 
-          {/* Unit selector */}
+          {/* Đơn vị công tác */}
           <div className="space-y-1">
             <label className="block text-xs font-bold text-[#004776]">
               Đơn vị công tác <span className="text-red-500">*</span>
@@ -201,7 +188,7 @@ export function OperatorSessionModal({
               <select
                 value={unitCode}
                 onChange={(e) => setUnitCode(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] focus:border-[#004776] outline-hidden text-[#004776] font-medium bg-white"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium bg-white"
               >
                 {QD2266_GROUPED_UNITS_CATALOG.map((group) => (
                   <optgroup key={group.groupLabel} label={group.groupLabel}>
@@ -216,7 +203,7 @@ export function OperatorSessionModal({
             </div>
           </div>
 
-          {/* Title selector */}
+          {/* Chức vụ */}
           <div className="space-y-1">
             <label className="block text-xs font-bold text-[#004776]">
               Chức vụ người điền <span className="text-red-500">*</span>
@@ -226,12 +213,10 @@ export function OperatorSessionModal({
               <select
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] focus:border-[#004776] outline-hidden text-[#004776] font-medium bg-white"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium bg-white"
               >
                 {COMMON_TITLES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
+                  <option key={t} value={t}>{t}</option>
                 ))}
               </select>
             </div>
@@ -242,27 +227,27 @@ export function OperatorSessionModal({
                 value={customTitle}
                 onChange={(e) => setCustomTitle(e.target.value)}
                 placeholder="Nhập tên chức vụ cụ thể..."
-                className="w-full px-3 py-2 text-xs rounded-lg border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] focus:border-[#004776] outline-hidden text-[#004776] font-medium mt-1"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium mt-1"
               />
             )}
           </div>
 
           {/* Action button */}
           <div className="pt-2 flex items-center justify-end gap-2">
-            {onClose && (
+            {currentSession && onClose && (
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-bold text-[#004776] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-lg transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-bold text-[#004776] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-xl transition-colors cursor-pointer"
               >
                 Hủy
               </button>
             )}
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-lg shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-xl shadow-xs transition-all cursor-pointer"
             >
-              <span>{matchedHistory ? 'Khôi phục phiên & Bắt đầu' : 'Xác nhận & Bắt đầu thao tác'}</span>
+              <span>{matchedHistory ? 'Khôi phục phiên & Bắt đầu' : 'Xác nhận & Bắt đầu'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -271,4 +256,3 @@ export function OperatorSessionModal({
     </div>
   );
 }
-

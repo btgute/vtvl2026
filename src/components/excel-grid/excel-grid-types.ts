@@ -26,6 +26,7 @@ export interface ExcelColumnDef {
   selectOptions?: string[];
   dynamicOptionsKey?: 'vtvlList' | 'missionList' | 'taskList' | 'productList' | 'pl1VtvlList';
   readOnly?: boolean;
+  required?: boolean;
 }
 
 export interface ExcelSheetMeta {
