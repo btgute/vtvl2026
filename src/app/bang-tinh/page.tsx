@@ -11,9 +11,9 @@ function BangTinhContent() {
   const unitParam = searchParams.get('unit') || 'TCNS';
 
   return (
-    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 space-y-4">
+    <div className="w-full max-w-full min-w-0 overflow-hidden px-3 sm:px-6 lg:px-8 xl:px-10 py-3 sm:py-5 space-y-3 sm:space-y-4">
       {/* Header breadcrumb & title */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-[#cbd5e1] shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-[#cbd5e1] shadow-2xs w-full max-w-full min-w-0">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#004776]/10 text-[#004776]">

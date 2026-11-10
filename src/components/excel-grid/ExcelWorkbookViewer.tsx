@@ -14,7 +14,6 @@ import { DataQualityReportModal } from './DataQualityReportModal';
 import { OperatorSessionModal } from './OperatorSessionModal';
 import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
-import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 
 const getStepFromSheet = (sheet: ExcelSheetKey): number => {
   switch (sheet) {
@@ -58,6 +57,7 @@ interface ExcelWorkbookViewerProps {
 export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookViewerProps) {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showQualityModal, setShowQualityModal] = useState(false);
+  const [dirtySheets, setDirtySheets] = useState<Set<ExcelSheetKey>>(new Set());
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
       try { return localStorage.getItem('hcmute_vtvl_sidebar_collapsed') === 'true'; } catch { /* ignore */ }
@@ -71,17 +71,37 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
       try { localStorage.setItem('hcmute_vtvl_sidebar_collapsed', String(val)); } catch { /* ignore */ }
     }
   };
+
+  const markSheetDirty = (sheetKey: ExcelSheetKey) => {
+    setDirtySheets((prev) => {
+      if (prev.has(sheetKey)) return prev;
+      const next = new Set(prev);
+      next.add(sheetKey);
+      return next;
+    });
+  };
+
+  const clearSheetDirty = (sheetKey: ExcelSheetKey) => {
+    setDirtySheets((prev) => {
+      if (!prev.has(sheetKey)) return prev;
+      const next = new Set(prev);
+      next.delete(sheetKey);
+      return next;
+    });
+  };
+
   const {
     session, isModalOpen, touchedCells, isRestoredSession,
     markCellTouched, submitSession, updateSessionUnit, switchSession, closeModal, persistDataForSession
   } = useOperatorSession();
+
   const {
     unitCode, currentUnit, orderMode, setOrderMode, currentSheetOrder,
     activeSheet, activeSheetIndex, data, lastSaved, lastSavedSheet,
     isExporting, dynamicOptionsMap, isC1Unlocked, unlockC1, lockC1,
     handleUnitChange: gridHandleUnitChange, handleLoadTcnsData, restoreWorkbookData,
     loadFullPl1Catalog, loadRecommendedVtvls, setActiveSheet,
-    updateCell, addRow, splitRow, deleteRow, saveSheetData, saveAndGoNext,
+    updateCell, addRow, splitRow, deleteRow, saveSheetData, saveAndGoNext: gridSaveAndGoNext,
     exportFullWorkbook, goToNextSheet, goToPrevSheet
   } = useExcelGridState(session?.unitCode || initialUnitCode);
 
@@ -91,6 +111,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   const handleUnitChange = (newUnitCode: string) => {
     gridHandleUnitChange(newUnitCode);
     updateSessionUnit(newUnitCode);
+    setDirtySheets(new Set());
   };
 
   const handleSessionSubmit = (em: string, uCode: string, tit: string) => {
@@ -100,11 +121,18 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     } else {
       gridHandleUnitChange(uCode);
     }
+    setDirtySheets(new Set());
   };
 
   const handleSave = () => {
     saveSheetData(activeSheet);
     persistDataForSession(data);
+    clearSheetDirty(activeSheet);
+  };
+
+  const handleSaveAndNext = () => {
+    handleSave();
+    goToNextSheet();
   };
 
   const qualityReport = useMemo(() => {
@@ -112,9 +140,9 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   }, [data, unitCode, currentUnit.nameVi]);
 
   return (
-    <div className="w-full flex flex-col gap-3">
-      {/* Top action toolbar & Excel order switcher (Văn bản 04) */}
-      <div className="bg-white border border-[#cbd5e1] rounded-xl p-3.5 shadow-2xs">
+    <div className="w-full max-w-full min-w-0 overflow-hidden flex flex-col gap-3">
+      {/* Top action toolbar & Excel order switcher */}
+      <div className="bg-white border border-[#cbd5e1] rounded-2xl p-3 sm:p-4 shadow-2xs w-full max-w-full min-w-0">
         <ExcelWorkbookToolbar
           session={session}
           unitCode={unitCode}
@@ -125,6 +153,8 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
           isC1Unlocked={isC1Unlocked}
           isExporting={isExporting}
           qualityReport={qualityReport}
+          isDirty={dirtySheets.has(activeSheet)}
+          lastSaved={lastSaved}
           onSwitchSession={switchSession}
           onUnitChange={handleUnitChange}
           onOpenUnlockModal={() => setShowUnlockModal(true)}
@@ -137,7 +167,6 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
           onExportWorkbook={exportFullWorkbook}
         />
 
-        {/* Status bar: Order workflow switcher (Văn bản 04) */}
         <ExcelOrderSwitcher
           orderMode={orderMode}
           onToggleOrderMode={setOrderMode}
@@ -146,7 +175,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
       </div>
 
       {/* Main Workspace: 8-step Workflow Sidebar + 15-Sheet Excel Grid */}
-      <div className="flex flex-col lg:flex-row gap-3 items-start w-full">
+      <div className="flex flex-col lg:flex-row gap-3 items-start w-full max-w-full min-w-0">
         <div className={`w-full shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-72'}`}>
           <WorkflowSidebar
             activeStep={getStepFromSheet(activeSheet)}
@@ -158,8 +187,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
           />
         </div>
 
-        <div className="flex-1 min-w-0 w-full flex flex-col gap-3">
-          {/* C1 Admin protection banner when viewing C1 */}
+        <div className="flex-1 min-w-0 w-full max-w-full flex flex-col gap-3 overflow-hidden">
           {activeSheet === 'C1' && (
             <C1AdminStatusBanner
               isUnlocked={isC1Unlocked}
@@ -168,7 +196,6 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
             />
           )}
 
-          {/* Main Spreadsheet grid view with Save and Next button */}
           <ExcelTableRenderer
             meta={activeMeta}
             rows={activeRows}
@@ -180,21 +207,31 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
             onCellTouch={markCellTouched}
             onCellChange={(rowId, field, val) => {
               markCellTouched(`${rowId}_${field}`);
+              markSheetDirty(activeSheet);
               updateCell(activeSheet, rowId, field, val);
             }}
-            onAddRow={() => addRow(activeSheet)}
-            onSplitRow={(rowId) => splitRow(activeSheet, rowId)}
-            onDeleteRow={(rowId) => deleteRow(activeSheet, rowId)}
+            onAddRow={() => {
+              markSheetDirty(activeSheet);
+              addRow(activeSheet);
+            }}
+            onSplitRow={(rowId) => {
+              markSheetDirty(activeSheet);
+              splitRow(activeSheet, rowId);
+            }}
+            onDeleteRow={(rowId) => {
+              markSheetDirty(activeSheet);
+              deleteRow(activeSheet, rowId);
+            }}
             onSaveSheet={handleSave}
-            onSaveAndNext={saveAndGoNext}
+            onSaveAndNext={handleSaveAndNext}
             canNext={activeSheetIndex < currentSheetOrder.length - 1}
           />
 
-          {/* Bottom Excel Sheet Tabs Bar */}
           <ExcelSheetTabs
             activeSheet={activeSheet}
             sheetOrder={currentSheetOrder}
             orderMode={orderMode}
+            dirtySheets={dirtySheets}
             onSelectSheet={setActiveSheet}
             onPrev={goToPrevSheet}
             onNext={goToNextSheet}
@@ -204,14 +241,12 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         </div>
       </div>
 
-      {/* Admin Unlock Modal for Biểu 6. C1_VTVL */}
       <C1AdminLockModal
         isOpen={showUnlockModal}
         onClose={() => setShowUnlockModal(false)}
         onUnlock={unlockC1}
       />
 
-      {/* Data Quality Checker Modal */}
       <DataQualityReportModal
         isOpen={showQualityModal}
         onClose={() => setShowQualityModal(false)}
@@ -219,7 +254,6 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onSelectSheet={setActiveSheet}
       />
 
-      {/* Operator Session Gate Modal */}
       <OperatorSessionModal
         isOpen={isModalOpen}
         currentSession={session}
@@ -229,4 +263,3 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     </div>
   );
 }
-

@@ -21,6 +21,8 @@ interface ExcelWorkbookToolbarProps {
   isC1Unlocked: boolean;
   isExporting: boolean;
   qualityReport: ValidationReport;
+  isDirty?: boolean;
+  lastSaved?: string;
   onSwitchSession: () => void;
   onUnitChange: (code: string) => void;
   onOpenUnlockModal: () => void;
@@ -43,6 +45,8 @@ export function ExcelWorkbookToolbar({
   isC1Unlocked,
   isExporting,
   qualityReport,
+  isDirty,
+  lastSaved,
   onSwitchSession,
   onUnitChange,
   onOpenUnlockModal,
@@ -55,25 +59,23 @@ export function ExcelWorkbookToolbar({
   onExportWorkbook
 }: ExcelWorkbookToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2.5">
-      {/* Group Left: Title Badge + Operator Session */}
+    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 w-full">
+      {/* Group Left: Title Badge + Operator Session + Dirty State */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Title badge: Bảng tính Excel 15 sheet */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-[#004776]/10 text-[#004776] border border-[#004776]/25 shrink-0 shadow-2xs">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-[#004776]/10 text-[#004776] border border-[#004776]/25 shrink-0 shadow-2xs">
           <TableProperties className="w-4 h-4 text-[#004776]" />
-          <span>Bảng tính Excel 15 sheet (Trực quan chuẩn HD 07)</span>
+          <span>Bảng tính Excel 15 sheet</span>
         </div>
 
         {/* Operator identification */}
         {session ? (
-          <div className="flex items-center gap-2.5 px-3 py-1 rounded-xl bg-linear-to-r from-blue-50/80 via-white to-sky-50/80 border border-[#004776]/30 shadow-2xs hover:border-[#004776]/60 transition-all text-xs shrink-0">
-            {/* Live Indicator */}
+          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-linear-to-r from-blue-50/80 via-white to-sky-50/80 border border-[#004776]/30 shadow-2xs hover:border-[#004776]/60 transition-all text-xs shrink-0">
             <span className="relative flex h-2 w-2 shrink-0" title="Tài khoản cán bộ đang xác thực &amp; đồng bộ">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
             </span>
 
-            {/* Email */}
             <div className="inline-flex items-center gap-1.5 font-bold text-[#004776]" title="Email công vụ người thực hiện">
               <span className="w-5 h-5 rounded-md bg-[#004776]/10 flex items-center justify-center shrink-0">
                 <UserCheck className="w-3.5 h-3.5 text-[#004776]" />
@@ -83,7 +85,6 @@ export function ExcelWorkbookToolbar({
 
             <span className="h-3.5 w-px bg-[#004776]/20 shrink-0" />
 
-            {/* Đơn vị */}
             <div className="inline-flex items-center gap-1.5 font-bold text-[#004776]" title="Đơn vị công tác">
               <span className="w-5 h-5 rounded-md bg-[#004776]/10 flex items-center justify-center shrink-0">
                 <Building2 className="w-3.5 h-3.5 text-[#004776]" />
@@ -93,7 +94,6 @@ export function ExcelWorkbookToolbar({
 
             <span className="h-3.5 w-px bg-[#004776]/20 shrink-0" />
 
-            {/* Chức vụ */}
             <div className="inline-flex items-center gap-1.5 font-semibold text-[#004776]/85" title="Chức vụ người điền">
               <span className="w-5 h-5 rounded-md bg-[#004776]/10 flex items-center justify-center shrink-0">
                 <Briefcase className="w-3.5 h-3.5 text-[#004776]" />
@@ -101,7 +101,6 @@ export function ExcelWorkbookToolbar({
               <span>{session.title}</span>
             </div>
 
-            {/* Nút Đổi */}
             <button
               type="button"
               onClick={onSwitchSession}
@@ -123,22 +122,35 @@ export function ExcelWorkbookToolbar({
           </button>
         )}
 
+        {/* Dirty State Indicator */}
+        {isDirty ? (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 shadow-2xs shrink-0 animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+            <span>Chưa lưu</span>
+          </span>
+        ) : lastSaved ? (
+          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 shrink-0">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <span>Đã lưu lúc {lastSaved}</span>
+          </span>
+        ) : null}
+
         {isRestoredSession && (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 shrink-0">
+          <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 shrink-0">
             Đã khôi phục phiên trước
           </span>
         )}
       </div>
 
-      {/* Quick actions: Unit Selector, VTVL Templates, Save, QA & Export */}
+      {/* Group Right: Unit Selector & Actions */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Unit Selector: Always visible so user can select any Khoa or Unit from any sheet */}
-        <div className="flex items-center gap-1.5 bg-[#f1f5f9] px-2.5 py-1 rounded-lg border border-[#cbd5e1]">
+        {/* Unit Selector */}
+        <div className="flex items-center gap-1.5 bg-[#f1f5f9] px-2.5 py-1 rounded-xl border border-[#cbd5e1]">
           <span className="text-xs font-bold text-[#004776] shrink-0">Đơn vị:</span>
           <select
             value={unitCode}
             onChange={(e) => onUnitChange(e.target.value)}
-            className="bg-white border border-[#cbd5e1] rounded px-2.5 py-1 text-xs font-bold text-[#004776] cursor-pointer max-w-[280px] sm:max-w-[340px]"
+            className="bg-white border border-[#cbd5e1] rounded-lg px-2.5 py-1 text-xs font-bold text-[#004776] cursor-pointer max-w-[240px] sm:max-w-[320px]"
             title="Chọn Khoa, Viện, Phòng ban hoặc Trung tâm để tải dữ liệu"
           >
             {QD2266_GROUPED_UNITS_CATALOG.map((group) => (
@@ -158,7 +170,7 @@ export function ExcelWorkbookToolbar({
             <button
               type="button"
               onClick={() => (!isC1Unlocked ? onOpenUnlockModal() : onLoadRecommendedVtvls())}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg cursor-pointer transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl cursor-pointer transition-colors"
               title={`Nạp danh mục VTVL chuẩn theo loại hình ${currentUnit.nameVi}`}
             >
               <Building2 className="w-3.5 h-3.5 text-[#004776]" />
@@ -167,7 +179,7 @@ export function ExcelWorkbookToolbar({
             <button
               type="button"
               onClick={() => (!isC1Unlocked ? onOpenUnlockModal() : onLoadFullPl1Catalog())}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg cursor-pointer transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl cursor-pointer transition-colors"
               title="Nạp toàn bộ 56 VTVL chuẩn theo Phụ lục I kèm Quyết định của Hiệu trưởng"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
@@ -179,7 +191,7 @@ export function ExcelWorkbookToolbar({
         <button
           type="button"
           onClick={onLoadTcnsData}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg cursor-pointer transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-xl cursor-pointer transition-colors"
           title="Nạp toàn bộ 39 nhiệm vụ và 200 công việc mẫu của Phòng Tổ chức - Nhân sự"
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
@@ -189,7 +201,7 @@ export function ExcelWorkbookToolbar({
         <button
           type="button"
           onClick={onSaveSheet}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg cursor-pointer transition-colors shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl cursor-pointer transition-colors shadow-2xs"
           title="Lưu lại bảng tính của biểu hiện tại"
         >
           <CheckCircle2 className="w-3.5 h-3.5" />
@@ -199,7 +211,7 @@ export function ExcelWorkbookToolbar({
         <button
           type="button"
           onClick={() => onSelectSheet('K')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer border transition-colors ${
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl cursor-pointer border transition-colors ${
             activeSheet === 'K'
               ? 'bg-emerald-600 text-white border-emerald-600'
               : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-300'
@@ -212,7 +224,7 @@ export function ExcelWorkbookToolbar({
         <button
           type="button"
           onClick={onShowQualityModal}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg cursor-pointer transition-colors shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#004776] bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl cursor-pointer transition-colors shadow-2xs"
           title="Bộ máy kiểm soát chất lượng dữ liệu 15 sheet theo chuẩn Hướng dẫn số 07-HD/BTCTW"
         >
           <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
@@ -232,13 +244,9 @@ export function ExcelWorkbookToolbar({
           type="button"
           onClick={onExportWorkbook}
           disabled={isExporting}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-lg cursor-pointer shadow-2xs transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-xl cursor-pointer shadow-2xs transition-colors disabled:opacity-50"
         >
-          {isExporting ? (
-            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Download className="w-3.5 h-3.5" />
-          )}
+          {isExporting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
           <span>{isExporting ? 'Đang tạo...' : 'Xuất tệp Excel (.xlsx)'}</span>
         </button>
       </div>

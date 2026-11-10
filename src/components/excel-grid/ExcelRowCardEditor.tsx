@@ -1,0 +1,193 @@
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { ExcelSheetMeta, GenericGridRow } from './excel-grid-types';
+import { Pencil, Trash2, Copy, Plus, X, Search, ChevronRight } from 'lucide-react';
+
+interface ExcelRowCardEditorProps {
+  meta: ExcelSheetMeta;
+  rows: GenericGridRow[];
+  dynamicOptionsMap?: Record<string, string[]>;
+  isC1Locked: boolean;
+  touchedCells?: Set<string>;
+  onCellTouch?: (cellKey: string) => void;
+  onCellChange: (rowId: string, field: string, value: string | number) => void;
+  onAddRow: () => void;
+  onSplitRow?: (rowId: string) => void;
+  onDeleteRow: (rowId: string) => void;
+}
+
+export function ExcelRowCardEditor({
+  meta, rows, dynamicOptionsMap, isC1Locked, touchedCells,
+  onCellTouch, onCellChange, onAddRow, onSplitRow, onDeleteRow
+}: ExcelRowCardEditorProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+
+  const filteredRows = useMemo(() => {
+    if (!searchTerm.trim()) return rows;
+    const term = searchTerm.toLowerCase();
+    return rows.filter((r) => Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(term)));
+  }, [rows, searchTerm]);
+
+  const editingRow = useMemo(() => editingRowId ? rows.find((r) => r.id === editingRowId) || null : null, [rows, editingRowId]);
+  const editingRowIndex = useMemo(() => editingRowId ? rows.findIndex((r) => r.id === editingRowId) : -1, [rows, editingRowId]);
+
+  const getPrimaryCode = (r: GenericGridRow) => String(r.maNhiemVu || r.maCongViec || r.maVtvl || r.maSpChuan || r.maNhomVtvl || r.stt || '');
+  const getPrimaryTitle = (r: GenericGridRow) => String(r.tenNhiemVu || r.tenCongViec || r.tenVtvl || r.tenSanPham || r.tenNhomVtvl || r.noiDung || '');
+  const getSecondaryInfo = (r: GenericGridRow) => String(r.donViChuTri || r.sanPhamChuan || r.tenNgach || r.phuongAn2026 || r.canCu || '');
+
+  return (
+    <div className="w-full space-y-3">
+      {/* Mobile Search & Add bar */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#64748b]" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={`Tìm nhanh trong ${rows.length} dòng...`}
+            className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] bg-white font-medium"
+          />
+          {searchTerm && (
+            <button type="button" onClick={() => setSearchTerm('')} className="absolute right-2.5 top-2 text-[#94a3b8] hover:text-[#004776] p-0.5">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+        {!isC1Locked && (
+          <button
+            type="button"
+            onClick={onAddRow}
+            className="inline-flex items-center gap-1 min-h-[38px] px-3.5 rounded-xl bg-[#004776] text-white text-xs font-bold shrink-0 hover:bg-[#00385c] active:scale-95 shadow-2xs cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /><span>Thêm</span>
+          </button>
+        )}
+      </div>
+
+      {/* Row Cards List */}
+      <div className="space-y-2.5">
+        {filteredRows.length === 0 ? (
+          <div className="p-8 text-center bg-white rounded-xl border border-dashed border-[#cbd5e1] text-xs text-[#64748b]">
+            {searchTerm ? 'Không tìm thấy dòng phù hợp.' : 'Chưa có dữ liệu nào. Bấm "Thêm" để bắt đầu nhập.'}
+          </div>
+        ) : (
+          filteredRows.map((row) => {
+            const rowNumber = rows.findIndex((r) => r.id === row.id) + 1;
+            const primaryCode = getPrimaryCode(row);
+            const primaryTitle = getPrimaryTitle(row);
+            const secondary = getSecondaryInfo(row);
+
+            return (
+              <div key={row.id} className="bg-white rounded-xl border border-[#cbd5e1] hover:border-[#004776]/50 p-3.5 shadow-2xs space-y-2 transition-all">
+                <div className="flex items-center justify-between gap-2 border-b border-[#f1f5f9] pb-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-[#004776]/10 text-[#004776]">
+                      Dòng {String(rowNumber).padStart(2, '0')}
+                    </span>
+                    {primaryCode && (
+                      <span className="font-mono text-xs font-bold text-[#004776] bg-slate-100 px-2 py-0.5 rounded">
+                        {primaryCode}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {meta.key === 'A1' && (
+                      <button type="button" onClick={() => onSplitRow?.(row.id)} title="Tách nhiệm vụ" className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg cursor-pointer">
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {!isC1Locked && (
+                      <button type="button" onClick={() => onDeleteRow(row.id)} title="Xóa dòng" className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="cursor-pointer space-y-1" onClick={() => setEditingRowId(row.id)}>
+                  <p className="text-xs font-bold text-[#004776] leading-snug line-clamp-3">
+                    {primaryTitle || '(Chưa nhập nội dung)'}
+                  </p>
+                  {secondary && <p className="text-[11px] text-[#64748b] line-clamp-1">{secondary}</p>}
+                </div>
+
+                <div className="pt-1 flex items-center justify-between border-t border-[#f8fafc]">
+                  <span className="text-[10px] text-[#94a3b8]">{meta.columns.length} trường</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditingRowId(row.id)}
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-[#004776] hover:text-white rounded-lg transition-all cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /><span>Chỉnh sửa</span><ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Mobile Detail Editor Drawer */}
+      {editingRow && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs select-none p-0 sm:p-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl max-h-[88vh] flex flex-col shadow-2xl border border-[#cbd5e1] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 bg-linear-to-r from-[#004776] to-[#00385c] text-white">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-xs font-extrabold bg-white/20 text-white">Dòng {editingRowIndex + 1}</span>
+                <h3 className="text-sm font-bold text-white truncate max-w-[200px]">{meta.sheetName} — {getPrimaryCode(editingRow) || 'Chi tiết dòng'}</h3>
+              </div>
+              <button type="button" onClick={() => setEditingRowId(null)} className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/10 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {meta.columns.map((col) => {
+                const val = editingRow[col.field];
+                const cellKey = `${editingRow.id}_${col.field}`;
+                const isTouched = touchedCells?.has(cellKey) ?? false;
+                const isComputed = col.isFormula || col.readOnly || isC1Locked;
+                const dynamicOpts = col.dynamicOptionsKey && dynamicOptionsMap?.[col.dynamicOptionsKey];
+                const selectOpts = dynamicOpts && dynamicOpts.length > 0 ? dynamicOpts : (col.selectOptions || []);
+                const inputCls = `w-full min-h-[44px] px-3 py-2 rounded-lg border text-xs font-medium text-[#004776] focus:ring-2 focus:ring-[#004776] outline-hidden ${isTouched ? 'border-emerald-500 bg-emerald-50/40' : 'border-[#cbd5e1]'}`;
+
+                return (
+                  <div key={col.field} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <label className="font-bold text-[#004776]">{col.headerName}</label>
+                      {col.isFormula && <span className="text-[10px] text-blue-700 bg-blue-50 px-1 rounded border border-blue-200">=fx</span>}
+                    </div>
+
+                    {isComputed ? (
+                      <div className="p-2.5 rounded-lg bg-[#f8fafc] border border-[#cbd5e1] text-xs font-medium text-[#004776] break-words">
+                        {val !== undefined && val !== '' ? String(val) : '—'}
+                      </div>
+                    ) : col.type === 'select' || selectOpts.length > 0 ? (
+                      <select value={String(val ?? '')} onFocus={() => onCellTouch?.(cellKey)} onChange={(e) => { onCellTouch?.(cellKey); onCellChange(editingRow.id, col.field, e.target.value); }} className={`${inputCls} bg-white`}>
+                        <option value="">-- Chọn --</option>
+                        {selectOpts.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    ) : col.type === 'number' ? (
+                      <input type="number" value={val !== undefined ? String(val) : ''} onFocus={() => onCellTouch?.(cellKey)} onChange={(e) => { onCellTouch?.(cellKey); onCellChange(editingRow.id, col.field, Number(e.target.value)); }} className={`${inputCls} text-right`} />
+                    ) : (
+                      <textarea rows={2} value={String(val ?? '')} onFocus={() => onCellTouch?.(cellKey)} onChange={(e) => { onCellTouch?.(cellKey); onCellChange(editingRow.id, col.field, e.target.value); }} className={inputCls} placeholder={`Nhập ${col.headerName.toLowerCase()}...`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="p-3 bg-[#f8fafc] border-t border-[#cbd5e1] flex items-center justify-end">
+              <button type="button" onClick={() => setEditingRowId(null)} className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#004776] text-white text-xs font-bold hover:bg-[#00385c] transition-all shadow-xs cursor-pointer text-center">
+                Xong &amp; Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

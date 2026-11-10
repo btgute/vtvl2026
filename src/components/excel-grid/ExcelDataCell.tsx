@@ -27,9 +27,10 @@ export function ExcelDataCell({
   onCellTouch,
   onCellChange
 }: ExcelDataCellProps) {
+  // Phong cách viền & nền tinh giản chuẩn HCM-UTE: ô đã sửa có viền xanh ngọc nhẹ, ô thường thanh lịch
   const cellStyle = isTouched
-    ? 'border-emerald-500 bg-emerald-50/80 text-[#004776] focus:ring-emerald-500 focus:border-emerald-600'
-    : 'border-red-400 bg-red-50/70 text-[#004776] focus:ring-red-500 focus:border-red-600';
+    ? 'border-emerald-500 bg-emerald-50/50 text-[#004776] focus:ring-1 focus:ring-emerald-500 focus:border-emerald-600 shadow-2xs font-medium'
+    : 'border-[#cbd5e1] bg-white hover:border-[#94a3b8] text-[#004776] focus:ring-1 focus:ring-[#004776] focus:border-[#004776] transition-colors';
 
   const colStyle = {
     minWidth: col.width || '150px',
@@ -42,10 +43,10 @@ export function ExcelDataCell({
     return (
       <td
         style={colStyle}
-        className="py-1.5 px-2 border-r border-[#cbd5e1] text-center align-top whitespace-normal"
+        className="py-2 px-2 border-r border-[#cbd5e1] text-center align-top whitespace-normal"
       >
         <span
-          className={`inline-block px-2 py-1 text-[11px] font-bold rounded break-words leading-tight ${
+          className={`inline-block px-2.5 py-1 text-[11px] font-bold rounded-md break-words leading-tight shadow-2xs ${
             isOk
               ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
               : 'bg-rose-100 text-rose-800 border border-rose-300'
@@ -57,7 +58,7 @@ export function ExcelDataCell({
     );
   }
 
-  // 2. Computed / Read-only / Formula cell — Always display full text without truncation
+  // 2. Computed / Read-only / Formula cell
   if (isComputed) {
     return (
       <td
@@ -67,7 +68,7 @@ export function ExcelDataCell({
       >
         <div className="flex items-start justify-between gap-1">
           <span className="whitespace-normal break-words leading-relaxed text-[#004776]">
-            {val !== undefined ? String(val) : '—'}
+            {val !== undefined && val !== '' ? String(val) : '—'}
           </span>
           {col.formulaHint && (
             <FunctionSquare
@@ -95,7 +96,7 @@ export function ExcelDataCell({
             onCellTouch?.(cellKey);
             onCellChange(rowId, col.field, e.target.value);
           }}
-          className={`w-full min-h-[36px] px-2 py-1.5 rounded border text-xs font-medium focus:ring-1 whitespace-normal break-words leading-normal ${cellStyle}`}
+          className={`w-full min-h-[38px] px-2 py-1.5 rounded-lg border text-xs font-medium focus:outline-hidden whitespace-normal break-words leading-normal ${cellStyle}`}
         >
           <option value="">-- Chọn --</option>
           {selectOptions.map((opt) => (
@@ -120,7 +121,7 @@ export function ExcelDataCell({
             onCellTouch?.(cellKey);
             onCellChange(rowId, col.field, Number(e.target.value));
           }}
-          className={`w-full h-9 px-2 rounded border text-xs font-medium text-right focus:ring-1 ${cellStyle}`}
+          className={`w-full h-9 px-2 rounded-lg border text-xs font-semibold text-right focus:outline-hidden tabular-nums ${cellStyle}`}
         />
       </td>
     );
@@ -141,14 +142,13 @@ export function ExcelDataCell({
             onCellTouch?.(cellKey);
             onCellChange(rowId, col.field, e.target.value);
           }}
-          className={`w-full h-9 px-2.5 rounded border text-xs font-semibold focus:ring-1 ${cellStyle}`}
+          className={`w-full h-9 px-2.5 rounded-lg border text-xs font-mono font-bold focus:outline-hidden ${cellStyle}`}
         />
       </td>
     );
   }
 
   // 6. Descriptive text cell (Tên nhiệm vụ, công việc, căn cứ, nguồn...)
-  // Auto-calculated rows to ensure full visibility without cutting
   const estimatedLines = Math.min(8, Math.max(2, Math.ceil(strVal.length / 38)));
 
   return (
@@ -161,10 +161,9 @@ export function ExcelDataCell({
           onCellTouch?.(cellKey);
           onCellChange(rowId, col.field, e.target.value);
         }}
-        className={`w-full min-h-[46px] px-2.5 py-1.5 rounded border text-xs font-medium focus:ring-1 leading-relaxed whitespace-pre-wrap break-words resize-y transition-colors ${cellStyle}`}
+        className={`w-full min-h-[46px] px-2.5 py-1.5 rounded-lg border text-xs font-medium focus:outline-hidden leading-relaxed whitespace-pre-wrap break-words resize-y ${cellStyle}`}
         placeholder="Nhập nội dung đầy đủ..."
       />
     </td>
   );
 }
-

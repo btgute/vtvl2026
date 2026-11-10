@@ -2,10 +2,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import {
-  ExcelSheetKey,
-  SheetOrderMode,
-  EXCEL_NATURAL_SHEET_ORDER,
-  WORKFLOW_SHEET_ORDER
+  ExcelSheetKey, SheetOrderMode, EXCEL_NATURAL_SHEET_ORDER, WORKFLOW_SHEET_ORDER
 } from './excel-grid-types';
 import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
 import { ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react';
@@ -19,6 +16,7 @@ interface ExcelSheetTabsProps {
   canNext: boolean;
   sheetOrder?: ExcelSheetKey[];
   orderMode?: SheetOrderMode;
+  dirtySheets?: Set<ExcelSheetKey>;
 }
 
 export function ExcelSheetTabs({
@@ -29,7 +27,8 @@ export function ExcelSheetTabs({
   canPrev,
   canNext,
   sheetOrder = EXCEL_NATURAL_SHEET_ORDER,
-  orderMode = 'excel'
+  orderMode = 'excel',
+  dirtySheets
 }: ExcelSheetTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -83,6 +82,7 @@ export function ExcelSheetTabs({
             {displayOrder.map((key, index) => {
               const meta = EXCEL_SHEET_METAS[key];
               const isActive = activeSheet === key;
+              const isDirty = dirtySheets?.has(key);
 
               return (
                 <button
@@ -124,6 +124,11 @@ export function ExcelSheetTabs({
                   )}
 
                   <span className="whitespace-nowrap">{meta.sheetName}</span>
+
+                  {/* Dirty Dot or Control indicator */}
+                  {isDirty && (
+                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 animate-pulse" title="Sheet có thay đổi chưa lưu" />
+                  )}
                   {key === 'K' && (
                     <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Chỉ tiêu kiểm soát" />
                   )}
@@ -136,4 +141,3 @@ export function ExcelSheetTabs({
     </div>
   );
 }
-

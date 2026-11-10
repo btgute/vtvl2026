@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { ExcelSheetMeta, GenericGridRow } from './excel-grid-types';
 import { ExcelDataCell } from './ExcelDataCell';
-import { Plus, Trash2, Info, Save, ArrowRight, CheckCircle2, Copy } from 'lucide-react';
+import { ExcelRowCardEditor } from './ExcelRowCardEditor';
+import { Plus, Trash2, Save, ArrowRight, CheckCircle2, Copy, Search, X } from 'lucide-react';
 
 interface ExcelTableRendererProps {
   meta: ExcelSheetMeta;
@@ -28,34 +29,74 @@ export function ExcelTableRenderer({
   isC1Unlocked = false, touchedCells, onCellTouch, onCellChange,
   onAddRow, onSplitRow, onDeleteRow, onSaveSheet, onSaveAndNext, canNext = true
 }: ExcelTableRendererProps) {
+  const [searchTerm, setSearchTerm] = useState('');
   const isJustSaved = lastSavedSheet === meta.key && Boolean(lastSaved);
   const isC1Locked = meta.key === 'C1' && !isC1Unlocked;
 
+  const filteredRows = useMemo(() => {
+    if (!searchTerm.trim()) return rows;
+    const term = searchTerm.toLowerCase();
+    return rows.filter((r) =>
+      Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(term))
+    );
+  }, [rows, searchTerm]);
+
   return (
-    <div className="flex flex-col h-full bg-white border border-[#cbd5e1] rounded-lg shadow-xs overflow-hidden">
+    <div className="flex flex-col h-full bg-white border border-[#cbd5e1] rounded-xl shadow-2xs overflow-hidden w-full max-w-full min-w-0">
       {/* Sheet description banner */}
-      <div className="px-4 py-2.5 bg-[#f8fafc] border-b border-[#e2e8f0] flex flex-wrap items-center justify-between gap-2">
+      <div className="px-3.5 py-2.5 bg-[#f8fafc] border-b border-[#e2e8f0] flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="px-2 py-0.5 text-xs font-bold bg-[#004776] text-white rounded">
             {meta.sheetName}
           </span>
           <span className="text-xs font-semibold text-[#004776]">{meta.title}</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[#64748b]">
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
-            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" /> Cần điền/điều chỉnh
-          </span>
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> Đã thao tác
+
+        {/* Quick search input on Desktop & Tablet */}
+        <div className="hidden md:flex items-center gap-2">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#64748b]" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Lọc nhanh dòng..."
+              className="pl-8 pr-7 py-1 text-xs rounded-lg border border-[#cbd5e1] bg-white text-[#004776] w-48 focus:ring-1 focus:ring-[#004776] outline-hidden"
+            />
+            {searchTerm && (
+              <button type="button" onClick={() => setSearchTerm('')} className="absolute right-2 top-1.5 text-[#94a3b8] hover:text-[#004776]">
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          <span className="text-[11px] text-[#64748b]">
+            <strong>{filteredRows.length}</strong>/{rows.length} dòng
           </span>
         </div>
       </div>
 
-      {/* Spreadsheet scroll area */}
-      <div className="flex-1 overflow-auto max-h-[580px] select-text">
+      {/* MOBILE PRESENTATION: Row Card Editor (< 768px) */}
+      <div className="block md:hidden p-3 bg-[#f8fafc]/50">
+        <ExcelRowCardEditor
+          meta={meta}
+          rows={rows}
+          dynamicOptionsMap={dynamicOptionsMap}
+          isC1Locked={isC1Locked}
+          touchedCells={touchedCells}
+          onCellTouch={onCellTouch}
+          onCellChange={onCellChange}
+          onAddRow={onAddRow}
+          onSplitRow={onSplitRow}
+          onDeleteRow={onDeleteRow}
+        />
+      </div>
+
+      {/* TABLET & DESKTOP PRESENTATION: Full Spreadsheet Grid (>= 768px) */}
+      <div className="hidden md:block flex-1 overflow-x-auto overflow-y-auto max-h-[580px] select-text w-full max-w-full">
         <table className="w-full text-xs border-collapse">
-          {/* Row 1: Excel column letters (A, B, C...) */}
-          <thead>
+          {/* Sticky header */}
+          <thead className="sticky top-0 z-10 shadow-xs">
+            {/* Row 1: Excel column letters (A, B, C...) */}
             <tr className="bg-[#f1f5f9] text-[#64748b] border-b border-[#cbd5e1]">
               <th className="w-12 min-w-[48px] py-1 text-center font-bold border-r border-[#cbd5e1] select-none bg-[#e2e8f0]">#</th>
               {meta.columns.map((col) => (
@@ -66,9 +107,7 @@ export function ExcelTableRenderer({
 
             {/* Row 2: Header title names */}
             <tr className="bg-[#f8fafc] text-[#004776] border-b-2 border-[#cbd5e1]">
-              <th className="w-12 py-2 text-center font-bold border-r border-[#cbd5e1] select-none">
-                Dòng
-              </th>
+              <th className="w-12 py-2 text-center font-bold border-r border-[#cbd5e1] select-none">Dòng</th>
               {meta.columns.map((col) => (
                 <th
                   key={col.field}
@@ -79,42 +118,34 @@ export function ExcelTableRenderer({
                   <div className="flex items-start justify-between gap-1">
                     <span className="break-words leading-tight">{col.headerName}</span>
                     {col.isFormula && (
-                      <span
-                        className="inline-flex items-center text-[10px] text-blue-700 bg-blue-50 px-1 rounded border border-blue-200 mt-0.5 shrink-0"
-                        title={col.formulaHint}
-                      >
+                      <span className="inline-flex items-center text-[10px] text-blue-700 bg-blue-50 px-1 rounded border border-blue-200 mt-0.5 shrink-0" title={col.formulaHint}>
                         =fx
                       </span>
                     )}
                   </div>
                 </th>
               ))}
-              <th className="w-10 py-2 text-center font-bold border-r border-[#cbd5e1]">Xóa</th>
+              <th className="w-14 py-2 text-center font-bold border-r border-[#cbd5e1]">Xóa</th>
             </tr>
           </thead>
 
           {/* Table body */}
           <tbody className="divide-y divide-[#e2e8f0]">
-            {rows.length === 0 ? (
+            {filteredRows.length === 0 ? (
               <tr>
-                <td
-                  colSpan={meta.columns.length + 2}
-                  className="py-10 text-center text-[#64748b] bg-[#fafafa]"
-                >
-                  Chưa có dòng dữ liệu nào. Bấm <strong>"+ Thêm dòng"</strong> để bắt đầu nhập.
+                <td colSpan={meta.columns.length + 2} className="py-10 text-center text-[#64748b] bg-[#fafafa]">
+                  {searchTerm ? 'Không tìm thấy dòng khớp từ khóa tìm kiếm.' : 'Chưa có dòng dữ liệu nào. Bấm "+ Thêm dòng mới" để bắt đầu.'}
                 </td>
               </tr>
             ) : (
-              rows.map((row, rIdx) => {
+              filteredRows.map((row, rIdx) => {
                 const rowNum = rIdx + 1;
                 return (
-                  <tr key={row.id} className="hover:bg-[#f8fafc] transition-colors group">
-                    {/* Row header with row number */}
+                  <tr key={row.id} className="odd:bg-white even:bg-[#fafcff] hover:bg-sky-50/50 transition-colors group">
                     <td className="w-12 py-1.5 text-center font-bold text-[#64748b] bg-[#f1f5f9] border-r border-[#cbd5e1] select-none align-top">
                       {rowNum}
                     </td>
 
-                    {/* Data cells without any truncation */}
                     {meta.columns.map((col) => {
                       const val = row[col.field];
                       const isComputed = col.isFormula || col.readOnly || isC1Locked;
@@ -138,7 +169,6 @@ export function ExcelTableRenderer({
                       );
                     })}
 
-                    {/* Action buttons (Tách & Xóa) */}
                     <td className="w-14 py-1 text-center border-r border-[#cbd5e1] align-top">
                       <div className="flex items-center justify-center gap-1">
                         {meta.key === 'A1' && (
@@ -146,7 +176,7 @@ export function ExcelTableRenderer({
                             type="button"
                             onClick={() => onSplitRow?.(row.id)}
                             aria-label={`Tách nhiệm vụ dòng ${rowNum}`}
-                            title="Tách nhiệm vụ (nhân bản sang mã mới để chia nhỏ các ý gạch đầu dòng)"
+                            title="Tách nhiệm vụ"
                             className="w-6 h-6 inline-flex items-center justify-center rounded text-indigo-600 hover:bg-indigo-50 cursor-pointer"
                           >
                             <Copy className="w-3.5 h-3.5" />
@@ -174,23 +204,23 @@ export function ExcelTableRenderer({
       </div>
 
       {/* Table bottom footer with Add Row & Save Buttons */}
-      <div className="px-4 py-2 bg-[#f8fafc] border-t border-[#e2e8f0] flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="px-3.5 py-2.5 bg-[#f8fafc] border-t border-[#e2e8f0] flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {!isC1Locked && (
             <button
               type="button"
               onClick={onAddRow}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-[#004776] text-white rounded-md hover:bg-[#00385c] cursor-pointer shadow-2xs transition-colors"
+              className="inline-flex items-center gap-1 min-h-[38px] px-3.5 text-xs font-bold bg-[#004776] text-white rounded-xl hover:bg-[#00385c] active:scale-95 cursor-pointer shadow-2xs transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>{meta.key === 'A1' ? 'Thêm nhiệm vụ mới' : 'Thêm dòng mới'}</span>
+              <span>{meta.key === 'A1' ? 'Thêm nhiệm vụ' : 'Thêm dòng mới'}</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={onSaveSheet}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-md cursor-pointer shadow-2xs transition-colors"
+            className="inline-flex items-center gap-1 min-h-[38px] px-4 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 active:scale-95 rounded-xl cursor-pointer shadow-2xs transition-all"
             title="Lưu lại toàn bộ dữ liệu biểu hiện tại"
           >
             <Save className="w-3.5 h-3.5" />
@@ -201,7 +231,7 @@ export function ExcelTableRenderer({
             <button
               type="button"
               onClick={onSaveAndNext}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-md cursor-pointer shadow-2xs transition-colors"
+              className="inline-flex items-center gap-1 min-h-[38px] px-3.5 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-[#004776] hover:text-white border border-[#004776]/30 rounded-xl cursor-pointer shadow-2xs transition-all"
               title="Lưu dữ liệu và sang sheet tiếp theo"
             >
               <span>Lưu &amp; Sang sheet tiếp theo</span>
@@ -217,7 +247,7 @@ export function ExcelTableRenderer({
               <span>Đã lưu {lastSaved}</span>
             </span>
           )}
-          <span>Tổng số: <strong>{rows.length}</strong> dòng</span>
+          <span>Tổng: <strong>{rows.length}</strong> dòng</span>
         </div>
       </div>
     </div>
