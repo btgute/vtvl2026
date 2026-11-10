@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --font-weight-black: 650;
-  --font-weight-extrabold: 600;
-  --font-weight-bold: 525;
-  --font-weight-semibold: 450;
-  --font-weight-medium: 400;
+  --font-weight-black: 715;
+  --font-weight-extrabold: 660;
+  --font-weight-bold: 580;
+  --font-weight-semibold: 500;
+  --font-weight-medium: 440;
+  --font-weight-normal: 440;
   --background: #f5f7fa;
   --sheet: #ffffff;
   --surface-secondary: #f7f9fc;
@@ -85,24 +86,51 @@ body {
   color: #ffffff !important;
 }
 
-/* Giảm độ đậm (bold) của toàn bộ chữ xuống 75% so với mức trước đó */
-.font-black {
-  font-weight: 650 !important;
+/* Tăng độ dày (font-weight) của tất cả chữ lên 110% so với hiện tại */
+html,
+body,
+p,
+span,
+td,
+input,
+select,
+textarea,
+button,
+label {
+  font-weight: 440;
 }
-.font-extrabold {
-  font-weight: 600 !important;
+
+.font-normal {
+  font-weight: 440 !important;
 }
+
+.font-medium {
+  font-weight: 440 !important;
+}
+
+.font-semibold {
+  font-weight: 500 !important;
+}
+
 .font-bold,
 strong,
 b,
-th {
-  font-weight: 525 !important;
+th,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 580 !important;
 }
-.font-semibold {
-  font-weight: 450 !important;
+
+.font-extrabold {
+  font-weight: 660 !important;
 }
-.font-medium {
-  font-weight: 400 !important;
+
+.font-black {
+  font-weight: 715 !important;
 }
 
 input:not([type="checkbox"]):not([type="radio"]),
