@@ -28,7 +28,12 @@ export function getCurrentOperatorSession(): OperatorSession | null {
   try {
     const raw = localStorage.getItem(CURRENT_OPERATOR_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const session: OperatorSession = JSON.parse(raw);
+    if (session && session.email === 'hoavm@hcmute.edu.vn') {
+      session.email = 'tcns@hcmute.edu.vn';
+      localStorage.setItem(CURRENT_OPERATOR_KEY, JSON.stringify(session));
+    }
+    return session;
   } catch {
     return null;
   }
@@ -87,7 +92,21 @@ export function getAllEmailSessions(): EmailSessionRecord[] {
     const raw = localStorage.getItem(EMAIL_RECORDS_KEY);
     if (!raw) return [];
     const list: EmailSessionRecord[] = JSON.parse(raw);
-    return Array.isArray(list) ? list : [];
+    if (Array.isArray(list)) {
+      let changed = false;
+      const updated = list.map((item) => {
+        if (item.email === 'hoavm@hcmute.edu.vn') {
+          changed = true;
+          return { ...item, email: 'tcns@hcmute.edu.vn' };
+        }
+        return item;
+      });
+      if (changed) {
+        localStorage.setItem(EMAIL_RECORDS_KEY, JSON.stringify(updated));
+      }
+      return updated;
+    }
+    return [];
   } catch {
     return [];
   }

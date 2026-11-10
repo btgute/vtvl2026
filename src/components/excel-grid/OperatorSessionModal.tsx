@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import {
   OperatorSession, EmailSessionRecord, getAllEmailSessions, getSessionByEmail
 } from '@/services/telemetry/operator-session';
 import {
   UserCheck, Building2, Briefcase, Mail, History, CheckCircle2,
-  ArrowRight, X, Info
+  ArrowRight, X
 } from 'lucide-react';
 
 const COMMON_TITLES = [
@@ -30,7 +29,7 @@ export function OperatorSessionModal({
   isOpen, currentSession, defaultUnitCode = 'TCNS', onSubmit, onClose
 }: OperatorSessionModalProps) {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('tcns@hcmute.edu.vn');
   const [unitCode, setUnitCode] = useState(defaultUnitCode);
   const [title, setTitle] = useState('Chuyên viên');
   const [customTitle, setCustomTitle] = useState('');
@@ -41,7 +40,7 @@ export function OperatorSessionModal({
       const allHist = getAllEmailSessions();
       setHistorySessions(allHist);
       if (currentSession) {
-        setEmail(currentSession.email);
+        setEmail(currentSession.email === 'hoavm@hcmute.edu.vn' ? 'tcns@hcmute.edu.vn' : (currentSession.email || 'tcns@hcmute.edu.vn'));
         setUnitCode(currentSession.unitCode);
         if (COMMON_TITLES.includes(currentSession.title)) {
           setTitle(currentSession.title);
@@ -52,8 +51,11 @@ export function OperatorSessionModal({
       } else {
         setUnitCode(defaultUnitCode);
         if (allHist.length > 0) {
-          setEmail(allHist[0].email);
-          if (COMMON_TITLES.includes(allHist[0].title)) setTitle(allHist[0].title);
+          const first = allHist[0];
+          setEmail(first.email === 'hoavm@hcmute.edu.vn' ? 'tcns@hcmute.edu.vn' : (first.email || 'tcns@hcmute.edu.vn'));
+          if (COMMON_TITLES.includes(first.title)) setTitle(first.title);
+        } else {
+          setEmail('tcns@hcmute.edu.vn');
         }
       }
     }
@@ -65,7 +67,7 @@ export function OperatorSessionModal({
   }, [email]);
 
   const handleSelectHistory = (h: EmailSessionRecord) => {
-    setEmail(h.email);
+    setEmail(h.email === 'hoavm@hcmute.edu.vn' ? 'tcns@hcmute.edu.vn' : h.email);
     setUnitCode(h.unitCode);
     if (COMMON_TITLES.includes(h.title)) {
       setTitle(h.title);
@@ -94,8 +96,8 @@ export function OperatorSessionModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
       role="dialog"
       aria-modal="true"
-      onClick={currentSession ? onClose : undefined}
-      onKeyDown={(e) => { if (e.key === 'Escape' && currentSession && onClose) onClose(); }}
+      onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Escape' && onClose) onClose(); }}
       tabIndex={-1}
     >
       <div
@@ -117,7 +119,7 @@ export function OperatorSessionModal({
               </p>
             </div>
           </div>
-          {currentSession && onClose && (
+          {onClose && (
             <button
               type="button"
               onClick={onClose}
@@ -146,7 +148,7 @@ export function OperatorSessionModal({
                     onClick={() => handleSelectHistory(h)}
                     className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-lg bg-white hover:bg-blue-50 border border-[#cbd5e1] hover:border-[#004776] text-[#004776] transition-all cursor-pointer shadow-2xs font-medium"
                   >
-                    <span>{h.email}</span>
+                    <span>{h.email === 'hoavm@hcmute.edu.vn' ? 'tcns@hcmute.edu.vn' : h.email}</span>
                     <span className="text-[#64748b]">({h.unitCode})</span>
                   </button>
                 ))}
@@ -155,19 +157,21 @@ export function OperatorSessionModal({
           )}
 
           {/* Email input */}
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="block text-xs font-bold text-[#004776]">
               Email công vụ người thực hiện <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-2.5 w-4 h-4 text-[#64748b]" />
+            <div className="flex items-center w-full rounded-xl border border-[#cbd5e1] bg-white focus-within:ring-2 focus-within:ring-[#004776] focus-within:border-[#004776] transition-all shadow-2xs overflow-hidden">
+              <div className="pl-3.5 pr-2 flex items-center justify-center shrink-0 text-[#004776]">
+                <Mail className="w-4 h-4" />
+              </div>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ví dụ: tcns@hcmute.edu.vn"
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium"
+                className="w-full py-2.5 pr-4 bg-transparent border-0 outline-none text-xs sm:text-sm font-semibold text-[#004776]"
               />
             </div>
             {matchedHistory && (
@@ -179,16 +183,18 @@ export function OperatorSessionModal({
           </div>
 
           {/* Đơn vị công tác */}
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="block text-xs font-bold text-[#004776]">
               Đơn vị công tác <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <Building2 className="absolute left-3 top-2.5 w-4 h-4 text-[#64748b]" />
+            <div className="flex items-center w-full rounded-xl border border-[#cbd5e1] bg-white focus-within:ring-2 focus-within:ring-[#004776] focus-within:border-[#004776] transition-all shadow-2xs overflow-hidden">
+              <div className="pl-3.5 pr-2 flex items-center justify-center shrink-0 text-[#004776]">
+                <Building2 className="w-4 h-4" />
+              </div>
               <select
                 value={unitCode}
                 onChange={(e) => setUnitCode(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium bg-white"
+                className="w-full py-2.5 pr-4 bg-transparent border-0 outline-none text-xs sm:text-sm font-semibold text-[#004776] cursor-pointer"
               >
                 {QD2266_GROUPED_UNITS_CATALOG.map((group) => (
                   <optgroup key={group.groupLabel} label={group.groupLabel}>
@@ -204,16 +210,18 @@ export function OperatorSessionModal({
           </div>
 
           {/* Chức vụ */}
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="block text-xs font-bold text-[#004776]">
               Chức vụ người điền <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <Briefcase className="absolute left-3 top-2.5 w-4 h-4 text-[#64748b]" />
+            <div className="flex items-center w-full rounded-xl border border-[#cbd5e1] bg-white focus-within:ring-2 focus-within:ring-[#004776] focus-within:border-[#004776] transition-all shadow-2xs overflow-hidden">
+              <div className="pl-3.5 pr-2 flex items-center justify-center shrink-0 text-[#004776]">
+                <Briefcase className="w-4 h-4" />
+              </div>
               <select
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium bg-white"
+                className="w-full py-2.5 pr-4 bg-transparent border-0 outline-none text-xs sm:text-sm font-semibold text-[#004776] cursor-pointer"
               >
                 {COMMON_TITLES.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -227,28 +235,28 @@ export function OperatorSessionModal({
                 value={customTitle}
                 onChange={(e) => setCustomTitle(e.target.value)}
                 placeholder="Nhập tên chức vụ cụ thể..."
-                className="w-full px-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium mt-1"
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-semibold mt-1.5 shadow-2xs"
               />
             )}
           </div>
 
           {/* Action button */}
-          <div className="pt-2 flex items-center justify-end gap-2">
-            {currentSession && onClose && (
+          <div className="pt-2 flex items-center justify-end gap-2.5">
+            {onClose && (
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-bold text-[#004776] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-xl transition-colors cursor-pointer"
+                className="px-5 py-2.5 text-xs sm:text-sm font-bold text-[#004776] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-xl transition-colors cursor-pointer"
               >
                 Hủy
               </button>
             )}
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-xl shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <span>{matchedHistory ? 'Khôi phục phiên & Bắt đầu' : 'Xác nhận & Bắt đầu'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </form>
