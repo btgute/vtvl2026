@@ -81,7 +81,7 @@ export function WorkspaceActionsRow({
       <div className="flex flex-wrap items-center gap-2.5 text-xs text-[#475569]">
         <div className="inline-flex items-center gap-1.5 bg-[#f8fafc] px-2.5 py-1 rounded-lg border border-[#e2e8f0]">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-medium text-[#004776]">{session?.email || 'hoavm@hcmute.edu.vn'}</span>
+          <span className="font-medium text-[#004776]">{session?.email || 'tcns@hcmute.edu.vn'}</span>
           <span className="text-[#94a3b8]">·</span>
           <span>{session?.title || 'Nhân viên'}</span>
           <span className="text-[#cbd5e1]">|</span>

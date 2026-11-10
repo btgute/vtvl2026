@@ -166,7 +166,7 @@ export function OperatorSessionModal({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ví dụ: hoavm@hcmute.edu.vn"
+                placeholder="ví dụ: tcns@hcmute.edu.vn"
                 className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-medium"
               />
             </div>
