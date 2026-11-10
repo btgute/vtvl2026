@@ -5,9 +5,7 @@ import { useExcelGridState } from './excel-grid-state';
 import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
 import { ExcelSheetTabs } from './ExcelSheetTabs';
 import { ExcelTableRenderer } from './ExcelTableRenderer';
-import { ExcelOrderSwitcher } from './ExcelOrderSwitcher';
-import { ExcelWorkbookToolbar } from './ExcelWorkbookToolbar';
-import { CompactWorkspaceHeader } from './CompactWorkspaceHeader';
+import { ScientificWorkspaceCard } from './ScientificWorkspaceCard';
 import { GuidanceDrawerModal } from './GuidanceDrawerModal';
 import { WorkflowSidebar } from '@/components/layout/MilestonesBar';
 import { ExcelSheetKey } from './excel-grid-types';
@@ -16,6 +14,7 @@ import { DataQualityReportModal } from './DataQualityReportModal';
 import { OperatorSessionModal } from './OperatorSessionModal';
 import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 const getStepFromSheet = (sheet: ExcelSheetKey): number => {
   switch (sheet) {
@@ -61,17 +60,18 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   const [showQualityModal, setShowQualityModal] = useState(false);
   const [showGuidanceModal, setShowGuidanceModal] = useState(false);
   const [dirtySheets, setDirtySheets] = useState<Set<ExcelSheetKey>>(new Set());
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+  const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
     if (typeof window !== 'undefined') {
-      try { return localStorage.getItem('hcmute_vtvl_sidebar_collapsed') === 'true'; } catch { /* ignore */ }
+      try { return localStorage.getItem('hcmute_vtvl_sidebar_visible') === 'true'; } catch { /* ignore */ }
     }
     return false;
   });
 
-  const handleToggleSidebar = (val: boolean) => {
-    setIsSidebarCollapsed(val);
+  const toggleSidebar = () => {
+    const nextVal = !isSidebarVisible;
+    setIsSidebarVisible(nextVal);
     if (typeof window !== 'undefined') {
-      try { localStorage.setItem('hcmute_vtvl_sidebar_collapsed', String(val)); } catch { /* ignore */ }
+      try { localStorage.setItem('hcmute_vtvl_sidebar_visible', String(nextVal)); } catch { /* ignore */ }
     }
   };
 
@@ -89,7 +89,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   };
 
   const {
-    session, isModalOpen, touchedCells, isRestoredSession,
+    session, isModalOpen, touchedCells,
     markCellTouched, submitSession, updateSessionUnit, switchSession, closeModal, persistDataForSession
   } = useOperatorSession();
 
@@ -117,7 +117,6 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     goToNextSheet();
   }, [handleSave, goToNextSheet]);
 
-  // Phím tắt Ctrl + S / Cmd + S
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
@@ -142,79 +141,50 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
   return (
     <div className="w-full max-w-full min-w-0 overflow-hidden flex flex-col gap-3">
-      {/* 1. Header làm việc thu gọn (Compact Workspace Header) */}
-      <CompactWorkspaceHeader
-        activeMeta={activeMeta}
+      {/* 1. KHỐI TIÊU ĐỀ & ĐIỀU KHIỂN CHUẨN KHOA HỌC (CARD 1) */}
+      <ScientificWorkspaceCard
+        activeSheet={activeSheet}
         currentUnit={currentUnit}
+        unitCode={unitCode}
         activeStep={getStepFromSheet(activeSheet)}
         activeSheetIndex={activeSheetIndex}
         totalSheets={currentSheetOrder.length}
         rowsCount={activeRows.length}
         isDirty={dirtySheets.has(activeSheet)}
-        lastSaved={lastSaved}
-        fixCount={qualityReport.summary.fixCount}
+        lastSaved={lastSaved ? new Date() : null}
+        qualityReport={qualityReport}
+        session={session}
+        orderMode={orderMode}
+        canNext={activeSheetIndex < currentSheetOrder.length - 1}
+        isExporting={isExporting}
+        isC1Unlocked={isC1Unlocked}
+        onSelectSheet={handleSelectSheetSafe}
+        onUnitChange={(u) => { gridHandleUnitChange(u); updateSessionUnit(u); setDirtySheets(new Set()); }}
+        onSwitchSession={switchSession}
+        onToggleOrderMode={setOrderMode}
         onOpenGuidance={() => setShowGuidanceModal(true)}
         onOpenQualityModal={() => setShowQualityModal(true)}
+        onSaveSheet={handleSave}
+        onSaveAndNext={handleSaveAndNext}
+        onExportWorkbook={exportFullWorkbook}
+        onLoadTcnsData={handleLoadTcnsData}
+        onLoadRecommendedVtvls={loadRecommendedVtvls}
+        onOpenUnlockModal={() => setShowUnlockModal(true)}
       />
 
-      {/* 2. Action Toolbar & Order Switcher */}
-      <div className="bg-white border border-[#cbd5e1] rounded-2xl p-3 sm:p-3.5 shadow-2xs w-full max-w-full min-w-0">
-        <ExcelWorkbookToolbar
-          session={session}
-          unitCode={unitCode}
-          currentUnit={currentUnit}
-          isRestoredSession={isRestoredSession}
-          activeSheet={activeSheet}
-          activeMeta={activeMeta}
-          isC1Unlocked={isC1Unlocked}
-          isExporting={isExporting}
-          qualityReport={qualityReport}
-          isDirty={dirtySheets.has(activeSheet)}
-          lastSaved={lastSaved}
-          canNext={activeSheetIndex < currentSheetOrder.length - 1}
-          onSwitchSession={switchSession}
-          onUnitChange={(u) => { gridHandleUnitChange(u); updateSessionUnit(u); setDirtySheets(new Set()); }}
-          onOpenUnlockModal={() => setShowUnlockModal(true)}
-          onLoadRecommendedVtvls={loadRecommendedVtvls}
-          onLoadFullPl1Catalog={loadFullPl1Catalog}
-          onLoadTcnsData={handleLoadTcnsData}
-          onSaveSheet={handleSave}
-          onSaveAndNext={handleSaveAndNext}
-          onSelectSheet={handleSelectSheetSafe}
-          onShowQualityModal={() => setShowQualityModal(true)}
-          onExportWorkbook={exportFullWorkbook}
-        />
+      {/* Dải 15 sheet cuộn ngang */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-xs font-semibold text-[#004776] shadow-2xs cursor-pointer shrink-0 transition-colors"
+          title={isSidebarVisible ? 'Ẩn quy trình 8 bước để mở rộng bảng' : 'Hiện quy trình 8 bước'}
+        >
+          {isSidebarVisible ? <PanelLeftClose className="w-3.5 h-3.5" /> : <PanelLeftOpen className="w-3.5 h-3.5" />}
+          <span>{isSidebarVisible ? 'Thu gọn' : 'Quy trình 8 bước'}</span>
+        </button>
 
-        <ExcelOrderSwitcher
-          orderMode={orderMode}
-          onToggleOrderMode={setOrderMode}
-          lastSaved={lastSaved}
-        />
-      </div>
-
-      {/* 3. Main Workspace: 8-step Workflow Sidebar + 15-Sheet Excel Grid */}
-      <div className="flex flex-col lg:flex-row gap-3 items-start w-full max-w-full min-w-0">
-        <div className={`w-full shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-72'}`}>
-          <WorkflowSidebar
-            activeStep={getStepFromSheet(activeSheet)}
-            onSelectStep={(s) => handleSelectSheetSafe(getSheetFromStep(s))}
-            unitCode={unitCode}
-            alwaysExpanded={false}
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={handleToggleSidebar}
-          />
-        </div>
-
-        <div className="flex-1 min-w-0 w-full max-w-full flex flex-col gap-3 overflow-hidden">
-          {activeSheet === 'C1' && (
-            <C1AdminStatusBanner
-              isUnlocked={isC1Unlocked}
-              onOpenUnlockModal={() => setShowUnlockModal(true)}
-              onLock={lockC1}
-            />
-          )}
-
-          {/* Dải 15 sheet được đưa lên phía trên bảng tính để dễ dàng bấm chọn */}
+        <div className="flex-1 min-w-0">
           <ExcelSheetTabs
             activeSheet={activeSheet}
             sheetOrder={currentSheetOrder}
@@ -226,6 +196,32 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
             canPrev={activeSheetIndex > 0}
             canNext={activeSheetIndex < currentSheetOrder.length - 1}
           />
+        </div>
+      </div>
+
+      {/* 2. KHÔNG GIAN BẢNG DỮ LIỆU CHÍNH (CARD 2) */}
+      <div className="flex flex-col lg:flex-row gap-3 items-start w-full max-w-full min-w-0">
+        {isSidebarVisible && (
+          <div className="w-full shrink-0 transition-all duration-200 lg:w-72">
+            <WorkflowSidebar
+              activeStep={getStepFromSheet(activeSheet)}
+              onSelectStep={(s) => handleSelectSheetSafe(getSheetFromStep(s))}
+              unitCode={unitCode}
+              alwaysExpanded={true}
+              isCollapsed={false}
+              onToggleCollapse={() => {}}
+            />
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0 w-full max-w-full flex flex-col gap-3 overflow-hidden">
+          {activeSheet === 'C1' && (
+            <C1AdminStatusBanner
+              isUnlocked={isC1Unlocked}
+              onOpenUnlockModal={() => setShowUnlockModal(true)}
+              onLock={lockC1}
+            />
+          )}
 
           <ExcelTableRenderer
             meta={activeMeta}
