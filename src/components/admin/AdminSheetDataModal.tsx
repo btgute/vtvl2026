@@ -223,7 +223,7 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
         {/* Footer */}
         <div className="px-5 py-3 bg-[#f8fafc] border-t border-[#cbd5e1] flex items-center justify-between">
           <span className="text-xs text-[#64748b]">
-            Dữ liệu được lưu trữ tự động trong nhật ký phiên của hệ thống VTVL 360
+            Dữ liệu được lưu trữ tự động trong nhật ký phiên của hệ thống VTVL
           </span>
           <button
             type="button"
