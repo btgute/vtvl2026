@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, FileSpreadsheet, Download, Table2, Layers, Calendar, User, Building } from 'lucide-react';
-import { EmailSessionRecord } from '@/services/telemetry/operator-session';
+import { EmailSessionRecord, loadSessionData } from '@/services/telemetry/operator-session';
 import { EXCEL_NATURAL_SHEET_ORDER, ExcelSheetKey } from '@/components/excel-grid/excel-grid-types';
 import { EXCEL_SHEET_METAS } from '@/components/excel-grid/excel-sheet-metas';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
@@ -21,7 +21,11 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
   if (!session) return null;
 
   const currentSheetMeta = EXCEL_SHEET_METAS[selectedSheet];
-  const sheetRows = session.data?.[selectedSheet] || [];
+  const fullData = useMemo(() => {
+    if (session.data && Object.keys(session.data).length > 0) return session.data;
+    return loadSessionData(session.email, session.unitCode);
+  }, [session]);
+  const sheetRows = fullData[selectedSheet] || [];
   const columns = currentSheetMeta?.columns || [];
 
   const handleExport = async () => {
@@ -111,7 +115,7 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
           {EXCEL_NATURAL_SHEET_ORDER.map((key) => {
             const meta = EXCEL_SHEET_METAS[key];
             const isActive = selectedSheet === key;
-            const count = session.data?.[key]?.length || 0;
+            const count = fullData[key]?.length || 0;
             return (
               <button
                 key={key}

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import {
-  OperatorSession, EmailSessionRecord, getAllEmailSessions, getSessionByEmail
+  OperatorSession, EmailSessionRecord, getAllEmailSessions, getSessionByEmail, normalizeEmail
 } from '@/services/telemetry/operator-session';
 import {
   UserCheck, Building2, Briefcase, Mail, History, CheckCircle2,
@@ -80,7 +80,7 @@ export function OperatorSessionModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalEmail = email.trim();
+    const finalEmail = normalizeEmail(email);
     if (!finalEmail) return;
     const finalTitle = title === 'Khác (tự nhập)' ? customTitle.trim() || 'Người thực hiện' : title;
     onSubmit(finalEmail, unitCode, finalTitle);
@@ -166,11 +166,17 @@ export function OperatorSessionModal({
                 <Mail className="w-4 h-4" />
               </div>
               <input
-                type="email"
+                type="text"
+                inputMode="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ví dụ: tcns@hcmute.edu.vn"
+                onBlur={() => {
+                  if (email.trim()) {
+                    setEmail((prev) => normalizeEmail(prev) || prev);
+                  }
+                }}
+                placeholder="ví dụ: tcns@hcmute.edu.vn hoặc vtvl@hcmute"
                 className="w-full py-2.5 pr-4 bg-transparent border-0 outline-none text-xs sm:text-sm font-semibold text-[#004776]"
               />
             </div>

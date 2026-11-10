@@ -63,7 +63,7 @@ export function useOperatorSession() {
     unitCode: string,
     title: string
   ): { restoredData: Record<ExcelSheetKey, GenericGridRow[]> | null; isExisting: boolean } => {
-    const savedRecord = getSessionByEmail(email);
+    const savedRecord = getSessionByEmail(email, true);
     const chosenUnit = savedRecord ? savedRecord.unitCode : unitCode;
     const chosenTitle = savedRecord ? savedRecord.title : title;
     const newSession = saveCurrentOperatorSession(email, chosenUnit, chosenTitle);
