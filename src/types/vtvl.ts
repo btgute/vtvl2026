@@ -39,7 +39,7 @@ export interface NgachItem {
   defaultCareerLevel?: string;
   allowedCareerLevels?: string[];
   group: string;
-  personnelType: 'Viên chức' | 'Công chức' | 'Cán bộ' | 'Hợp đồng lao động';
+  personnelType: 'Viên chức' | 'Hợp đồng lao động' | 'Hợp đồng khoán việc' | 'Thuê dịch vụ';
   workingRegime: WorkingRegime;
   standardHoursPerYear: number;
   defaultCount: number;

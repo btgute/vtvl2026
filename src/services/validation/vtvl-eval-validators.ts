@@ -5,6 +5,7 @@ export function validateC1Sheet(rows: GenericGridRow[], unitCode: string): Valid
   const issues: ValidationIssue[] = [];
   const seenCodes = new Set<string>();
   const validStatus = ['Tiếp tục sử dụng', 'Cần cập nhật', 'Đề nghị bổ sung', 'Đề nghị sửa đổi', 'Đề nghị bãi bỏ'];
+  const validPersonnel = ['Viên chức', 'Hợp đồng lao động', 'Hợp đồng khoán việc', 'Thuê dịch vụ'];
 
   rows.forEach((r, idx) => {
     const rowNum = idx + 3;
@@ -13,6 +14,7 @@ export function validateC1Sheet(rows: GenericGridRow[], unitCode: string): Valid
     const status = String(r.trangThai || '').trim();
     const stdHours = Number(r.gioChuanPp2);
     const workMode = String(r.cheDoLamViec || '').trim();
+    const pType = String(r.loaiNhanLuc || '').trim();
 
     if (!vCode) {
       issues.push({
@@ -57,6 +59,15 @@ export function validateC1Sheet(rows: GenericGridRow[], unitCode: string): Valid
         cellRef: `6. C1_VTVL!E${rowNum}`, rowId: r.id, field: 'gioChuanPp2', severity: 'fix',
         title: `THIẾU MẪU SỐ: Quỹ giờ PP2 chưa xác định cho "${vCode}"`, currentValue: String(r.gioChuanPp2 || 'Trống'),
         suggestion: 'Quỹ giờ chuẩn phổ biến là 1.904 giờ/năm (hoặc 1.760 giờ cho chế độ đặc thù).'
+      });
+    }
+
+    if (pType && !validPersonnel.includes(pType)) {
+      issues.push({
+        id: `c1-pType-${idx}`, ruleId: 'R-C1-06', sheetKey: 'C1', sheetName: '6. C1_VTVL',
+        cellRef: `6. C1_VTVL!C${rowNum}`, rowId: r.id, field: 'loaiNhanLuc', severity: 'fix',
+        title: `Loại nhân lực chưa đúng chuẩn: "${pType}"`, currentValue: pType,
+        suggestion: 'Chỉ chọn 1 trong: Viên chức, Hợp đồng lao động, Hợp đồng khoán việc, Thuê dịch vụ.'
       });
     }
 

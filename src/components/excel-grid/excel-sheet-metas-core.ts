@@ -80,7 +80,7 @@ export const CORE_EXCEL_SHEET_METAS: Record<
       { colLetter: 'A', field: 'maCongViec', headerName: 'Mã công việc', width: '160px', type: 'select', dynamicOptionsKey: 'taskList' },
       { colLetter: 'B', field: 'maVtvl', headerName: 'Mã VTVL', width: '120px', isFormula: true, formulaHint: '=INDEX(A2!C,MATCH(A,A2!A,0))' },
       { colLetter: 'C', field: 'congDoan', headerName: 'Công đoạn / Quy trình tác động', width: '240px' },
-      { colLetter: 'D', field: 'loaiTacDong', headerName: 'Loại tác động', width: '140px', type: 'select', selectOptions: ['Chuyển đổi số / AI', 'Tự chủ đại học', 'Thuê dịch vụ ngoài', 'Chuẩn hóa quy trình'] },
+      { colLetter: 'D', field: 'loaiTacDong', headerName: 'Loại tác động', width: '160px', type: 'select', selectOptions: ['Số hóa', 'Cải tiến quy trình', 'Thuê dịch vụ/đặt hàng', 'Tự chủ', 'Xã hội hóa', 'Công việc mới phát sinh'] },
       { colLetter: 'E', field: 'mucDo', headerName: 'Mức độ', width: '100px', type: 'select', selectOptions: ['Toàn phần', 'Một phần'] },
       { colLetter: 'F', field: 'gioBienDong', headerName: 'Giờ biến động (h/năm)', width: '140px', type: 'number' },
       { colLetter: 'G', field: 'vanBan', headerName: 'Văn bản / Đề án căn cứ', width: '220px' }
@@ -117,7 +117,7 @@ export const CORE_EXCEL_SHEET_METAS: Record<
     columns: [
       { colLetter: 'A', field: 'maVtvl', headerName: 'Mã VTVL (Phụ lục I)', width: '160px', type: 'select', dynamicOptionsKey: 'pl1VtvlList' },
       { colLetter: 'B', field: 'tenVtvl', headerName: 'Tên VTVL cụ thể tại đơn vị', width: '260px' },
-      { colLetter: 'C', field: 'loaiNhanLuc', headerName: 'Loại nhân lực', width: '110px', type: 'select', selectOptions: ['Viên chức', 'Hợp đồng lao động', 'Cán bộ'] },
+      { colLetter: 'C', field: 'loaiNhanLuc', headerName: 'Loại nhân lực', width: '130px', type: 'select', selectOptions: ['Viên chức', 'Hợp đồng lao động', 'Hợp đồng khoán việc', 'Thuê dịch vụ'] },
       { colLetter: 'D', field: 'quyetDinh', headerName: 'Quyết định / Căn cứ VTVL', width: '200px' },
       { colLetter: 'E', field: 'gioChuanPp2', headerName: 'Giờ chuẩn PP2', width: '110px', isFormula: true, formulaHint: '=IF(J="Đặc thù",1760,1904)' },
       { colLetter: 'F', field: 'canCuQuyGio', headerName: 'Căn cứ xác định quỹ giờ', width: '220px' },

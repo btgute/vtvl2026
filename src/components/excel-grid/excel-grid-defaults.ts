@@ -86,7 +86,7 @@ export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey
     maCongViec: t.maCongViec,
     maVtvl: t.maVtvl,
     congDoan: `Số hóa tiếp nhận và xử lý trên nền tảng S-Link`,
-    loaiTacDong: 'Chuyển đổi số / AI',
+    loaiTacDong: 'Số hóa',
     mucDo: 'Toàn phần',
     gioBienDong: -60 - idx * 30,
     vanBan: 'Kế hoạch CĐS HCM-UTE 2026–2030'

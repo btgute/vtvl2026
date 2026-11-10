@@ -13,6 +13,7 @@ const METHODS: { value: WorkforceMethod; label: string }[] = [
   { value: 'PP2', label: 'PP2 (Tính theo khối lượng giờ)' },
   { value: 'PP3', label: 'PP3 (Định mức kiêm nhiệm)' },
   { value: 'PP1+PP2', label: 'PP1+PP2 (Kết hợp chức danh & giờ)' },
+  { value: 'PP1+PP3', label: 'PP1+PP3 (Kết hợp chức danh & kiêm nhiệm)' },
   { value: 'PP2+PP3', label: 'PP2+PP3 (Kết hợp giờ & kiêm nhiệm)' }
 ];
 

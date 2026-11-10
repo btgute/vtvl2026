@@ -251,6 +251,10 @@ runTest('9. Kiểm tra chuẩn hóa Mã nhiệm vụ ([MÃ_ĐV].NVxx), Mã công
   // Kiểm tra chuẩn hóa trạng thái C1, kỳ A1, giải trình C3, T_TienDo và Validation Rules
   const metasCore = fs.readFileSync(path.join(root, 'src/components/excel-grid/excel-sheet-metas-core.ts'), 'utf8');
   assert.ok(metasCore.includes('Tiếp tục sử dụng') && metasCore.includes('Đề nghị bãi bỏ'), 'C1 Cột G phải có dropdown Tiếp tục sử dụng, Cần cập nhật, Đề nghị bổ sung, Đề nghị sửa đổi, Đề nghị bãi bỏ');
+  assert.ok(metasCore.includes("'Số hóa', 'Cải tiến quy trình', 'Thuê dịch vụ/đặt hàng', 'Tự chủ', 'Xã hội hóa', 'Công việc mới phát sinh'"), 'B2_CT Cột D phải có đủ 6 lựa chọn loại tác động chuẩn');
+  assert.ok(metasCore.includes("'Viên chức', 'Hợp đồng lao động', 'Hợp đồng khoán việc', 'Thuê dịch vụ'"), 'C1 Cột C phải có đúng 4 loại nhân lực chuẩn');
+  const metasEval = fs.readFileSync(path.join(root, 'src/components/excel-grid/excel-sheet-metas-eval.ts'), 'utf8');
+  assert.ok(metasEval.includes("'PP1', 'PP2', 'PP3', 'PP1+PP2', 'PP1+PP3', 'PP2+PP3'"), 'C3 Cột B phải có đủ 6 phương pháp tính nhân lực');
   assert.ok(defaults.includes('01/10/2025–30/9/2026'), 'A1 Cột E phải chuẩn hóa kỳ 01/10/2025–30/9/2026');
   assert.ok(defaults.includes('Định biên theo PP1; QĐ 2266, PL18 và BMTCV&KNL'), 'C3 Cột K phải có giải trình PP1 chuẩn');
   assert.ok(defaults.includes('Phòng Tổ chức – Nhân sự (HCM-UTE)'), '14. T_TienDo phải hiển thị Phòng Tổ chức – Nhân sự (HCM-UTE)');

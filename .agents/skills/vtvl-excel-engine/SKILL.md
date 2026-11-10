@@ -15,16 +15,16 @@ description: Lõi xử lý tệp Excel (.xlsx) và gói nén (.zip) theo chuẩn
 ## B. Quy trình thực hiện & Cấu trúc bảng chuẩn Hướng dẫn 07-HD/BTCTW
 
 ### 1. Thứ tự 12 bước nhập và liên kết dữ liệu chuẩn
-1. `6. C1_VTVL` (Danh mục VTVL & Quỹ giờ chuẩn PP2 = `1.904 giờ/năm` theo chế độ 40h/tuần hoặc giờ riêng theo chế độ `Đặc thù` của Giảng viên/NCV).
+1. `6. C1_VTVL` (Danh mục VTVL, Loại nhân lực [`Viên chức`, `Hợp đồng lao động`, `Hợp đồng khoán việc`, `Thuê dịch vụ`] & Quỹ giờ chuẩn PP2 = `1.904 giờ/năm` theo chế độ 40h/tuần hoặc giờ riêng theo chế độ `Đặc thù` của Giảng viên/NCV).
 2. `1. A1_NhiemVu` (Danh mục nhiệm vụ từ chức năng, nhiệm vụ được giao).
 3. `2. A2_CongViec` (Phân rã nhiệm vụ thành công việc, sản phẩm đầu ra, đơn vị tính và gắn `Mã VTVL`).
 4. `11. DM_SAN_PHAM` (Danh mục sản phẩm chuẩn phân nhóm `I–VI` và định mức phút/SP chuẩn nếu có).
 5. `3. B1_KhoiLuong` (Thống kê sản lượng kỳ `01/10/2025–30/9/2026`, đo thời gian thực tế, tra cứu định mức chuẩn, tự tính `Giờ SP (tính)` và `Giờ tổng (tính)`).
-6. `4. B2_CT_TacDong` (Chi tiết tác động của `Số hóa`, `Cải tiến quy trình`, `Thuê dịch vụ/đặt hàng`, `Tự chủ`, `Xã hội hóa`, `Công việc mới phát sinh`).
+6. `4. B2_CT_TacDong` (Chi tiết tác động của 6 loại: `Số hóa`, `Cải tiến quy trình`, `Thuê dịch vụ/đặt hàng`, `Tự chủ`, `Xã hội hóa`, `Công việc mới phát sinh`).
 7. `5. B2_ThayDoi` (Bảng tự động tổng hợp từ `B2_CT_TacDong`, tính `Giờ tác động ròng`).
 8. `7. C2_NangLuc` (Bản mô tả VTVL và khung năng lực).
 9. `9. D1_NhanLuc` (Nhân lực hiện có chốt tại `30/9/2026`, kiểm soát không trùng mã nguồn lực và không vượt quỹ giờ).
-10. `8. C3_NhuCau` (Xác định nhu cầu nhân lực theo `PP1`, `PP2`, `PP3` hoặc kết hợp `PP1+PP2`, `PP2+PP3`, `PP1+PP2+PP3`).
+10. `8. C3_NhuCau` (Xác định nhu cầu nhân lực theo 6 phương pháp: `PP1`, `PP2`, `PP3`, `PP1+PP2`, `PP1+PP3`, `PP2+PP3`).
 11. `DU_BAO_5_NAM` (Dự báo thay đổi khối lượng công việc giai đoạn `2027–2031`).
 12. `10. D2_PhuongAn` (Phương án biên chế từng năm `2027–2031`).
 

@@ -175,8 +175,9 @@ export function appendHd07GuideAndRefSheets(
     ['TT_A1 (Trạng thái nhiệm vụ)', 'Tiếp tục thực hiện | Mới tiếp nhận | Đã chuyển giao | Không còn thực hiện'],
     ['TT_B1 (Căn cứ thời gian B1)', 'Có định mức | Kiểm đếm, ước lượng thực tế'],
     ['LOAI_TD (Loại tác động B2_CT)', 'Số hóa | Cải tiến quy trình | Thuê dịch vụ/đặt hàng | Tự chủ | Xã hội hóa | Công việc mới phát sinh'],
+    ['LOAI_NL (Loại nhân lực C1, D1)', 'Viên chức | Hợp đồng lao động | Hợp đồng khoán việc | Thuê dịch vụ'],
     ['CHE_DO (Chế độ làm việc C1)', 'Phổ biến (40 giờ/tuần) | Đặc thù'],
-    ['PP (Phương pháp C3)', 'PP1 | PP2 | PP3 | PP1+PP2 | PP1+PP3 | PP2+PP3 | PP1+PP2+PP3'],
+    ['PP (Phương pháp C3)', 'PP1 | PP2 | PP3 | PP1+PP2 | PP1+PP3 | PP2+PP3'],
     ['BAC_NGHE_NGHIEP (Phụ lục I HCM-UTE)', 'Bậc 1 | Bậc 2 | Bậc 3 | Bậc 4 | Bậc 5 (CM76: Bậc 3, 4, 5; CM79/80/65/103: Bậc 3, 4; HT46/49/50/51: Bậc 2, 3, 4; HT61: Bậc 1, 2, 3)']
   ]);
   XLSX.utils.book_append_sheet(wb, wsThamSo, 'DM_THAM_SO');
