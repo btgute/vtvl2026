@@ -8,14 +8,16 @@ import {
   Home,
   Menu,
   X,
-  BookOpenCheck
+  BookOpenCheck,
+  ShieldCheck
 } from 'lucide-react';
 import { InfoTip } from './MilestonesBar';
 
 const NAV_ITEMS = [
   { href: '/bang-tinh', label: 'Bảng tính Excel 15 sheet', icon: FileSpreadsheet },
   { href: '/?view=overview', label: 'Tổng quan (08 bước)', icon: Home },
-  { href: '/huong-dan', label: 'Phụ lục HD 07', icon: BookOpenCheck }
+  { href: '/huong-dan', label: 'Phụ lục HD 07', icon: BookOpenCheck },
+  { href: '/admin', label: 'Quản trị (Admin)', icon: ShieldCheck }
 ];
 
 export function Header() {

@@ -151,3 +151,29 @@ export function saveEmailSessionData(
   }
 }
 
+export function deleteEmailSession(email: string): boolean {
+  if (typeof window === 'undefined') return false;
+  const normEmail = email.trim().toLowerCase();
+  try {
+    const all = getAllEmailSessions();
+    const filtered = all.filter((s) => s.email !== normEmail);
+    if (filtered.length === all.length) return false;
+    localStorage.setItem(EMAIL_RECORDS_KEY, JSON.stringify(filtered));
+    window.dispatchEvent(new CustomEvent('vtvl-email-sessions-updated', { detail: filtered }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearAllEmailSessions(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(EMAIL_RECORDS_KEY);
+    window.dispatchEvent(new CustomEvent('vtvl-email-sessions-updated', { detail: [] }));
+  } catch {
+    /* ignore */
+  }
+}
+
+

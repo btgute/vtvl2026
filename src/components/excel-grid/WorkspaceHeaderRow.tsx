@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Building2, ChevronDown, Layers, AlertTriangle, HelpCircle, ShieldCheck, Check } from 'lucide-react';
 import { ExcelSheetKey, SheetOrderMode, EXCEL_NATURAL_SHEET_ORDER, WORKFLOW_SHEET_ORDER } from './excel-grid-types';
 import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
-import { HCMUTE_UNITS } from '@/configs/hcmute-units';
+import { HCMUTE_UNITS, getActiveHcmuteUnits } from '@/configs/hcmute-units';
 import { HcmuteUnit } from '@/types/vtvl';
 import { ValidationReport } from '@/services/validation';
 
@@ -40,6 +40,7 @@ export function WorkspaceHeaderRow({
   const [showSheetMenu, setShowSheetMenu] = useState(false);
   const [showUnitMenu, setShowUnitMenu] = useState(false);
   const [unitSearch, setUnitSearch] = useState('');
+  const [availableUnits, setAvailableUnits] = useState<HcmuteUnit[]>(() => getActiveHcmuteUnits());
 
   const sheetMenuRef = useRef<HTMLDivElement>(null);
   const unitMenuRef = useRef<HTMLDivElement>(null);
@@ -54,11 +55,18 @@ export function WorkspaceHeaderRow({
       if (sheetMenuRef.current && !sheetMenuRef.current.contains(target)) setShowSheetMenu(false);
       if (unitMenuRef.current && !unitMenuRef.current.contains(target)) setShowUnitMenu(false);
     };
+    const handleUnitsUpdated = () => {
+      setAvailableUnits(getActiveHcmuteUnits());
+    };
     document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
+    window.addEventListener('vtvl-units-updated', handleUnitsUpdated);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      window.removeEventListener('vtvl-units-updated', handleUnitsUpdated);
+    };
   }, []);
 
-  const filteredUnits = HCMUTE_UNITS.filter(
+  const filteredUnits = availableUnits.filter(
     (u: HcmuteUnit) => u.nameVi.toLowerCase().includes(unitSearch.toLowerCase()) || u.code.toLowerCase().includes(unitSearch.toLowerCase())
   );
 

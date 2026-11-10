@@ -151,17 +151,33 @@ export const QD2266_UNIT_NAMES: Record<string, string> = {
   KDTTT: 'Khoa Đào tạo Tiên tiến'
 };
 
+export function getActiveHcmuteUnits(): HcmuteUnit[] {
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem('hcmute_vtvl_custom_units_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      /* fallback */
+    }
+  }
+  return HCMUTE_UNITS;
+}
+
 export function findHcmuteUnit(codeOrName?: string): HcmuteUnit {
-  if (!codeOrName) return HCMUTE_UNITS[0];
+  const units = getActiveHcmuteUnits();
+  if (!codeOrName) return units[0] || HCMUTE_UNITS[0];
   const query = codeOrName.trim().toUpperCase();
-  const direct = HCMUTE_UNITS.find((u) => u.code.toUpperCase() === query);
+  const direct = units.find((u) => u.code.toUpperCase() === query);
   if (direct) {
     const customName = QD2266_UNIT_NAMES[query];
     return customName ? Object.assign({}, direct, { nameVi: customName }) : direct;
   }
   const aliased = UNIT_CODE_ALIASES[query];
   if (aliased) {
-    const matched = HCMUTE_UNITS.find((u) => u.code.toUpperCase() === aliased);
+    const matched = units.find((u) => u.code.toUpperCase() === aliased);
     if (matched) {
       const customName = QD2266_UNIT_NAMES[query] || matched.nameVi;
       return Object.assign({}, matched, { code: query, nameVi: customName });
@@ -169,15 +185,15 @@ export function findHcmuteUnit(codeOrName?: string): HcmuteUnit {
   }
   if (QD2266_UNIT_NAMES[query]) {
     const isDept = query.startsWith('P') || query === 'BQLKTX' || query === 'TYT';
-    return Object.assign({}, HCMUTE_UNITS[0], {
+    return Object.assign({}, units[0] || HCMUTE_UNITS[0], {
       code: query,
       nameVi: QD2266_UNIT_NAMES[query],
       group: isDept ? 'phong-ban' : 'trung-tam'
     });
   }
-  const byName = HCMUTE_UNITS.find((u) =>
+  const byName = units.find((u) =>
     u.nameVi.toUpperCase().includes(query) || query.includes(u.nameVi.toUpperCase())
   );
-  return byName || HCMUTE_UNITS[0];
+  return byName || units[0] || HCMUTE_UNITS[0];
 }
 
