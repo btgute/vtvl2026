@@ -13,8 +13,8 @@ import {
 import { InfoTip } from './MilestonesBar';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Tổng quan (08 bước)', icon: Home },
   { href: '/bang-tinh', label: 'Bảng tính Excel 15 sheet', icon: FileSpreadsheet },
+  { href: '/?view=overview', label: 'Tổng quan (08 bước)', icon: Home },
   { href: '/huong-dan', label: 'Phụ lục HD 07', icon: BookOpenCheck }
 ];
 
@@ -31,9 +31,9 @@ export function Header() {
       <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 flex h-16 items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 min-w-0 shrink-0">
           <Link
-            href="/"
-            aria-label="Trang chủ Tổng quan 08 bước Vị trí việc làm HCM-UTE"
-            className="flex items-center gap-2.5 py-1 min-h-[44px] min-w-0"
+            href="/bang-tinh"
+            aria-label="Bảng tính Excel 15 sheet Vị trí việc làm HCM-UTE"
+            className="flex items-center gap-2.5 py-1 min-h-[44px] min-w-0 cursor-pointer"
           >
             <img
               src="/ute_logo.png"
@@ -59,7 +59,11 @@ export function Header() {
           <nav aria-label="Điều hướng quy trình nghiệp vụ" className="hidden lg:flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
-              const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+              const active = item.href === '/bang-tinh'
+                ? pathname === '/bang-tinh' || pathname === '/tao-tep'
+                : item.href.startsWith('/?view=overview')
+                  ? pathname === '/'
+                  : pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
@@ -94,7 +98,11 @@ export function Header() {
         <div className="lg:hidden border-t border-[var(--border-subtle)] bg-[var(--sheet)] px-4 py-3 space-y-1.5 shadow-lg">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+            const active = item.href === '/bang-tinh'
+              ? pathname === '/bang-tinh' || pathname === '/tao-tep'
+              : item.href.startsWith('/?view=overview')
+                ? pathname === '/'
+                : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}

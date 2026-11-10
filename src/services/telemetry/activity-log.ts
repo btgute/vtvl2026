@@ -1,4 +1,5 @@
-import { HCMUTE_UNITS } from '@/configs/hcmute-units';
+import { HCMUTE_UNITS, findHcmuteUnit } from '@/configs/hcmute-units';
+import { getCurrentOperatorSession } from './operator-session';
 import { buildDefaultProposedPositionsForUnit } from '@/configs/hcmute-nd232-catalog';
 import { HcmuteUnit, NgachAllocationRow, ProposedVtvlRow, TimeSessionRow, UnitGroupKind, UnitScaleMetrics } from '@/types/vtvl';
 import { syncActivityToSupabase } from '@/services/supabase/vtvl-sync';
@@ -109,41 +110,41 @@ function createDefaultSession(unit: HcmuteUnit = HCMUTE_UNITS[0]): ActiveUnitSes
 export function getActiveUnitSession(): ActiveUnitSession {
   if (typeof window === 'undefined') return createDefaultSession();
   try {
+    const op = getCurrentOperatorSession();
     const raw = window.localStorage.getItem(UNIT_SESSION_KEY);
-    if (!raw) return createDefaultSession();
+    if (!raw) {
+      const def = createDefaultSession();
+      if (op) {
+        def.actorEmail = op.email;
+        def.actorTitle = op.title;
+        if (op.unitCode) { def.unitCode = op.unitCode; def.kind = findHcmuteUnit(op.unitCode).group; }
+      }
+      return def;
+    }
     const parsed = JSON.parse(raw) as Partial<ActiveUnitSession>;
-    const unit = HCMUTE_UNITS.find((u) => u.code === parsed.unitCode) || HCMUTE_UNITS[0];
+    const targetCode = parsed.unitCode || op?.unitCode || HCMUTE_UNITS[0].code;
+    const unit = findHcmuteUnit(targetCode);
     const proposed =
       Array.isArray(parsed.proposedPositions) && parsed.proposedPositions.length > 0
-        ? parsed.proposedPositions
-        : buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group);
+        ? parsed.proposedPositions : buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group);
     const stage = ([1, 2, 3, 4, 5] as const).includes(parsed.wizardStage as 1 | 2 | 3 | 4 | 5)
-      ? (parsed.wizardStage as 1 | 2 | 3 | 4 | 5)
-      : 1;
+      ? (parsed.wizardStage as 1 | 2 | 3 | 4 | 5) : 1;
     return {
       unitCode: unit.code,
       kind: unit.group,
       customDate: parsed.customDate || getRealtimeDateYYYYMMDD(),
-      actorEmail: parsed.actorEmail || '',
-      actorTitle: parsed.actorTitle || '',
+      actorEmail: parsed.actorEmail || op?.email || '',
+      actorTitle: parsed.actorTitle || op?.title || '',
       activeStep: parsed.activeStep || 1,
       wizardStage: stage,
       lastSavedAt: parsed.lastSavedAt || formatCurrentHHMM(),
       scaleMetrics: parsed.scaleMetrics || buildDefaultScaleMetrics(unit.group),
-      ngachAllocations:
-        Array.isArray(parsed.ngachAllocations) && parsed.ngachAllocations.length > 0
-          ? parsed.ngachAllocations
-          : buildDefaultNgachAllocations(proposed),
-      ngachOverrides: parsed.ngachOverrides || {},
-      customPositionNames: parsed.customPositionNames || {},
-      customCareerLevels: parsed.customCareerLevels || {},
-      proposedPositions: proposed,
-      previousPositionsSnapshot: parsed.previousPositionsSnapshot,
+      ngachAllocations: Array.isArray(parsed.ngachAllocations) && parsed.ngachAllocations.length > 0 ? parsed.ngachAllocations : buildDefaultNgachAllocations(proposed),
+      ngachOverrides: parsed.ngachOverrides || {}, customPositionNames: parsed.customPositionNames || {}, customCareerLevels: parsed.customCareerLevels || {},
+      proposedPositions: proposed, previousPositionsSnapshot: parsed.previousPositionsSnapshot,
       timeSessions: Array.isArray(parsed.timeSessions) ? parsed.timeSessions : [],
-      lastExportedFileName: parsed.lastExportedFileName,
-      lastMergedFileName: parsed.lastMergedFileName,
-      lastMergedVersion: parsed.lastMergedVersion,
-      lastAuditFixCount: parsed.lastAuditFixCount
+      lastExportedFileName: parsed.lastExportedFileName, lastMergedFileName: parsed.lastMergedFileName,
+      lastMergedVersion: parsed.lastMergedVersion, lastAuditFixCount: parsed.lastAuditFixCount
     };
   } catch {
     return createDefaultSession();
@@ -151,15 +152,16 @@ export function getActiveUnitSession(): ActiveUnitSession {
 }
 
 export function getActiveUnitDefinition(codeOverride?: string): HcmuteUnit {
+  const op = typeof window !== 'undefined' ? getCurrentOperatorSession() : null;
   const session = getActiveUnitSession();
-  const targetCode = codeOverride || session.unitCode;
-  return HCMUTE_UNITS.find((u) => u.code === targetCode) || HCMUTE_UNITS[0];
+  const targetCode = codeOverride || session.unitCode || op?.unitCode;
+  return findHcmuteUnit(targetCode);
 }
 
 export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): ActiveUnitSession {
   const current = getActiveUnitSession();
   const nextUnitCode = partial.unitCode ?? current.unitCode;
-  const matchedUnit = HCMUTE_UNITS.find((u) => u.code === nextUnitCode) || HCMUTE_UNITS[0];
+  const matchedUnit = findHcmuteUnit(nextUnitCode);
   const isSameUnit = matchedUnit.code === current.unitCode;
   const nextPositions =
     partial.proposedPositions ??
@@ -179,8 +181,7 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
     ngachOverrides: partial.ngachOverrides ?? (isSameUnit ? current.ngachOverrides : {}),
     customPositionNames: partial.customPositionNames ?? (isSameUnit ? current.customPositionNames : {}),
     customCareerLevels: partial.customCareerLevels ?? (isSameUnit ? current.customCareerLevels : {}),
-    proposedPositions: nextPositions,
-    previousPositionsSnapshot: partial.previousPositionsSnapshot !== undefined ? partial.previousPositionsSnapshot : current.previousPositionsSnapshot,
+    proposedPositions: nextPositions, previousPositionsSnapshot: partial.previousPositionsSnapshot !== undefined ? partial.previousPositionsSnapshot : current.previousPositionsSnapshot,
     timeSessions: partial.timeSessions ?? (isSameUnit ? current.timeSessions : []),
     lastExportedFileName: partial.lastExportedFileName ?? (isSameUnit ? current.lastExportedFileName : undefined),
     lastMergedFileName: partial.lastMergedFileName ?? (isSameUnit ? current.lastMergedFileName : undefined),
@@ -204,7 +205,7 @@ export function saveActiveUnitSession(partial: Partial<ActiveUnitSession>): Acti
 
 export function resetActiveUnitToDefault(unitCode: string, fullSessionReset = false): ActiveUnitSession {
   const current = getActiveUnitSession();
-  const unit = HCMUTE_UNITS.find((u) => u.code === unitCode) || HCMUTE_UNITS[0];
+  const unit = findHcmuteUnit(unitCode);
   const freshPositions = buildDefaultProposedPositionsForUnit(unit.nameVi, unit.group);
   const freshScale = buildDefaultScaleMetrics(unit.group);
   const freshNgach = buildDefaultNgachAllocations(freshPositions);

@@ -108,3 +108,76 @@ export const HCMUTE_UNITS: HcmuteUnit[] = [
   { code: 'DTN', nameVi: 'Đoàn Thanh niên - Hội Sinh viên', nameEn: 'Ho Chi Minh Communist Youth Union & Students Association', group: 'dang-doanthe', domain: 'doanthanhnien.hcmute.edu.vn', headTitleVi: 'Bí thư Đoàn Thanh niên', headTitleEn: 'Secretary of the Ho Chi Minh Communist Youth Union', defaultStaffCount: 9 }
 ];
 
+export const UNIT_CODE_ALIASES: Record<string, string> = {
+  PKHTC: 'FPO', PDT: 'AAO', PHCTH: 'OGA', PKHCN: 'STIAO',
+  PKTDBCL: 'QAO', PCTSV: 'SAO', PQTTH: 'BMC', 'PQTTH&TT': 'BMC',
+  PQTCSVC: 'EMO', PQLDTXDDT: 'CPM', PQHQT: 'OIA', PQHDN: 'ERO',
+  BQLKTX: 'KTX', TYT: 'TYT', TCNS: 'TCNS', VPDU: 'VPDU',
+  PHBP: 'PHBP', TCKHGDKT: 'TCKHGDKT', TTHLDHS: 'HLDHS',
+  TTSTKN: 'CISAT', 'TTSTKN&CGCN': 'CISAT', TTTTMT: 'INC',
+  TTCNPM: 'STC', TTGDQPAN: 'GDQPAN', TTGDTC: 'GDTC', BANTT: 'KTX',
+  VDTQT: 'IIE', VSDH: 'SDH', KDTTT: 'FAE', FHQ: 'FAE', KHOA: 'FME'
+};
+
+export const QD2266_UNIT_NAMES: Record<string, string> = {
+  PKHTC: 'Phòng Kế hoạch - Tài chính',
+  PDT: 'Phòng Đào tạo',
+  PHCTH: 'Phòng Hành chính - Tổng hợp',
+  PKHCN: 'Phòng Khoa học Công nghệ',
+  PKTDBCL: 'Phòng Khảo thí và Đảm bảo chất lượng',
+  PCTSV: 'Phòng Công tác sinh viên',
+  PQTTH: 'Phòng Quản trị thương hiệu và Truyền thông',
+  'PQTTH&TT': 'Phòng Quản trị thương hiệu và Truyền thông',
+  PQTCSVC: 'Phòng Quản trị cơ sở vật chất',
+  PQLDTXDDT: 'Phòng Quản lý đầu tư xây dựng và Đấu thầu',
+  PQHQT: 'Phòng Quan hệ Quốc tế',
+  PQHDN: 'Phòng Quan hệ Doanh nghiệp',
+  BQLKTX: 'Ban Quản lý ký túc xá',
+  TYT: 'Trạm Y tế',
+  TCNS: 'Phòng Tổ chức - Nhân sự',
+  VPDU: 'Văn phòng Đảng ủy',
+  PHBP: 'Phân hiệu Trường ĐHCNKT TP.HCM tại Bình Phước',
+  TCKHGDKT: 'Tạp chí Khoa học Giáo dục Kỹ thuật',
+  TTCNPM: 'Trung tâm Công nghệ phần mềm',
+  TTGDQPAN: 'Trung tâm Giáo dục Quốc phòng và An ninh',
+  TTGDTC: 'Trung tâm Giáo dục Thể chất',
+  TTHLDHS: 'Trung tâm Học liệu và Dạy học số',
+  TTSTKN: 'Trung tâm Sáng tạo khởi nghiệp và Chuyển giao công nghệ',
+  'TTSTKN&CGCN': 'Trung tâm Sáng tạo khởi nghiệp và Chuyển giao công nghệ',
+  TTTTMT: 'Trung tâm Thông tin - Máy tính',
+  BANTT: 'Ban An ninh trật tự',
+  VDTQT: 'Viện Đào tạo quốc tế',
+  VSDH: 'Viện Sau đại học',
+  KDTTT: 'Khoa Đào tạo Tiên tiến'
+};
+
+export function findHcmuteUnit(codeOrName?: string): HcmuteUnit {
+  if (!codeOrName) return HCMUTE_UNITS[0];
+  const query = codeOrName.trim().toUpperCase();
+  const direct = HCMUTE_UNITS.find((u) => u.code.toUpperCase() === query);
+  if (direct) {
+    const customName = QD2266_UNIT_NAMES[query];
+    return customName ? Object.assign({}, direct, { nameVi: customName }) : direct;
+  }
+  const aliased = UNIT_CODE_ALIASES[query];
+  if (aliased) {
+    const matched = HCMUTE_UNITS.find((u) => u.code.toUpperCase() === aliased);
+    if (matched) {
+      const customName = QD2266_UNIT_NAMES[query] || matched.nameVi;
+      return Object.assign({}, matched, { code: query, nameVi: customName });
+    }
+  }
+  if (QD2266_UNIT_NAMES[query]) {
+    const isDept = query.startsWith('P') || query === 'BQLKTX' || query === 'TYT';
+    return Object.assign({}, HCMUTE_UNITS[0], {
+      code: query,
+      nameVi: QD2266_UNIT_NAMES[query],
+      group: isDept ? 'phong-ban' : 'trung-tam'
+    });
+  }
+  const byName = HCMUTE_UNITS.find((u) =>
+    u.nameVi.toUpperCase().includes(query) || query.includes(u.nameVi.toUpperCase())
+  );
+  return byName || HCMUTE_UNITS[0];
+}
+

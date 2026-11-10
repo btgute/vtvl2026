@@ -2,7 +2,7 @@ import { ExcelSheetKey, GenericGridRow } from './excel-grid-types';
 import { cleanMissionSuffix } from './excel-grid-code-helpers';
 import { PL1_VTVL_CATALOG, TCNS_REAL_MISSIONS, TCNS_REAL_TASKS, TCNS_C2_PROFILES } from '@/configs/hcmute-pl1-catalog';
 import { buildRecommendedC1Rows, createC2RowFromPl1 } from '@/configs/hcmute-pl1-builder';
-import { HCMUTE_UNITS } from '@/configs/hcmute-units';
+import { HCMUTE_UNITS, findHcmuteUnit } from '@/configs/hcmute-units';
 import { TASK_TEMPLATES_BY_GROUP } from '@/configs/hcmute-quotas';
 import { getQd2266A1RowsForUnit } from '@/configs/hcmute-qd2266-missions';
 import { UnitGroupKind } from '@/types/vtvl';
@@ -17,7 +17,7 @@ export const DM_SP_DEFAULT_ROWS: GenericGridRow[] = [
 ];
 
 export function buildDefaultGridWorkbook(unitCode: string): Record<ExcelSheetKey, GenericGridRow[]> {
-  const unitDef = HCMUTE_UNITS.find((u) => u.code === unitCode) || HCMUTE_UNITS[0];
+  const unitDef = findHcmuteUnit(unitCode);
   const isTcns = unitCode === 'TCNS';
   const group = unitDef.group as UnitGroupKind;
 

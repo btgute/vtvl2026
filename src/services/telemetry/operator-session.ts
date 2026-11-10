@@ -1,4 +1,4 @@
-import { HCMUTE_UNITS } from '@/configs/hcmute-units';
+import { HCMUTE_UNITS, findHcmuteUnit } from '@/configs/hcmute-units';
 import { GenericGridRow, ExcelSheetKey } from '@/components/excel-grid/excel-grid-types';
 
 export interface OperatorSession {
@@ -39,7 +39,7 @@ export function saveCurrentOperatorSession(
   unitCode: string,
   title: string
 ): OperatorSession {
-  const unit = HCMUTE_UNITS.find((u) => u.code === unitCode) || HCMUTE_UNITS[0];
+  const unit = findHcmuteUnit(unitCode);
   const now = new Date().toLocaleString('vi-VN');
   const session: OperatorSession = {
     email: email.trim().toLowerCase(),
@@ -54,6 +54,24 @@ export function saveCurrentOperatorSession(
     window.dispatchEvent(new CustomEvent('vtvl-operator-changed', { detail: session }));
   }
   return session;
+}
+
+export function updateOperatorSessionUnit(unitCode: string): OperatorSession | null {
+  const cur = getCurrentOperatorSession();
+  if (!cur) return null;
+  const unit = findHcmuteUnit(unitCode);
+  const now = new Date().toLocaleString('vi-VN');
+  const updated: OperatorSession = {
+    ...cur,
+    unitCode,
+    unitNameVi: unit.nameVi,
+    lastActiveAt: now
+  };
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(CURRENT_OPERATOR_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent('vtvl-operator-changed', { detail: updated }));
+  }
+  return updated;
 }
 
 export function clearCurrentOperatorSession(): void {
@@ -90,7 +108,7 @@ export function saveEmailSessionData(
 ): void {
   if (typeof window === 'undefined') return;
   const normEmail = email.trim().toLowerCase();
-  const unit = HCMUTE_UNITS.find((u) => u.code === unitCode) || HCMUTE_UNITS[0];
+  const unit = findHcmuteUnit(unitCode);
   const now = new Date().toLocaleString('vi-VN');
 
   const newRecord: EmailSessionRecord = {

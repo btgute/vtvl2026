@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { FileSpreadsheet, ArrowRight, ArrowLeft, RotateCcw, BookOpenCheck, Timer, ShieldAlert, Undo2, Layers, TableProperties } from 'lucide-react';
+import { FileSpreadsheet, ArrowRight, ArrowLeft, RotateCcw, BookOpenCheck, Timer, ShieldAlert, Undo2, Layers } from 'lucide-react';
 import { WorkflowSidebar, focusTaskTarget } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS, UNIT_GROUPS } from '@/configs/hcmute-units';
 import { HD07_CONSTANTS } from '@/configs/hcmute-hd07-catalog';
@@ -157,36 +157,6 @@ export default function TaoTepPage() {
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 space-y-4">
       <ToastRegion toasts={toasts} onDismiss={(id) => setToasts((p) => p.filter((t) => t.id !== id))} />
-
-      {/* Mode switcher bar */}
-      <div className="bg-white border border-[#cbd5e1] rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
-        <div className="flex items-center gap-1.5 p-1 bg-[#f1f5f9] rounded-lg border border-[#cbd5e1]">
-          <button
-            type="button"
-            onClick={() => setViewMode('excel')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors cursor-pointer ${
-              viewMode === 'excel' ? 'bg-white text-[#004776] shadow-xs' : 'text-[#64748b] hover:text-[#004776]'
-            }`}
-          >
-            <TableProperties className="w-4 h-4 text-[#004776]" />
-            <span>Bảng tính Excel 15 sheet (Trực quan chuẩn HD 07)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('wizard')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors cursor-pointer ${
-              viewMode === 'wizard' ? 'bg-white text-[#004776] shadow-xs' : 'text-[#64748b] hover:text-[#004776]'
-            }`}
-          >
-            <Layers className="w-4 h-4 text-[#004776]" />
-            <span>Trình hướng dẫn từng chặng (Wizard)</span>
-          </button>
-        </div>
-
-        <div className="text-xs text-[#64748b]">
-          Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE) · Phòng Tổ chức - Nhân sự
-        </div>
-      </div>
 
       {/* View Mode 1: Excel Interactive Spreadsheet (Default) */}
       {viewMode === 'excel' ? (

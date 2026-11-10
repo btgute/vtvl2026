@@ -6,30 +6,39 @@ import { getNextMissionCode, getNextTaskCode, buildNewGridRow } from './excel-gr
 import { isMissionCodeDuplicate, canDeleteMission, performSplitMission, buildAuditLogEntry, syncA1MissionChange, syncC1VtvlChange } from './excel-grid-a1-helpers';
 import { buildFullPl1C1Rows, buildFullPl1C2Rows, buildRecommendedC1Rows } from '@/configs/hcmute-pl1-builder';
 import { PL1_VTVL_CATALOG } from '@/configs/hcmute-pl1-catalog';
-import { HCMUTE_UNITS } from '@/configs/hcmute-units';
+import { HCMUTE_UNITS, findHcmuteUnit } from '@/configs/hcmute-units';
 import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
 import { UnitGroupKind } from '@/types/vtvl';
 import { useC1AdminLock } from './useC1AdminLock';
 
+function getInitialUnitCode(fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const cur = localStorage.getItem('hcmute_vtvl_current_operator_v1');
+    return cur ? (JSON.parse(cur)?.unitCode || fallback) : fallback;
+  } catch { return fallback; }
+}
+
 export function useExcelGridState(initialUnitCode = 'TCNS') {
-  const [unitCode, setUnitCode] = useState(initialUnitCode);
+  const [unitCode, setUnitCode] = useState(() => getInitialUnitCode(initialUnitCode));
   const [orderMode, setOrderMode] = useState<SheetOrderMode>('excel');
   const [activeSheet, setActiveSheet] = useState<ExcelSheetKey>('A1');
   const { isC1Unlocked, unlockC1, lockC1 } = useC1AdminLock();
   const [data, setData] = useState<Record<ExcelSheetKey, GenericGridRow[]>>(() => {
+    const code = getInitialUnitCode(initialUnitCode);
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem(`hcmute_vtvl_grid_${initialUnitCode}`);
+        const stored = localStorage.getItem(`hcmute_vtvl_grid_${code}`);
         if (stored) return JSON.parse(stored);
       } catch { /* ignore */ }
     }
-    return buildDefaultGridWorkbook(initialUnitCode);
+    return buildDefaultGridWorkbook(code);
   });
   const [lastSaved, setLastSaved] = useState<string>('');
   const [lastSavedSheet, setLastSavedSheet] = useState<string>('');
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
-  const currentUnit = HCMUTE_UNITS.find((u) => u.code === unitCode) || HCMUTE_UNITS[0];
+  const currentUnit = findHcmuteUnit(unitCode);
 
   const handleUnitChange = useCallback((newUnitCode: string) => {
     setUnitCode(newUnitCode);

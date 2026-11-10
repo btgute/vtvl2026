@@ -7,7 +7,8 @@ import { OperatorSession } from '@/services/telemetry/operator-session';
 import { ValidationReport } from '@/services/validation/vtvl-validation-types';
 import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import {
-  Download, Building2, Sparkles, ShieldCheck, CheckCircle2, RefreshCw
+  Download, Building2, Sparkles, ShieldCheck, CheckCircle2, RefreshCw, TableProperties,
+  UserCheck, Briefcase, ArrowLeftRight
 } from 'lucide-react';
 
 interface ExcelWorkbookToolbarProps {
@@ -54,37 +55,76 @@ export function ExcelWorkbookToolbar({
   onExportWorkbook
 }: ExcelWorkbookToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      {/* Operator identification & Unit selector */}
+    <div className="flex flex-wrap items-center justify-between gap-2.5">
+      {/* Group Left: Title Badge + Operator Session */}
       <div className="flex flex-wrap items-center gap-2">
+        {/* Title badge: Bảng tính Excel 15 sheet */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-[#004776]/10 text-[#004776] border border-[#004776]/25 shrink-0 shadow-2xs">
+          <TableProperties className="w-4 h-4 text-[#004776]" />
+          <span>Bảng tính Excel 15 sheet (Trực quan chuẩn HD 07)</span>
+        </div>
+
+        {/* Operator identification */}
         {session ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#004776]/5 border border-[#004776]/20 text-xs">
-            <span className="font-bold text-[#004776]">👤 {session.email}</span>
-            <span className="text-[#cbd5e1]">|</span>
-            <span className="text-[#334155] font-semibold">🏢 {session.unitNameVi}</span>
-            <span className="text-[#cbd5e1]">|</span>
-            <span className="text-[#64748b]">🏷️ {session.title}</span>
+          <div className="flex items-center gap-2.5 px-3 py-1 rounded-xl bg-linear-to-r from-blue-50/80 via-white to-sky-50/80 border border-[#004776]/30 shadow-2xs hover:border-[#004776]/60 transition-all text-xs shrink-0">
+            {/* Live Indicator */}
+            <span className="relative flex h-2 w-2 shrink-0" title="Tài khoản cán bộ đang xác thực &amp; đồng bộ">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+            </span>
+
+            {/* Email */}
+            <div className="inline-flex items-center gap-1.5 font-bold text-[#004776]" title="Email công vụ người thực hiện">
+              <span className="w-5 h-5 rounded-md bg-[#004776]/10 flex items-center justify-center shrink-0">
+                <UserCheck className="w-3.5 h-3.5 text-[#004776]" />
+              </span>
+              <span className="font-mono tracking-tight">{session.email}</span>
+            </div>
+
+            <span className="h-3.5 w-px bg-[#004776]/20 shrink-0" />
+
+            {/* Đơn vị */}
+            <div className="inline-flex items-center gap-1.5 font-bold text-[#004776]" title="Đơn vị công tác">
+              <span className="w-5 h-5 rounded-md bg-[#004776]/10 flex items-center justify-center shrink-0">
+                <Building2 className="w-3.5 h-3.5 text-[#004776]" />
+              </span>
+              <span>{session.unitNameVi || currentUnit.nameVi}</span>
+            </div>
+
+            <span className="h-3.5 w-px bg-[#004776]/20 shrink-0" />
+
+            {/* Chức vụ */}
+            <div className="inline-flex items-center gap-1.5 font-semibold text-[#004776]/85" title="Chức vụ người điền">
+              <span className="w-5 h-5 rounded-md bg-[#004776]/10 flex items-center justify-center shrink-0">
+                <Briefcase className="w-3.5 h-3.5 text-[#004776]" />
+              </span>
+              <span>{session.title}</span>
+            </div>
+
+            {/* Nút Đổi */}
             <button
               type="button"
               onClick={onSwitchSession}
-              className="ml-1 text-[11px] font-bold text-[#004776] hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold text-white bg-[#004776] hover:bg-[#00385c] active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0 ml-1"
               title="Đổi tài khoản email hoặc đơn vị công tác"
             >
-              (Đổi)
+              <ArrowLeftRight className="w-3 h-3 text-white" />
+              <span>Đổi</span>
             </button>
           </div>
         ) : (
           <button
             type="button"
             onClick={onSwitchSession}
-            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer shadow-xs animate-pulse"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs cursor-pointer shadow-xs transition-colors shrink-0 animate-pulse"
           >
-            ⚠️ Điền email &amp; đơn vị để bắt đầu
+            <UserCheck className="w-4 h-4" />
+            <span>Khai báo email &amp; đơn vị để bắt đầu</span>
           </button>
         )}
 
         {isRestoredSession && (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200">
+          <span className="px-2 py-0.5 rounded text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 shrink-0">
             Đã khôi phục phiên trước
           </span>
         )}

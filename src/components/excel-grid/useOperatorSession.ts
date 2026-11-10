@@ -6,10 +6,12 @@ import {
   EmailSessionRecord,
   getCurrentOperatorSession,
   saveCurrentOperatorSession,
+  updateOperatorSessionUnit,
   clearCurrentOperatorSession,
   getSessionByEmail,
   saveEmailSessionData
 } from '@/services/telemetry/operator-session';
+import { saveActiveUnitSession } from '@/services/telemetry/activity-log';
 import { ExcelSheetKey, GenericGridRow } from './excel-grid-types';
 
 export function useOperatorSession() {
@@ -18,18 +20,21 @@ export function useOperatorSession() {
   const [touchedCells, setTouchedCells] = useState<Set<string>>(new Set());
   const [isRestoredSession, setIsRestoredSession] = useState<boolean>(false);
 
-  // Khởi tạo từ localStorage
+  // Khởi tạo từ localStorage & lắng nghe sự kiện đồng bộ
   useEffect(() => {
-    const cur = getCurrentOperatorSession();
-    if (cur) {
-      setSession(cur);
-      const saved = getSessionByEmail(cur.email);
-      if (saved?.touchedCells) {
-        setTouchedCells(new Set(saved.touchedCells));
+    const sync = () => {
+      const cur = getCurrentOperatorSession();
+      if (cur) {
+        setSession(cur);
+        const saved = getSessionByEmail(cur.email);
+        if (saved?.touchedCells) setTouchedCells(new Set(saved.touchedCells));
+      } else {
+        setIsModalOpen(true);
       }
-    } else {
-      setIsModalOpen(true);
-    }
+    };
+    sync();
+    window.addEventListener('vtvl-operator-changed', sync);
+    return () => window.removeEventListener('vtvl-operator-changed', sync);
   }, []);
 
   const markCellTouched = useCallback((cellKey: string) => {
@@ -41,19 +46,35 @@ export function useOperatorSession() {
     });
   }, []);
 
+  const updateSessionUnit = useCallback((newUnitCode: string) => {
+    const updated = updateOperatorSessionUnit(newUnitCode);
+    if (updated) {
+      setSession(updated);
+      saveActiveUnitSession({
+        unitCode: newUnitCode,
+        actorEmail: updated.email,
+        actorTitle: updated.title
+      });
+    }
+  }, []);
+
   const submitSession = useCallback((
     email: string,
     unitCode: string,
     title: string
   ): { restoredData: Record<ExcelSheetKey, GenericGridRow[]> | null; isExisting: boolean } => {
     const savedRecord = getSessionByEmail(email);
-    const newSession = saveCurrentOperatorSession(
-      email,
-      savedRecord ? savedRecord.unitCode : unitCode,
-      savedRecord ? savedRecord.title : title
-    );
+    const chosenUnit = savedRecord ? savedRecord.unitCode : unitCode;
+    const chosenTitle = savedRecord ? savedRecord.title : title;
+    const newSession = saveCurrentOperatorSession(email, chosenUnit, chosenTitle);
     setSession(newSession);
     setIsModalOpen(false);
+
+    saveActiveUnitSession({
+      unitCode: newSession.unitCode,
+      actorEmail: newSession.email,
+      actorTitle: newSession.title
+    });
 
     if (savedRecord && savedRecord.data) {
       setIsRestoredSession(true);
@@ -70,6 +91,10 @@ export function useOperatorSession() {
 
   const switchSession = useCallback(() => {
     setIsModalOpen(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
   }, []);
 
   const logoutSession = useCallback(() => {
@@ -99,12 +124,11 @@ export function useOperatorSession() {
     isRestoredSession,
     markCellTouched,
     submitSession,
+    updateSessionUnit,
     switchSession,
+    closeModal,
     logoutSession,
-    persistDataForSession,
-    closeModal: () => {
-      if (session) setIsModalOpen(false);
-    }
+    persistDataForSession
   };
 }
 

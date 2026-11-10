@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, Building2, CheckCircle2, History, FileText, BookOpenCheck, Clock, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import { WorkflowSidebar, SIDEBAR_FIVE_STEPS } from '@/components/layout/MilestonesBar';
 import { HCMUTE_UNITS, UNIT_GROUPS } from '@/configs/hcmute-units';
@@ -10,8 +11,20 @@ import { validateStep1Data } from '@/components/tao-tep/Step1ReviewConfirm';
 import { ActiveUnitSession, ActivityLogEntry, getActiveUnitDefinition, getActiveUnitSession, getActivityLogs } from '@/services/telemetry/activity-log';
 
 export default function HomePage() {
+  const router = useRouter();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const [session, setSession] = useState<ActiveUnitSession>(() => getActiveUnitSession());
   const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('view') !== 'overview') {
+        setShouldRedirect(true);
+        router.replace('/bang-tinh');
+      }
+    }
+  }, [router]);
 
   useEffect(() => {
     const sync = () => {
@@ -60,6 +73,17 @@ export default function HomePage() {
 
   const continueHref = '/bang-tinh';
   const progressPercent = Math.min(100, Math.round((currentStepNum / 8) * 100));
+
+  if (shouldRedirect) {
+    return (
+      <div className="w-full min-h-[60vh] flex flex-col items-center justify-center p-8 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#004776]/10 text-[#004776] text-sm font-bold border border-[#004776]/20">
+          <FileSpreadsheet className="w-5 h-5 animate-pulse" />
+          <span>Đang chuyển đến Bảng tính Excel 15 sheet...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6 space-y-6">
@@ -160,52 +184,6 @@ export default function HomePage() {
                   )}
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* Lộ trình 08 bước & 10 biểu nghiệp vụ (A1–D2) theo Hướng dẫn số 07-HD/BTCTW */}
-          <section className="surface-canvas rounded-2xl p-5 sm:p-6 space-y-3.5">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-2.5">
-              <div className="flex items-center gap-2">
-                <BookOpenCheck className="w-4 h-4 text-[var(--primary)]" />
-                <h2 className="text-sm sm:text-base font-bold text-[var(--foreground)]">
-                  Quy trình 08 bước &amp; 10 biểu nghiệp vụ (1. A1_NhiemVu → 10. D2_PhuongAn)
-                </h2>
-              </div>
-              <Link href="/huong-dan" className="text-xs font-bold text-[var(--primary)] hover:underline">
-                Xem Phụ lục I–VIII &amp; tải biểu mẫu gốc →
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {SIDEBAR_FIVE_STEPS.map((st) => {
-                const isCur = st.num === currentStepNum;
-                return (
-                  <Link
-                    key={st.num}
-                    href={st.href}
-                    className={`rounded-xl border p-3.5 flex flex-col justify-between gap-2 transition-colors ${
-                      isCur
-                        ? 'border-[var(--primary)] bg-[var(--surface-tint)]'
-                        : 'border-[var(--border-subtle)] bg-[var(--surface-secondary)] hover:border-[var(--primary)]'
-                    }`}
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between gap-1.5">
-                        <span className={`w-6 h-6 rounded-full text-xs font-extrabold inline-flex items-center justify-center ${isCur ? 'bg-[var(--primary)] text-white' : 'bg-[var(--sheet)] text-[var(--primary)] border border-[var(--border)]'}`}>
-                          {st.num}
-                        </span>
-                        <span className="text-[11px] font-mono font-bold text-[var(--primary)] truncate">{st.sheets}</span>
-                      </div>
-                      <div className="text-xs sm:text-sm font-bold text-[var(--foreground)] leading-snug pt-0.5">
-                        Bước {st.num} — {st.shortTitle}
-                      </div>
-                    </div>
-                    <div className="text-[11px] text-[var(--ink-muted)] truncate">
-                      {st.subTasks[0]?.label}
-                    </div>
-                  </Link>
-                );
-              })}
             </div>
           </section>
 

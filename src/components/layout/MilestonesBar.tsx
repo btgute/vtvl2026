@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Check, PanelLeftClose, PanelLeftOpen, FileSpreadsheet, Building2, Layers, Timer, GitMerge, ShieldCheck, RefreshCw, UserCheck, Info, AlertTriangle, X } from 'lucide-react';
 import { getActiveUnitDefinition, getActiveUnitSession } from '@/services/telemetry/activity-log';
+import { findHcmuteUnit } from '@/configs/hcmute-units';
+import { getCurrentOperatorSession } from '@/services/telemetry/operator-session';
 
 export interface InfoTipProps { title?: string; children: React.ReactNode; align?: 'left' | 'right'; }
 
@@ -25,14 +27,7 @@ export function InfoTip({ title, children, align = 'left' }: InfoTipProps) {
   );
 }
 
-import {
-  VTVL_MILESTONES,
-  SIDEBAR_EIGHT_STEPS,
-  SIDEBAR_FIVE_STEPS,
-  SidebarStepItem,
-  StepSubTask
-} from '@/configs/milestones';
-
+import { VTVL_MILESTONES, SIDEBAR_EIGHT_STEPS, SIDEBAR_FIVE_STEPS, SidebarStepItem, StepSubTask } from '@/configs/milestones';
 export { SIDEBAR_EIGHT_STEPS, SIDEBAR_FIVE_STEPS };
 export type { SidebarStepItem, StepSubTask };
 
@@ -56,28 +51,45 @@ interface WorkflowSidebarProps {
   unitCode?: string;
   errorStep?: number | null;
   alwaysExpanded?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: (collapsed: boolean) => void;
 }
 
 export function WorkflowSidebar({
-  activeStep, onSelectStep, unitCode, errorStep, alwaysExpanded = true
+  activeStep, onSelectStep, unitCode, errorStep,
+  alwaysExpanded = false, isCollapsed: isCollapsedProp, onToggleCollapse
 }: WorkflowSidebarProps) {
   const pathname = usePathname();
-  const [activeUnit, setActiveUnit] = useState(() => getActiveUnitDefinition(unitCode));
-  const [actorInfo, setActorInfo] = useState(() => ({
-    email: '', title: '', lastSavedAt: '', wizardStage: 1, posCount: 0,
-    exportedFile: '', timerCount: 0, mergedVer: '', auditFixCount: null as number | null
-  }));
+  const [activeUnit, setActiveUnit] = useState(() => findHcmuteUnit(unitCode));
+  const [actorInfo, setActorInfo] = useState(() => {
+    const s = getActiveUnitSession();
+    const op = getCurrentOperatorSession();
+    return {
+      email: s.actorEmail || op?.email || '', title: s.actorTitle || op?.title || '',
+      lastSavedAt: s.lastSavedAt, wizardStage: s.wizardStage || 1, posCount: s.proposedPositions?.length || 0,
+      exportedFile: s.lastExportedFileName || '', timerCount: s.timeSessions?.length || 0,
+      mergedVer: s.lastMergedVersion ? `v${s.lastMergedVersion}` : '',
+      auditFixCount: typeof s.lastAuditFixCount === 'number' ? s.lastAuditFixCount : null
+    };
+  });
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const isCollapsed = !alwaysExpanded && (typeof isCollapsedProp === 'boolean' ? isCollapsedProp : internalCollapsed);
+  const setCollapsed = (val: boolean) => {
+    setInternalCollapsed(val);
+    onToggleCollapse?.(val);
+  };
   const triggerBtnRef = useRef<HTMLButtonElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     const sync = () => {
-      setActiveUnit(getActiveUnitDefinition(unitCode));
+      setActiveUnit(findHcmuteUnit(unitCode));
       const s = getActiveUnitSession();
+      const op = getCurrentOperatorSession();
       setActorInfo({
-        email: s.actorEmail, title: s.actorTitle, lastSavedAt: s.lastSavedAt, wizardStage: s.wizardStage || 1,
+        email: s.actorEmail || op?.email || '', title: s.actorTitle || op?.title || '',
+        lastSavedAt: s.lastSavedAt, wizardStage: s.wizardStage || 1,
         posCount: s.proposedPositions?.length || 0, exportedFile: s.lastExportedFileName || '',
         timerCount: s.timeSessions?.length || 0, mergedVer: s.lastMergedVersion ? `v${s.lastMergedVersion}` : '',
         auditFixCount: typeof s.lastAuditFixCount === 'number' ? s.lastAuditFixCount : null
@@ -85,10 +97,16 @@ export function WorkflowSidebar({
     };
     sync();
     window.addEventListener('vtvl-unit-session-updated', sync);
+    window.addEventListener('vtvl-operator-changed', sync);
     window.addEventListener('storage', sync);
     let bc: BroadcastChannel | null = null;
     if ('BroadcastChannel' in window) { bc = new BroadcastChannel('hcmute_vtvl_realtime'); bc.onmessage = sync; }
-    return () => { window.removeEventListener('vtvl-unit-session-updated', sync); window.removeEventListener('storage', sync); bc?.close(); };
+    return () => {
+      window.removeEventListener('vtvl-unit-session-updated', sync);
+      window.removeEventListener('vtvl-operator-changed', sync);
+      window.removeEventListener('storage', sync);
+      bc?.close();
+    };
   }, [unitCode]);
 
   useEffect(() => { if (drawerOpen) closeBtnRef.current?.focus(); }, [drawerOpen]);
@@ -98,13 +116,10 @@ export function WorkflowSidebar({
   const activeStepObj = SIDEBAR_EIGHT_STEPS.find((s) => s.num === currentStep) || SIDEBAR_EIGHT_STEPS[0];
   const hasStep1Done = Boolean(actorInfo.email && actorInfo.title && actorInfo.posCount > 0);
   const stageDoneFlags = [
-    hasStep1Done,
-    Boolean(actorInfo.posCount > 0 && (actorInfo.wizardStage >= 2 || currentStep > 2)),
-    Boolean(actorInfo.timerCount > 0 || currentStep > 3),
-    Boolean(actorInfo.timerCount > 0 || actorInfo.mergedVer || currentStep > 4),
+    hasStep1Done, Boolean(actorInfo.posCount > 0 && (actorInfo.wizardStage >= 2 || currentStep > 2)),
+    Boolean(actorInfo.timerCount > 0 || currentStep > 3), Boolean(actorInfo.timerCount > 0 || actorInfo.mergedVer || currentStep > 4),
     Boolean(hasStep1Done && (actorInfo.wizardStage >= 4 || Boolean(actorInfo.exportedFile))),
-    Boolean(actorInfo.exportedFile || currentStep > 6),
-    Boolean(actorInfo.mergedVer || currentStep > 7),
+    Boolean(actorInfo.exportedFile || currentStep > 6), Boolean(actorInfo.mergedVer || currentStep > 7),
     actorInfo.auditFixCount === 0
   ];
   const completedStagesCount = stageDoneFlags.filter(Boolean).length;
@@ -113,9 +128,7 @@ export function WorkflowSidebar({
   const stepIcon = (num: number) => {
     if (num === 1 || num === 2 || num === 5) return <Layers className="w-3.5 h-3.5 shrink-0" />;
     if (num === 3 || num === 4) return <Timer className="w-3.5 h-3.5 shrink-0" />;
-    if (num === 6) return <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />;
-    if (num === 7) return <GitMerge className="w-3.5 h-3.5 shrink-0" />;
-    return <ShieldCheck className="w-3.5 h-3.5 shrink-0" />;
+    return num === 6 ? <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" /> : num === 7 ? <GitMerge className="w-3.5 h-3.5 shrink-0" /> : <ShieldCheck className="w-3.5 h-3.5 shrink-0" />;
   };
 
   const renderStagesList = (compactMode: boolean, inMobileDrawer = false) => (
@@ -125,21 +138,9 @@ export function WorkflowSidebar({
         const isDone = !isCurrent && stageDoneFlags[s.num - 1];
         const hasError = errorStep === s.num || (s.num === 8 && (actorInfo.auditFixCount ?? 0) > 0);
         const needsSupplement = !isCurrent && !isDone && !hasError && s.num === 1 && (!actorInfo.email || !actorInfo.title);
-        const handleInternal = Boolean(
-          onSelectStep && (
-            pathname === '/bang-tinh' ||
-            (pathname === '/tao-tep' && (s.num === 1 || s.num === 2 || s.num === 5 || s.num === 6 || s.num === 7)) ||
-            (pathname === '/bam-gio' && (s.num === 3 || s.num === 4))
-          )
-        );
+        const handleInternal = Boolean(onSelectStep && (pathname === '/bang-tinh' || (pathname === '/tao-tep' && (s.num === 1 || s.num === 2 || s.num === 5 || s.num === 6 || s.num === 7)) || (pathname === '/bam-gio' && (s.num === 3 || s.num === 4))));
         const isLast = idx === SIDEBAR_EIGHT_STEPS.length - 1;
-        const statusText = hasError
-          ? (s.num === 8 && actorInfo.auditFixCount ? `${actorInfo.auditFixCount} mục phải sửa` : 'Có lỗi')
-          : isCurrent
-            ? `${s.sheets} · Đang thực hiện`
-            : isDone
-              ? `${s.sheets} · Hoàn thành`
-              : needsSupplement ? `${s.sheets} · Cần bổ sung` : s.sheets;
+        const statusText = hasError ? (s.num === 8 && actorInfo.auditFixCount ? `${actorInfo.auditFixCount} mục phải sửa` : 'Có lỗi') : isCurrent ? `${s.sheets} · Đang thực hiện` : isDone ? `${s.sheets} · Hoàn thành` : needsSupplement ? `${s.sheets} · Cần bổ sung` : s.sheets;
 
         if (compactMode) {
           const railCircleClass = hasError
@@ -205,10 +206,8 @@ export function WorkflowSidebar({
     </ol>
   );
 
-  const isCollapsed = desktopCollapsed && !alwaysExpanded;
-
   return (
-    <aside aria-label="Quy trình 08 bước HD 07" data-collapsed={isCollapsed ? 'true' : 'false'} className="workflow-sidebar w-full lg:w-auto surface-secondary rounded-xl lg:rounded-2xl border border-[var(--border-subtle)] lg:sticky lg:top-20 select-none">
+    <aside aria-label="Quy trình 08 bước HD 07" data-collapsed={isCollapsed ? 'true' : 'false'} className="workflow-sidebar w-full surface-secondary rounded-xl lg:rounded-2xl border border-[var(--border-subtle)] lg:sticky lg:top-20 select-none">
       {/* MOBILE BAR + BOTTOM SHEET DRAWER */}
       <div className="lg:hidden px-3.5 py-2.5 flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1 space-y-1">
@@ -241,7 +240,7 @@ export function WorkflowSidebar({
       <div className="hidden lg:block">
         {isCollapsed ? (
           <div className="flex flex-col items-center py-3.5 w-full">
-            <button type="button" onClick={() => setDesktopCollapsed(false)} aria-label="Mở rộng thanh tiến trình" title="Mở rộng thanh tiến trình" className="w-9 h-9 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-xl border border-[var(--primary)]/50 bg-[var(--sheet)] hover:bg-[var(--surface-tint)] text-[var(--primary)] shadow-2xs cursor-pointer transition-colors mb-3">
+            <button type="button" onClick={() => setCollapsed(false)} aria-label="Mở rộng thanh tiến trình" title="Mở rộng thanh tiến trình (08 bước)" className="w-9 h-9 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-xl border border-[var(--primary)]/50 bg-[var(--sheet)] hover:bg-[var(--surface-tint)] text-[var(--primary)] shadow-2xs cursor-pointer transition-colors mb-3">
               <PanelLeftOpen className="w-4 h-4" />
             </button>
             {renderStagesList(true, false)}
@@ -259,7 +258,7 @@ export function WorkflowSidebar({
                   ))}
                 </InfoTip>
                 {!alwaysExpanded && (
-                  <button type="button" onClick={() => setDesktopCollapsed(true)} aria-label="Thu gọn thanh tiến trình" title="Thu gọn chỉ còn số bước 1–8" className="w-9 h-9 min-h-[38px] min-w-[38px] inline-flex items-center justify-center rounded-xl hover:bg-[var(--background)] text-[var(--primary)] cursor-pointer">
+                  <button type="button" onClick={() => setCollapsed(true)} aria-label="Thu gọn thanh tiến trình" title="Thu gọn chỉ còn số bước 1–8 để phóng to bảng tính" className="w-9 h-9 min-h-[38px] min-w-[38px] inline-flex items-center justify-center rounded-xl hover:bg-[var(--background)] text-[var(--primary)] cursor-pointer">
                     <PanelLeftClose className="w-4 h-4" />
                   </button>
                 )}

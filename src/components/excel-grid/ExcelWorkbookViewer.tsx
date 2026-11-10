@@ -58,29 +58,47 @@ interface ExcelWorkbookViewerProps {
 export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookViewerProps) {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showQualityModal, setShowQualityModal] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try { return localStorage.getItem('hcmute_vtvl_sidebar_collapsed') === 'true'; } catch { /* ignore */ }
+    }
+    return false;
+  });
+
+  const handleToggleSidebar = (val: boolean) => {
+    setIsSidebarCollapsed(val);
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem('hcmute_vtvl_sidebar_collapsed', String(val)); } catch { /* ignore */ }
+    }
+  };
   const {
     session, isModalOpen, touchedCells, isRestoredSession,
-    markCellTouched, submitSession, switchSession, persistDataForSession
+    markCellTouched, submitSession, updateSessionUnit, switchSession, closeModal, persistDataForSession
   } = useOperatorSession();
   const {
     unitCode, currentUnit, orderMode, setOrderMode, currentSheetOrder,
     activeSheet, activeSheetIndex, data, lastSaved, lastSavedSheet,
     isExporting, dynamicOptionsMap, isC1Unlocked, unlockC1, lockC1,
-    handleUnitChange, handleLoadTcnsData, restoreWorkbookData,
+    handleUnitChange: gridHandleUnitChange, handleLoadTcnsData, restoreWorkbookData,
     loadFullPl1Catalog, loadRecommendedVtvls, setActiveSheet,
     updateCell, addRow, splitRow, deleteRow, saveSheetData, saveAndGoNext,
     exportFullWorkbook, goToNextSheet, goToPrevSheet
-  } = useExcelGridState(initialUnitCode);
+  } = useExcelGridState(session?.unitCode || initialUnitCode);
 
   const activeMeta = EXCEL_SHEET_METAS[activeSheet];
   const activeRows = data[activeSheet] || [];
+
+  const handleUnitChange = (newUnitCode: string) => {
+    gridHandleUnitChange(newUnitCode);
+    updateSessionUnit(newUnitCode);
+  };
 
   const handleSessionSubmit = (em: string, uCode: string, tit: string) => {
     const { restoredData } = submitSession(em, uCode, tit);
     if (restoredData) {
       restoreWorkbookData(restoredData, uCode);
     } else {
-      handleUnitChange(uCode);
+      gridHandleUnitChange(uCode);
     }
   };
 
@@ -127,14 +145,16 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         />
       </div>
 
-      {/* Main Workspace: 8-step Workflow Sidebar (always expanded) + 15-Sheet Excel Grid */}
+      {/* Main Workspace: 8-step Workflow Sidebar + 15-Sheet Excel Grid */}
       <div className="flex flex-col lg:flex-row gap-3 items-start w-full">
-        <div className="w-full lg:w-72 shrink-0">
+        <div className={`w-full shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-72'}`}>
           <WorkflowSidebar
             activeStep={getStepFromSheet(activeSheet)}
             onSelectStep={(s) => setActiveSheet(getSheetFromStep(s))}
             unitCode={unitCode}
-            alwaysExpanded={true}
+            alwaysExpanded={false}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={handleToggleSidebar}
           />
         </div>
 
@@ -204,7 +224,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         isOpen={isModalOpen}
         currentSession={session}
         onSubmit={handleSessionSubmit}
-        onClose={session ? () => switchSession() : undefined}
+        onClose={closeModal}
       />
     </div>
   );
