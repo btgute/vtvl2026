@@ -73,3 +73,4 @@ export async function clearServerAdminCookie(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(ADMIN_COOKIE_NAME);
 }
+

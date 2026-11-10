@@ -57,3 +57,4 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: 'Lỗi khi xóa hồ sơ.' }, { status: 500 });
   }
 }
+

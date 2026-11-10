@@ -51,3 +51,4 @@ Biểu D1 thống kê toàn bộ đội ngũ viên chức và người lao độ
 ### 2.3. Ràng buộc toàn vẹn & Kiểm tra chéo (K_KiemTra)
 1. **Kiểm tra chéo D1 vs C1:** Mọi nhân sự trong D1 phải có `maVtvl` tồn tại trong C1. Nếu có nhân sự mang mã không tồn tại, hệ thống báo lỗi đỏ cấp độ "Phải sửa".
 2. **Kiểm tra chéo D1 vs C3/D2:** Tổng số nhân sự hiện có trong D1 được tổng hợp lên Cột Hiện có của Biểu `10. D2_PhuongAn` để tính chênh lệch Thừa / Thiếu so với Nhu cầu.
+
