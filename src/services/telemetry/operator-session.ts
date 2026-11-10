@@ -67,7 +67,7 @@ export function registerOperatorSession(
       unitCode,
       unitNameVi: unit.nameVi,
       title: title.trim() || all[existingIdx].title,
-      lastSavedAt: all[existingIdx].lastSavedAt || `Đăng nhập ${now}`
+      lastSavedAt: all[existingIdx].lastSavedAt || `Khởi tạo ${now}`
     };
     all[existingIdx] = record;
   } else {
@@ -76,7 +76,7 @@ export function registerOperatorSession(
       unitCode,
       unitNameVi: unit.nameVi,
       title: title.trim() || 'Chuyên viên',
-      lastSavedAt: `Đăng nhập ${now}`,
+      lastSavedAt: `Khởi tạo ${now}`,
       touchedCells: []
     };
     all.unshift(record);

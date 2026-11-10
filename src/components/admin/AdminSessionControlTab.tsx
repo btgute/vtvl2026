@@ -51,7 +51,7 @@ export function AdminSessionControlTab() {
   }, []);
 
   const handleLogoutCurrentSession = () => {
-    if (confirm('Bạn có chắc muốn đăng xuất phiên làm việc hiện tại trên trình duyệt này?')) {
+    if (confirm('Bạn có chắc muốn rời phiên làm việc hiện tại trên trình duyệt này?')) {
       clearCurrentOperatorSession();
       refreshState();
     }
@@ -129,7 +129,7 @@ export function AdminSessionControlTab() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>Đăng xuất phiên</span>
+                <span>Rời phiên</span>
               </button>
             </div>
           )}
