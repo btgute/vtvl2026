@@ -59,9 +59,6 @@ Hệ thống màu sắc được trích xuất và đồng bộ hóa trực ti�
   - Nền `bg-[#e1edf8]` hover `bg-[#e3ecf6]`, chữ `text-[#004776] font-semibold`, bo `rounded-full` hoặc `rounded-xl`.
 - **Nút lọc / Thẻ con (Filter Pill):**
   - Chiều cao `h-9` (36px), `rounded-full`, viền `#e1eaefe7`, chữ `#20446c` hover `text-[#004776]`, nền `hover:bg-[#e3ecf6]`.
-- **Hiệu ứng gạch chân chuyển động mượt (S-Link Underline):**
-  - Dùng cho các liên kết điều hướng:
-    `relative inline-block w-fit text-sm font-medium tracking-tight text-[#004776] hover:text-[#006cee] transition-colors group after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-0 after:bg-[#006cee] after:transition-all after:duration-300 after:ease-out hover:after:w-full`
 
 ### 4. Quy chuẩn Khung chứa, Thẻ (Card) & Bảng tính
 - **Khung thẻ:** Nền trắng `#ffffff`, bo góc `rounded-2xl` hoặc `rounded-3xl`, viền `border border-[#cbd5e1]`, bóng mờ `shadow-2xs`.
