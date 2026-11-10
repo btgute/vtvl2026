@@ -1,183 +1,42 @@
 import React from 'react';
 import Link from 'next/link';
-import { Globe, Mail, ExternalLink } from 'lucide-react';
+import { Globe, Mail } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="relative z-20 w-full flex flex-col bg-[#0072BC] text-white overflow-hidden border-t border-white/10 text-left mt-12">
-      <div
-        className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-7xl border-x border-white/10 hidden xl:block z-30"
-        aria-hidden="true"
-      />
-      <section className="relative z-10 w-full py-9 sm:py-11">
-        <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
-          <div className="flex flex-col space-y-3">
-            <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
-              Quy trình 08 bước · 10 biểu HD 07-HD/BTCTW
-            </h3>
-            <ul className="flex flex-col space-y-2 text-xs sm:text-sm text-white/85">
-              <li>
-                <Link href="/huong-dan" className="hover:text-white hover:underline">
-                  Tài liệu gốc &amp; Bộ Phụ lục I–VIII (HD 07-HD/BTCTW)
-                </Link>
-              </li>
-              <li>
-                <Link href="/tao-tep?step=1" className="hover:text-white hover:underline">
-                  Bước 1, 2 &amp; 5: Nhiệm vụ (A1), Công việc (A2) &amp; VTVL (C1, C2)
-                </Link>
-              </li>
-              <li>
-                <Link href="/bam-gio" className="hover:text-white hover:underline">
-                  Bước 3 &amp; 4: Khối lượng, thời gian (B1) &amp; Tác động CĐS (B2_CT → B2)
-                </Link>
-              </li>
-              <li>
-                <Link href="/tao-tep?step=2" className="hover:text-white hover:underline">
-                  Bước 6 &amp; 7: Nhu cầu (C3), Nhân lực (D1) &amp; Phương án 2027–2031 (D2)
-                </Link>
-              </li>
-              <li>
-                <Link href="/ra-soat" className="hover:text-white hover:underline">
-                  Bước 8: Kiểm tra 10 biểu (K_KiemTra), xác nhận &amp; gửi kết quả
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col space-y-3">
-            <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
-              Phạm vi 51 đơn vị thuộc Trường
-            </h3>
-            <ul className="flex flex-col space-y-2 text-xs sm:text-sm text-white/85">
-              <li>
-                <Link href="/bang-tinh" className="hover:text-white hover:underline">
-                  Khối Khoa và Viện đào tạo (16 đơn vị)
-                </Link>
-              </li>
-              <li>
-                <Link href="/bang-tinh" className="hover:text-white hover:underline">
-                  Khối Phòng và Ban chức năng (14 đơn vị)
-                </Link>
-              </li>
-              <li>
-                <Link href="/bang-tinh" className="hover:text-white hover:underline">
-                  Khối Trung tâm và Phân hiệu (16 đơn vị)
-                </Link>
-              </li>
-              <li>
-                <Link href="/bang-tinh" className="hover:text-white hover:underline">
-                  Khối Quản trị và Đảng – Đoàn thể (5 đơn vị)
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col space-y-3">
-            <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
-              Cổng thông tin điện tử HCM-UTE
-            </h3>
-            <ul className="flex flex-col space-y-2 text-xs sm:text-sm text-white/85">
-              <li>
-                <a
-                  href="https://hcmute.edu.vn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:text-white hover:underline"
-                >
-                  <span>Cổng thông tin Trường (HCM-UTE)</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://tcns.hcmute.edu.vn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:text-white hover:underline"
-                >
-                  <span>Phòng Tổ chức - Nhân sự (TCNS)</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://bmc.hcmute.edu.vn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:text-white hover:underline"
-                >
-                  <span>Phòng Quản trị thương hiệu và Truyền thông</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://online.hcmute.edu.vn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:text-white hover:underline"
-                >
-                  <span>Hệ thống quản trị đào tạo</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col space-y-3 col-span-2 lg:col-span-1">
-            <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
-              Cơ quan thường trực thẩm định
-            </h3>
-            <div className="flex flex-col space-y-1.5 text-xs text-white/85 leading-relaxed">
-              <p className="font-semibold text-white">
-                Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)
-              </p>
-              <p className="text-white/80">
-                Ho Chi Minh City University of Technology and Engineering
-              </p>
-              <p className="text-white/80">
-                Đơn vị tiếp nhận hồ sơ: Phòng Tổ chức - Nhân sự (TCNS)
-              </p>
-              <p className="text-white/75">
-                Địa chỉ: 01 Võ Văn Ngân, Phường Thủ Đức, TP.HCM
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="relative z-10 w-full pt-4 pb-[calc(var(--sticky-action-height,76px)+1rem)] bg-[#06366E] border-t border-white/10">
-        <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3">
+    <footer className="relative z-20 w-full bg-[#06366E] text-white border-t border-white/10 py-3 mt-6">
+      <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/85">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="inline-flex items-center">
             <img
               src="/horizontal-ute-logo-white.png"
               alt="HCM-UTE Logo"
-              className="h-9 sm:h-11 w-auto object-contain"
+              className="h-8 w-auto object-contain"
             />
           </Link>
-          <div className="flex flex-wrap items-center gap-4 text-xs text-white/85">
-            <span>
-              © 2026 Hệ thống Vị trí việc làm — Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE).
-            </span>
-            <div className="flex items-center gap-3">
-              <a
-                href="https://hcmute.edu.vn"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/80 hover:text-white"
-                title="Cổng thông tin HCM-UTE"
-              >
-                <Globe className="w-4 h-4" />
-              </a>
-              <a
-                href="mailto:tcns@hcmute.edu.vn"
-                className="text-white/80 hover:text-white"
-                title="Thư điện tử hỗ trợ nghiệp vụ"
-              >
-                <Mail className="w-4 h-4" />
-              </a>
-            </div>
-          </div>
+          <span className="hidden md:inline text-white/60">|</span>
+          <span className="hidden md:inline">
+            Hệ thống Vị trí việc làm — Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)
+          </span>
+        </div>
+        <div className="flex items-center gap-4 text-white/80">
+          <span>© 2026 HCM-UTE</span>
+          <a
+            href="https://hcmute.edu.vn"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white"
+            title="Cổng thông tin HCM-UTE"
+          >
+            <Globe className="w-4 h-4" />
+          </a>
+          <a
+            href="mailto:tcns@hcmute.edu.vn"
+            className="hover:text-white"
+            title="Thư điện tử hỗ trợ nghiệp vụ"
+          >
+            <Mail className="w-4 h-4" />
+          </a>
         </div>
       </div>
     </footer>
