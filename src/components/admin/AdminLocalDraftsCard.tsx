@@ -63,3 +63,4 @@ export function AdminLocalDraftsCard({ initialDrafts }: Props) {
     </div>
   );
 }
+

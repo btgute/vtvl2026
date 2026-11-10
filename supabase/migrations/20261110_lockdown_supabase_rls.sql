@@ -120,3 +120,4 @@ CREATE POLICY "audit_logs_select_service" ON public.audit_logs
 -- CREATE POLICY "rls_select_s_nhat_ky" ON public.s_nhat_ky FOR SELECT TO anon USING (true);
 -- CREATE POLICY "rls_select_c1_vtvl" ON public.c1_vtvl FOR SELECT TO anon USING (true);
 -- CREATE POLICY "rls_select_t_tien_do" ON public.t_tien_do FOR SELECT TO anon USING (true);
+

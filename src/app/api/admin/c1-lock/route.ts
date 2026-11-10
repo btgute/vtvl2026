@@ -50,3 +50,4 @@ export async function DELETE() {
   await clearServerAdminCookie();
   return NextResponse.json({ success: true, unlocked: false });
 }
+
