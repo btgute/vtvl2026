@@ -5,7 +5,7 @@ import { X, FileSpreadsheet, Download, Table2, Layers, Calendar, User, Building 
 import { EmailSessionRecord, loadSessionData } from '@/services/telemetry/operator-session';
 import { EXCEL_NATURAL_SHEET_ORDER, ExcelSheetKey } from '@/components/excel-grid/excel-grid-types';
 import { EXCEL_SHEET_METAS } from '@/components/excel-grid/excel-sheet-metas';
-import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
+import { exportUserWorkbookToExcel } from '@/services/excel-export/user-workbook-exporter';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
 import { UnitGroupKind } from '@/types/vtvl';
 
@@ -31,16 +31,11 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const unitInfo = findHcmuteUnit(session.unitCode);
-      await generateUnitFiles({
-        kind: unitInfo.group as UnitGroupKind,
+      exportUserWorkbookToExcel({
         unitCode: session.unitCode,
         unitNameVi: session.unitNameVi,
-        unitNameEn: unitInfo.nameEn || '',
-        period: '01/10/2025–30/9/2026',
-        exportDate: new Date().toISOString().slice(0, 10),
-        includeZipPerPosition: false,
-        ngachOverrides: {}
+        operatorEmail: session.email,
+        data: fullData
       });
     } catch {
       alert('Không thể tạo file Excel cho phiên này, vui lòng thử lại.');

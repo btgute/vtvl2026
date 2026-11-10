@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ShieldAlert, KeyRound, ArrowLeft, Unlock, AlertCircle, ShieldCheck } from 'lucide-react';
-import { verifyAdminPassword } from '@/components/excel-grid/useC1AdminLock';
 
 interface AdminAuthGateProps {
   onSuccess: () => void;
@@ -25,26 +24,32 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
     setIsVerifying(true);
     setError('');
 
-    // Xác thực an toàn cục bộ (Local Client-Side) bằng mã băm mật mã học SHA-256,
-    // tuyệt đối không gửi mật khẩu qua mạng hay lưu plaintext.
-    const isMatch = await verifyAdminPassword(trimmed);
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: trimmed })
+      });
 
-    setIsVerifying(false);
-
-    if (isMatch) {
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('hcmute_vtvl_admin_auth', 'true');
+      if (res.ok) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('hcmute_vtvl_admin_auth', 'true');
+        }
+        onSuccess();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'Mật khẩu quản trị viên không chính xác.');
       }
-      onSuccess();
-    } else {
-      setError('Mật khẩu quản trị viên không chính xác. Vui lòng kiểm tra lại.');
+    } catch {
+      setError('Không thể kết nối đến máy chủ xác thực.');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-[#cbd5e1] overflow-hidden">
-        {/* Banner đầu trang */}
         <div className="bg-linear-to-r from-[#004776] to-[#00385c] p-6 text-white text-center relative">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/20 flex items-center justify-center text-amber-300 shadow-inner mb-3">
             <ShieldAlert className="w-7 h-7" />
@@ -57,7 +62,6 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
           </p>
         </div>
 
-        {/* Form nhập mật khẩu */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="space-y-1.5">
             <label htmlFor="admin-auth-pass" className="block text-xs font-bold text-[#004776]">
@@ -89,7 +93,7 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
           <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl text-[11px] text-[#004776] flex items-start gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Bảo mật cấp cao:</span> Mật khẩu quản trị được xác thực cục bộ bằng thuật toán băm mật mã học một chiều (SHA-256) trên trình duyệt người dùng, tuyệt đối không gửi qua mạng hay lưu trữ máy chủ.
+              <span className="font-bold">Bảo mật máy chủ:</span> Mật khẩu quản trị được xác thực qua token ký mã học an toàn, phiên làm việc được bảo vệ bằng cookie HttpOnly.
             </div>
           </div>
 

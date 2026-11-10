@@ -12,6 +12,7 @@ import { ExcelSheetKey } from './excel-grid-types';
 import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
 import { DataQualityReportModal } from './DataQualityReportModal';
 import { OperatorSessionModal } from './OperatorSessionModal';
+import { SyncStatusBar } from './SyncStatusBar';
 import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
@@ -90,6 +91,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
   const {
     session, isModalOpen, touchedCells,
+    currentRevision, syncStatus, lastSyncedAt,
     markCellTouched, submitSession, updateSessionUnit, switchSession, closeModal, persistDataForSession
   } = useOperatorSession();
 
@@ -170,6 +172,19 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onLoadTcnsData={handleLoadTcnsData}
         onLoadRecommendedVtvls={loadRecommendedVtvls}
         onOpenUnlockModal={() => setShowUnlockModal(true)}
+      />
+
+      <SyncStatusBar
+        session={session}
+        unitNameVi={currentUnit.nameVi}
+        revision={currentRevision}
+        syncStatus={syncStatus}
+        lastSyncedAt={lastSyncedAt}
+        onSaveNow={() => {
+          handleSave();
+          persistDataForSession(data, true);
+        }}
+        onSwitchSession={switchSession}
       />
 
       {/* Dải 15 sheet cuộn ngang */}
@@ -270,9 +285,9 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         isOpen={isModalOpen}
         currentSession={session}
         defaultUnitCode={unitCode}
-        onSubmit={(em, u, tit) => {
-          const { restoredData } = submitSession(em, u, tit);
-          if (restoredData) restoreWorkbookData(restoredData, u);
+        onSubmit={async (em, u, tit, wbId) => {
+          const res = await submitSession(em, u, tit, wbId);
+          if (res.restoredData) restoreWorkbookData(res.restoredData, u);
           else gridHandleUnitChange(u);
           setDirtySheets(new Set());
         }}

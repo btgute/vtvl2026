@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  FileSpreadsheet, UserCheck, Building2, Layers, ShieldCheck
+  FileSpreadsheet, UserCheck, Building2, ShieldCheck, RefreshCw
 } from 'lucide-react';
 import { AdminAuthGate } from '@/components/admin/AdminAuthGate';
 import { AdminHeader } from '@/components/admin/AdminHeader';
@@ -18,23 +18,47 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<AdminTabKey>('sessions');
 
-  // Thống kê nhanh KPI
   const [sessionCount, setSessionCount] = useState(0);
   const [activeUnitCode, setActiveUnitCode] = useState('Chưa kích hoạt');
   const [unitCount, setUnitCount] = useState(51);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const checkAuthAndLoadStats = () => {
-    if (typeof window !== 'undefined') {
-      const isAuth = sessionStorage.getItem('hcmute_vtvl_admin_auth') === 'true';
-      setIsAuthenticated(isAuth);
-      if (isAuth) {
+  const checkAuthAndLoadStats = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const authRes = await fetch('/api/admin/auth');
+      const authJson = await authRes.json().catch(() => ({}));
+      const isAuth = authRes.ok && authJson.authenticated;
+
+      if (!isAuth && sessionStorage.getItem('hcmute_vtvl_admin_auth') !== 'true') {
+        setIsAuthenticated(false);
+        return;
+      }
+
+      setIsAuthenticated(true);
+      const cur = getCurrentOperatorSession();
+      setActiveUnitCode(cur ? `[${cur.unitCode}] ${cur.email}` : 'Chưa kích hoạt');
+      setUnitCount(getAdminUnits().length);
+
+      // Lấy số lượng phiên từ Server API
+      const sessRes = await fetch('/api/admin/sessions');
+      if (sessRes.ok) {
+        const sessJson = await sessRes.json();
+        const serverTotal = sessJson.total || 0;
+        const localTotal = getAllEmailSessions().length;
+        setSessionCount(Math.max(serverTotal, localTotal));
+      } else {
         setSessionCount(getAllEmailSessions().length);
-        const cur = getCurrentOperatorSession();
-        setActiveUnitCode(cur ? `[${cur.unitCode}] ${cur.email}` : 'Chưa kích hoạt');
-        setUnitCount(getAdminUnits().length);
+      }
+    } catch {
+      const localAuth = sessionStorage.getItem('hcmute_vtvl_admin_auth') === 'true';
+      setIsAuthenticated(localAuth);
+      if (localAuth) {
+        setSessionCount(getAllEmailSessions().length);
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     checkAuthAndLoadStats();
@@ -47,16 +71,24 @@ export default function AdminPage() {
       window.removeEventListener('vtvl-operator-changed', handleUpdate);
       window.removeEventListener('vtvl-units-updated', handleUpdate);
     };
-  }, []);
+  }, [checkAuthAndLoadStats]);
 
-  const handleLogout = () => {
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await checkAuthAndLoadStats();
+    setIsRefreshing(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/auth', { method: 'DELETE' });
+    } catch { /* ignore */ }
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('hcmute_vtvl_admin_auth');
     }
     setIsAuthenticated(false);
   };
 
-  // Tránh flash nội dung khi đang kiểm tra session
   if (isAuthenticated === null) {
     return (
       <main className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
@@ -68,7 +100,6 @@ export default function AdminPage() {
     );
   }
 
-  // Chưa đăng nhập -> Hiển thị Auth Gate
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-[#f8fafc] flex flex-col justify-center py-10 px-4">
@@ -80,19 +111,30 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-[#f8fafc] py-6 px-4 sm:px-6 lg:px-8 space-y-5">
       <div className="max-w-7xl mx-auto space-y-5">
-        {/* Header quản trị */}
-        <AdminHeader onLogout={handleLogout} />
+        <div className="flex items-center justify-between">
+          <AdminHeader onLogout={handleLogout} />
+        </div>
 
         {/* 3 Thẻ thống kê nhanh KPI */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          <div className="bg-white rounded-2xl border border-[#cbd5e1] p-4 shadow-2xs flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#004776] shrink-0">
-              <FileSpreadsheet className="w-5 h-5" />
+          <div className="bg-white rounded-2xl border border-[#cbd5e1] p-4 shadow-2xs flex items-center justify-between">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#004776] shrink-0">
+                <FileSpreadsheet className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] text-[#64748b] block font-medium">Phiên &amp; Bảng biểu máy chủ</span>
+                <strong className="text-lg font-bold text-[#004776]">{sessionCount} hồ sơ</strong>
+              </div>
             </div>
-            <div className="min-w-0">
-              <span className="text-[11px] text-[#64748b] block font-medium">Phiên &amp; Bảng biểu đã lưu</span>
-              <strong className="text-lg font-bold text-[#004776]">{sessionCount} phiên</strong>
-            </div>
+            <button
+              type="button"
+              onClick={handleManualRefresh}
+              title="Làm mới dữ liệu từ máy chủ"
+              className="p-1.5 rounded-lg border border-[#cbd5e1] text-[#004776] hover:bg-blue-50 transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
 
           <div className="bg-white rounded-2xl border border-[#cbd5e1] p-4 shadow-2xs flex items-center gap-3.5">
@@ -160,7 +202,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Nội dung tương ứng theo Tab */}
         <div>
           {activeTab === 'sessions' && <AdminSessionsTab />}
           {activeTab === 'session-control' && <AdminSessionControlTab />}
@@ -170,4 +211,3 @@ export default function AdminPage() {
     </main>
   );
 }
-

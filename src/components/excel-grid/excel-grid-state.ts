@@ -7,7 +7,7 @@ import { isMissionCodeDuplicate, canDeleteMission, performSplitMission, buildAud
 import { buildFullPl1C1Rows, buildFullPl1C2Rows, buildRecommendedC1Rows } from '@/configs/hcmute-pl1-builder';
 import { PL1_VTVL_CATALOG } from '@/configs/hcmute-pl1-catalog';
 import { HCMUTE_UNITS, findHcmuteUnit } from '@/configs/hcmute-units';
-import { generateUnitFiles } from '@/services/excel-split/workbook-builder';
+import { exportUserWorkbookToExcel } from '@/services/excel-export/user-workbook-exporter';
 import { UnitGroupKind } from '@/types/vtvl';
 import { useC1AdminLock } from './useC1AdminLock';
 
@@ -234,22 +234,18 @@ export function useExcelGridState(initialUnitCode = 'TCNS') {
   const exportFullWorkbook = useCallback(async () => {
     setIsExporting(true);
     try {
-      await generateUnitFiles({
-        kind: currentUnit.group as UnitGroupKind,
+      exportUserWorkbookToExcel({
         unitCode: currentUnit.code,
         unitNameVi: currentUnit.nameVi,
-        unitNameEn: currentUnit.nameEn,
-        period: '01/10/2025–30/9/2026',
-        exportDate: new Date().toISOString().slice(0, 10),
-        includeZipPerPosition: false,
-        ngachOverrides: {}
+        reportingPeriod: '01/10/2025–30/9/2026',
+        data: data
       });
     } catch {
-      alert('Không thể tạo file Excel, vui lòng thử lại.');
+      alert('Không thể tạo file Excel từ dữ liệu đang điền, vui lòng thử lại.');
     } finally {
       setIsExporting(false);
     }
-  }, [currentUnit]);
+  }, [currentUnit, data]);
 
   return {
     unitCode,

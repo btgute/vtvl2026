@@ -41,7 +41,6 @@ export function getCurrentOperatorSession(): OperatorSession | null {
     if (!raw) return null;
     const session: OperatorSession = JSON.parse(raw);
     if (session) {
-      if (session.email === 'hoavm@hcmute.edu.vn') session.email = 'tcns@hcmute.edu.vn';
       session.email = normalizeEmail(session.email);
     }
     return session;
@@ -156,7 +155,7 @@ export function getAllEmailSessions(): EmailSessionRecord[] {
 
     list = list.map((item) => ({
       ...item,
-      email: item.email === 'hoavm@hcmute.edu.vn' ? 'tcns@hcmute.edu.vn' : normalizeEmail(item.email)
+      email: normalizeEmail(item.email)
     }));
 
     // Tự động đồng bộ phiên hiện tại nếu chưa nằm trong danh sách
