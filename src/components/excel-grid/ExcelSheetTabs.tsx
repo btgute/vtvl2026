@@ -44,9 +44,9 @@ export function ExcelSheetTabs({
   const isTechnical = orderMode === 'technical';
 
   return (
-    <div className="w-full bg-[#f1f5f9] border-t-2 border-[#cbd5e1] select-none shadow-xs">
-      <div className="flex flex-wrap items-center justify-between gap-1 px-2 py-1.5">
-        <div className="flex items-center gap-1 overflow-hidden min-w-0 flex-1">
+    <div className="w-full bg-[#f8fafc] border border-[#cbd5e1] rounded-xl select-none shadow-2xs overflow-hidden">
+      <div className="flex items-center justify-between gap-1.5 px-2.5 py-1.5">
+        <div className="flex items-center gap-1.5 overflow-hidden min-w-0 flex-1">
           {/* Navigation arrows */}
           <div className="flex items-center gap-0.5 shrink-0 pr-1.5 border-r border-[#cbd5e1]">
             <button
@@ -55,7 +55,7 @@ export function ExcelSheetTabs({
               disabled={!canPrev}
               aria-label="Sheet trước"
               title="Biểu tính trước đó"
-              className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-white text-[#004776] disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+              className="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-white text-[#004776] disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed border border-transparent hover:border-[#cbd5e1] transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -65,7 +65,7 @@ export function ExcelSheetTabs({
               disabled={!canNext}
               aria-label="Sheet tiếp theo"
               title="Biểu tính tiếp theo"
-              className="w-7 h-7 inline-flex items-center justify-center rounded hover:bg-white text-[#004776] disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+              className="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-white text-[#004776] disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed border border-transparent hover:border-[#cbd5e1] transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -75,9 +75,9 @@ export function ExcelSheetTabs({
           <div
             ref={scrollRef}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            className="flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
+            className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
             role="tablist"
-            aria-label="Danh sách các sheet nghiệp vụ theo chuẩn Excel"
+            aria-label="Danh sách các biểu mẫu 15 sheet theo chuẩn Hướng dẫn 07"
           >
             {displayOrder.map((key, index) => {
               const meta = EXCEL_SHEET_METAS[key];
@@ -91,20 +91,12 @@ export function ExcelSheetTabs({
                   data-tab-key={key}
                   aria-selected={isActive}
                   onClick={() => onSelectSheet(key)}
-                  className={`group relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t-md transition-all shrink-0 cursor-pointer border ${
+                  className={`group relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all shrink-0 cursor-pointer border ${
                     isActive
-                      ? 'bg-white text-[#004776] border-[#cbd5e1] border-b-transparent shadow-xs font-bold'
-                      : 'bg-[#e2e8f0]/80 text-[#475569] border-transparent hover:bg-white/80 hover:text-[#004776]'
+                      ? 'bg-white text-[#004776] border-[#004776] shadow-xs font-bold ring-2 ring-[#004776]/10'
+                      : 'bg-[#f1f5f9] text-[#475569] border-[#cbd5e1]/80 hover:bg-white hover:text-[#004776] hover:border-[#004776]/50'
                   }`}
                 >
-                  {/* Active indicator bar */}
-                  {isActive && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute top-0 left-0 right-0 h-[3px] bg-[#004776] rounded-t-sm"
-                    />
-                  )}
-
                   {/* Indicator: B.{n} in Technical mode, FileSpreadsheet in Excel mode */}
                   {isTechnical ? (
                     <span
@@ -130,7 +122,7 @@ export function ExcelSheetTabs({
                     <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 animate-pulse" title="Sheet có thay đổi chưa lưu" />
                   )}
                   {key === 'K' && (
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Chỉ tiêu kiểm soát" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Chỉ tiêu kiểm soát K" />
                   )}
                 </button>
               );

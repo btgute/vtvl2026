@@ -214,6 +214,19 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
             />
           )}
 
+          {/* Dải 15 sheet được đưa lên phía trên bảng tính để dễ dàng bấm chọn */}
+          <ExcelSheetTabs
+            activeSheet={activeSheet}
+            sheetOrder={currentSheetOrder}
+            orderMode={orderMode}
+            dirtySheets={dirtySheets}
+            onSelectSheet={handleSelectSheetSafe}
+            onPrev={goToPrevSheet}
+            onNext={goToNextSheet}
+            canPrev={activeSheetIndex > 0}
+            canNext={activeSheetIndex < currentSheetOrder.length - 1}
+          />
+
           <ExcelTableRenderer
             meta={activeMeta}
             rows={activeRows}
@@ -233,18 +246,6 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
             onDeleteRow={(rowId) => { markSheetDirty(activeSheet); deleteRow(activeSheet, rowId); }}
             onSaveSheet={handleSave}
             onSaveAndNext={handleSaveAndNext}
-            canNext={activeSheetIndex < currentSheetOrder.length - 1}
-          />
-
-          <ExcelSheetTabs
-            activeSheet={activeSheet}
-            sheetOrder={currentSheetOrder}
-            orderMode={orderMode}
-            dirtySheets={dirtySheets}
-            onSelectSheet={handleSelectSheetSafe}
-            onPrev={goToPrevSheet}
-            onNext={goToNextSheet}
-            canPrev={activeSheetIndex > 0}
             canNext={activeSheetIndex < currentSheetOrder.length - 1}
           />
         </div>
