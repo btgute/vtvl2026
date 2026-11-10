@@ -18,7 +18,8 @@ export async function GET() {
   await syncServerWorkbooksFromSupabase();
   const workbooks = getAllActiveServerWorkbooks();
   const summary = workbooks.map((w) => {
-    const latestParticipant = w.participants[w.participants.length - 1] || {
+    const parts = Array.isArray(w.participants) ? w.participants : [];
+    const latestParticipant = parts[parts.length - 1] || {
       email: 'tcns@hcmute.edu.vn',
       roleLabel: 'Chuyên viên'
     };
@@ -35,6 +36,8 @@ export async function GET() {
       }
     }
 
+    const revs = Array.isArray(w.revisions) ? w.revisions : [];
+
     return {
       id: w.id,
       unitCode: w.unitId,
@@ -44,9 +47,9 @@ export async function GET() {
       title: latestParticipant.roleLabel,
       lastSavedAt: w.updatedAt,
       currentRevision: w.currentRevision,
-      touchedCells: w.touchedCells || [],
-      revisionCount: w.revisions?.length || 1,
-      revisions: (w.revisions || []).map((r) => ({
+      touchedCells: Array.isArray(w.touchedCells) ? w.touchedCells : [],
+      revisionCount: revs.length || 1,
+      revisions: revs.map((r) => ({
         revision: r.revision,
         actorEmail: r.actorEmail,
         actorTitle: r.actorTitle,

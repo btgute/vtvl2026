@@ -29,7 +29,25 @@ export async function fetchWorkbooksFromSupabase(): Promise<ServerWorkbook[]> {
     for (const r of rows) {
       if (r.du_lieu_ho_so_json?.serverWorkbook) {
         const wb: ServerWorkbook = r.du_lieu_ho_so_json.serverWorkbook;
-        if (!wb.isDeleted) workbooks.push(wb);
+        if (!wb.isDeleted) {
+          if (!Array.isArray(wb.participants) || wb.participants.length === 0) {
+            const email = r.du_lieu_ho_so_json?.actorEmail || 'tcns@hcmute.edu.vn';
+            wb.participants = [{
+              id: `part_${wb.unitId || r.ma_don_vi}`,
+              sessionId: `sess_${wb.unitId || r.ma_don_vi}`,
+              workbookId: wb.id || `wb_${r.ma_don_vi}_2026`,
+              displayName: r.du_lieu_ho_so_json?.actorTitle || 'Chuyên viên',
+              email,
+              emailNormalized: email.trim().toLowerCase(),
+              roleLabel: r.du_lieu_ho_so_json?.actorTitle || 'Chuyên viên',
+              startedAt: wb.updatedAt || new Date().toISOString(),
+              updatedAt: wb.updatedAt || new Date().toISOString()
+            }];
+          }
+          if (!Array.isArray(wb.revisions)) wb.revisions = [];
+          if (!Array.isArray(wb.touchedCells)) wb.touchedCells = [];
+          workbooks.push(wb);
+        }
         continue;
       }
 

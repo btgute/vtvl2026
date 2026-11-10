@@ -153,8 +153,8 @@ export function findWorkbooksByEmail(email: string): ServerWorkbook[] {
   const norm = normalizeEmail(email);
   const username = norm.split('@')[0];
   return Array.from(store.values()).filter(
-    (w) => !w.isDeleted && w.participants.some(
-      (p) => p.emailNormalized === norm || p.emailNormalized.split('@')[0] === username
+    (w) => !w.isDeleted && Array.isArray(w.participants) && w.participants.some(
+      (p) => p && (p.emailNormalized === norm || p.emailNormalized?.split('@')[0] === username)
     )
   );
 }
