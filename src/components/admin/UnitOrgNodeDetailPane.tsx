@@ -144,3 +144,4 @@ export function UnitOrgNodeDetailPane({ node }: UnitOrgNodeDetailPaneProps) {
     </div>
   );
 }
+
