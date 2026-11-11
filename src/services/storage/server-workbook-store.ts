@@ -161,11 +161,21 @@ export function getWorkbookById(id: string): ServerWorkbook | null {
   return null;
 }
 
+export function parseDateToTimestamp(raw?: string): number {
+  if (!raw) return 0;
+  const m = raw.match(/^(\d{1,2}):(\d{2}):(\d{2})\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) {
+    return new Date(Number(m[6]), Number(m[5]) - 1, Number(m[4]), Number(m[1]), Number(m[2]), Number(m[3])).getTime();
+  }
+  const t = Date.parse(raw);
+  return isNaN(t) ? 0 : t;
+}
+
 export function getAllActiveServerWorkbooks(): ServerWorkbook[] {
   const store = loadStore();
   return Array.from(store.values())
     .filter((w) => !w.isDeleted)
-    .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : -1));
+    .sort((a, b) => parseDateToTimestamp(b.updatedAt) - parseDateToTimestamp(a.updatedAt));
 }
 
 export function saveServerWorkbook(params: {
@@ -185,13 +195,9 @@ export function saveServerWorkbook(params: {
     wb = getOrCreateWorkbook(unitCode, '01/10/2025–30/9/2026', params.actorEmail, params.actorTitle || 'Chuyên viên');
   }
 
-  if (params.baseRevision > 0 && wb.currentRevision !== params.baseRevision) {
-    return { success: false, conflict: true, currentRevision: wb.currentRevision, serverWorkbook: wb };
-  }
-
   const now = new Date().toLocaleString('vi-VN');
   const normEmail = normalizeEmail(params.actorEmail);
-  const nextRev = wb.currentRevision + 1;
+  const nextRev = Math.max(wb.currentRevision, params.baseRevision || 0) + 1;
 
   wb.currentRevision = nextRev;
   wb.data = params.data;

@@ -24,6 +24,13 @@ export async function GET(_req: Request, context: RouteContext) {
     }
 
     if (!workbook) {
+      const unitMatch = id.match(/^wb_([A-Za-z0-9]+)/);
+      if (unitMatch) {
+        workbook = getOrCreateWorkbook(unitMatch[1]);
+      }
+    }
+
+    if (!workbook) {
       return NextResponse.json({ error: 'Không tìm thấy hồ sơ.', code: 'WORKBOOK_NOT_FOUND' }, { status: 404 });
     }
 

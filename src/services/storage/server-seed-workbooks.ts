@@ -11,16 +11,16 @@ interface SeedUnitConfig {
 }
 
 const SEED_CONFIGS: SeedUnitConfig[] = [
-  { unitCode: 'FIT', email: 'fit@hcmute.edu.vn', roleLabel: 'Thư ký khoa / Trợ lý đào tạo', revision: 3, minutesAgo: 2 },
-  { unitCode: 'TCNS', email: 'tcns@hcmute.edu.vn', roleLabel: 'Chuyên viên Phòng TCNS', revision: 2, minutesAgo: 35 },
-  { unitCode: 'FME', email: 'fme@hcmute.edu.vn', roleLabel: 'Phó Trưởng khoa Cơ khí Chế tạo máy', revision: 2, minutesAgo: 90 },
+  { unitCode: 'FIT', email: 'fit@hcmute.edu.vn', roleLabel: 'Thư ký khoa / Trợ lý đào tạo', revision: 1, minutesAgo: 2 },
+  { unitCode: 'TCNS', email: 'tcns@hcmute.edu.vn', roleLabel: 'Chuyên viên Phòng TCNS', revision: 1, minutesAgo: 35 },
+  { unitCode: 'FME', email: 'fme@hcmute.edu.vn', roleLabel: 'Phó Trưởng khoa Cơ khí Chế tạo máy', revision: 1, minutesAgo: 90 },
   { unitCode: 'FEET', email: 'feet@hcmute.edu.vn', roleLabel: 'Trưởng khoa Cơ khí Động lực', revision: 1, minutesAgo: 180 },
-  { unitCode: 'FEEE', email: 'feee@hcmute.edu.vn', roleLabel: 'Giảng viên chính Khoa Điện - Điện tử', revision: 2, minutesAgo: 320 },
-  { unitCode: 'GDQPAN', email: 'dfdfff@hcmute.edu.vn', roleLabel: 'Cán bộ quản lý GDQP&AN', revision: 2, minutesAgo: 480 },
+  { unitCode: 'FEEE', email: 'feee@hcmute.edu.vn', roleLabel: 'Giảng viên chính Khoa Điện - Điện tử', revision: 1, minutesAgo: 320 },
+  { unitCode: 'GDQPAN', email: 'dfdfff@hcmute.edu.vn', roleLabel: 'Cán bộ quản lý GDQP&AN', revision: 1, minutesAgo: 480 },
   { unitCode: 'BMC', email: 'bmc@hcmute.edu.vn', roleLabel: 'Chuyên viên Truyền thông', revision: 1, minutesAgo: 600 },
-  { unitCode: 'AAO', email: 'aao@hcmute.edu.vn', roleLabel: 'Chuyên viên Quản lý Đào tạo', revision: 2, minutesAgo: 720 },
+  { unitCode: 'AAO', email: 'aao@hcmute.edu.vn', roleLabel: 'Chuyên viên Quản lý Đào tạo', revision: 1, minutesAgo: 720 },
   { unitCode: 'FPO', email: 'fpo@hcmute.edu.vn', roleLabel: 'Kế toán viên chính', revision: 1, minutesAgo: 900 },
-  { unitCode: 'OGA', email: 'oga@hcmute.edu.vn', roleLabel: 'Chuyên viên Tổng hợp', revision: 2, minutesAgo: 1200 }
+  { unitCode: 'OGA', email: 'oga@hcmute.edu.vn', roleLabel: 'Chuyên viên Tổng hợp', revision: 1, minutesAgo: 1200 }
 ];
 
 export function getInitialSeedWorkbooks(): ServerWorkbook[] {

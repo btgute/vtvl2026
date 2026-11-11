@@ -105,7 +105,17 @@ export function AdminSessionsTab() {
 
   const recentWorkbookId = useMemo(() => {
     if (filtered.length === 0) return null;
-    return filtered[0]?.id || filtered[0]?.email;
+    const sorted = [...filtered].sort((a, b) => {
+      const getT = (s?: string) => {
+        if (!s) return 0;
+        const m = s.match(/^(\d{1,2}):(\d{2}):(\d{2})\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (m) return new Date(Number(m[6]), Number(m[5]) - 1, Number(m[4]), Number(m[1]), Number(m[2]), Number(m[3])).getTime();
+        const t = Date.parse(s);
+        return isNaN(t) ? 0 : t;
+      };
+      return getT(b.lastSavedAt) - getT(a.lastSavedAt);
+    });
+    return sorted[0]?.id || sorted[0]?.email;
   }, [filtered]);
 
   const handleExport = async (session: AdminDisplaySession) => {
