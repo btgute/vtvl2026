@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building2, Search, PlusCircle, RotateCcw, Edit2, Trash2,
-  CheckCircle2, Sparkles, Filter
+  CheckCircle2, Filter
 } from 'lucide-react';
 import { HcmuteUnit, UnitGroupKind } from '@/types/vtvl';
 import {
@@ -13,6 +13,8 @@ import {
   subscribeToUnitsChange
 } from '@/services/units/unit-management';
 import { AdminUnitEditModal } from './AdminUnitEditModal';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
+import { useQueryFilter } from '@/services/query/use-query-filter';
 
 const GROUP_LABELS: Record<UnitGroupKind, string> = {
   'khoa-vien': 'Khoa - Viện đào tạo',
@@ -23,8 +25,6 @@ const GROUP_LABELS: Record<UnitGroupKind, string> = {
 
 export function AdminUnitsTab() {
   const [units, setUnits] = useState<HcmuteUnit[]>([]);
-  const [search, setSearch] = useState('');
-  const [selectedGroup, setSelectedGroup] = useState<string>('all');
   const [editingUnit, setEditingUnit] = useState<HcmuteUnit | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -40,16 +40,26 @@ export function AdminUnitsTab() {
     return () => unsubscribe();
   }, []);
 
-  const filtered = useMemo(() => {
-    return units.filter((u) => {
-      const matchSearch =
-        u.code.toLowerCase().includes(search.toLowerCase()) ||
-        u.nameVi.toLowerCase().includes(search.toLowerCase()) ||
-        (u.nameEn && u.nameEn.toLowerCase().includes(search.toLowerCase()));
-      const matchGroup = selectedGroup === 'all' || u.group === selectedGroup;
-      return matchSearch && matchGroup;
-    });
-  }, [units, search, selectedGroup]);
+  const { params, setParam, data: filtered } = useQueryFilter<
+    HcmuteUnit,
+    { uq: string; ugroup: string }
+  >({
+    queryKey: ['admin-units'],
+    initialParams: { uq: '', ugroup: 'all' },
+    data: units,
+    syncUrl: true,
+    queryFn: ({ params: p, data }) =>
+      data.filter((u) => {
+        const q = p.uq.trim().toLowerCase();
+        const matchSearch =
+          !q ||
+          u.code.toLowerCase().includes(q) ||
+          u.nameVi.toLowerCase().includes(q) ||
+          (u.nameEn && u.nameEn.toLowerCase().includes(q));
+        const matchGroup = p.ugroup === 'all' || u.group === p.ugroup;
+        return matchSearch && matchGroup;
+      })
+  });
 
   const handleEdit = (unit: HcmuteUnit) => {
     setEditingUnit(unit);
@@ -84,26 +94,26 @@ export function AdminUnitsTab() {
             <Search className="w-4 h-4 text-[#64748b] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={params.uq}
+              onChange={(e) => setParam('uq', e.target.value)}
               placeholder="Tìm theo mã đơn vị hoặc tên đơn vị..."
               className="w-full h-10 pl-9 pr-3 text-sm sm:text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
             />
           </div>
 
-          <div className="relative flex items-center w-full sm:w-auto">
-            <Filter className="w-3.5 h-3.5 text-[#64748b] absolute left-3 pointer-events-none" />
-            <select
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              className="w-full sm:w-auto h-10 pl-8 pr-7 text-sm sm:text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none cursor-pointer"
-            >
-              <option value="all">Tất cả các khối ({units.length})</option>
-              <option value="khoa-vien">Khoa &amp; Viện đào tạo</option>
-              <option value="phong-ban">Phòng ban quản lý</option>
-              <option value="trung-tam">Trung tâm &amp; Phân hiệu</option>
-              <option value="dang-doanthe">Quản trị &amp; Đảng – Đoàn thể</option>
-            </select>
+          <div className="relative flex items-center w-full sm:w-56">
+            <ShadcnSelect
+              value={params.ugroup}
+              onValueChange={(v) => setParam('ugroup', v)}
+              options={[
+                { value: 'all', label: `Tất cả các khối (${units.length})` },
+                { value: 'khoa-vien', label: 'Khoa & Viện đào tạo' },
+                { value: 'phong-ban', label: 'Phòng ban quản lý' },
+                { value: 'trung-tam', label: 'Trung tâm & Phân hiệu' },
+                { value: 'dang-doanthe', label: 'Quản trị & Đảng – Đoàn thể' }
+              ]}
+              size="md"
+            />
           </div>
         </div>
 
@@ -132,7 +142,7 @@ export function AdminUnitsTab() {
       {/* 6. Status row rút gọn mỏng ngay phía trên bảng */}
       <div className="flex items-center justify-between gap-2 px-1 py-1 text-xs text-[#004776] min-h-[32px] sm:min-h-[36px]">
         <div className="flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
           <span className="text-xs font-medium text-[#004776]">
             Đồng bộ thời gian thực với dropdown và công thức của 15 bảng tính
           </span>
@@ -164,7 +174,7 @@ export function AdminUnitsTab() {
                     {idx + 1}
                   </td>
                   <td className="p-2.5 font-bold border-r border-[#cbd5e1]">
-                    <span className="inline-block px-2 py-0.5 rounded bg-[#004776]/10 text-[#004776] font-mono text-xs">
+                    <span className="inline-block px-2 py-0.5 rounded bg-[#004776]/10 text-[#004776] font-bold text-xs">
                       {u.code}
                     </span>
                   </td>

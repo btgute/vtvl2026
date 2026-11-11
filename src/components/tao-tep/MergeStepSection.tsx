@@ -141,7 +141,7 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">X</div>
               <div className="min-w-0 space-y-0.5">
-                <div className="font-mono font-bold text-xs sm:text-sm text-[var(--foreground)] truncate">{unitFile ? unitFile.name : defaultRootName}</div>
+                <div className="font-bold text-xs sm:text-sm text-[var(--foreground)] truncate">{unitFile ? unitFile.name : defaultRootName}</div>
                 <div className="text-xs text-[var(--ink-muted)] flex flex-wrap items-center gap-1.5">
                   <span>{unitFile ? `Đã chọn · ${(unitFile.size / 1024).toFixed(1)} KB` : 'Lấy từ Giai đoạn 2 · 22 sheet'}</span>
                   <span>·</span>
@@ -197,7 +197,7 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
               <li key={f.name} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-7 h-7 rounded-md bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0">X</div>
-                  <span className="font-mono font-bold text-[var(--foreground)] truncate">{f.name}</span>
+                  <span className="font-bold text-[var(--foreground)] truncate">{f.name}</span>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
                   <span className="text-xs text-[var(--ink-muted)] tabular-nums">4 sheet · {(f.size / 1024).toFixed(1)} KB</span>
@@ -248,7 +248,7 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
           {mergeResult.rejectedForms.length > 0 && (
             <div className="rounded-xl border border-[var(--fix)] bg-[var(--fix-soft)] p-3 space-y-1 text-xs">
               <div className="flex items-center gap-1.5 font-extrabold text-[var(--fix)]"><ShieldAlert className="w-4 h-4" /><span>Đã từ chối {mergeResult.rejectedForms.length} phiếu không thuộc đơn vị [{mergeResult.unitCode}]:</span></div>
-              <ul className="list-disc pl-5 space-y-0.5 text-[var(--foreground)]">{mergeResult.rejectedForms.map((rf, idx) => <li key={idx}><code className="font-mono font-bold">{rf.fileName}</code>: {rf.reason}</li>)}</ul>
+              <ul className="list-disc pl-5 space-y-0.5 text-[var(--foreground)]">{mergeResult.rejectedForms.map((rf, idx) => <li key={idx}><code className="font-bold">{rf.fileName}</code>: {rf.reason}</li>)}</ul>
             </div>
           )}
           {mergeResult.conflicts.length > 0 && (
@@ -257,8 +257,8 @@ export function MergeStepSection({ unit: propUnit }: MergeStepSectionProps) {
               <ul className="space-y-2">
                 {mergeResult.conflicts.map((c, idx) => (
                   <li key={idx} className="rounded-lg bg-[var(--sheet)] border border-[var(--fix)]/30 p-2.5 space-y-1">
-                    <div className="font-bold text-[var(--foreground)]"><span className="font-mono text-[var(--primary)]">{c.taskCode}</span> — {c.taskName} · Chỉ tiêu lệch: <strong className="text-[var(--fix)]">{c.field}</strong></div>
-                    <ul className="pl-4 list-disc text-[var(--ink-muted)] space-y-0.5">{c.allValues.map((av, vIdx) => <li key={vIdx}>Tệp <code className="font-mono font-semibold text-[var(--foreground)]">{av.fileName}</code> ghi giá trị: <strong className="text-[var(--fix)]">{av.value}</strong></li>)}</ul>
+                    <div className="font-bold text-[var(--foreground)]"><span className="text-[var(--primary)]">{c.taskCode}</span> — {c.taskName} · Chỉ tiêu lệch: <strong className="text-[var(--fix)]">{c.field}</strong></div>
+                    <ul className="pl-4 list-disc text-[var(--ink-muted)] space-y-0.5">{c.allValues.map((av, vIdx) => <li key={vIdx}>Tệp <code className="font-semibold text-[var(--foreground)]">{av.fileName}</code> ghi giá trị: <strong className="text-[var(--fix)]">{av.value}</strong></li>)}</ul>
                   </li>
                 ))}
               </ul>

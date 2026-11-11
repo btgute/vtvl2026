@@ -4,8 +4,9 @@ import React, { useState, useMemo } from 'react';
 import { ExcelSheetMeta, GenericGridRow } from './excel-grid-types';
 import {
   Pencil, Trash2, Copy, Plus, X, Search, ChevronRight,
-  ChevronLeft, ArrowLeft, ArrowRight, Save
+  ArrowLeft, ArrowRight
 } from 'lucide-react';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 
 interface ExcelRowCardEditorProps {
   meta: ExcelSheetMeta;
@@ -107,7 +108,7 @@ export function ExcelRowCardEditor({
                       Dòng {rowNumber}/{rows.length}
                     </span>
                     {primaryCode && (
-                      <span className="font-mono text-xs font-bold text-[#004776] bg-slate-100 px-2 py-0.5 rounded">
+                      <span className="text-xs font-bold text-[#004776] bg-slate-100 px-2 py-0.5 rounded">
                         {primaryCode}
                       </span>
                     )}
@@ -156,16 +157,16 @@ export function ExcelRowCardEditor({
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs select-none p-0 sm:p-4" role="dialog" aria-modal="true">
           <div className="w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-[#cbd5e1] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             {/* Header Drawer */}
-            <div className="flex items-center justify-between px-4 py-3 bg-linear-to-r from-[#004776] to-[#00385c] text-white">
+            <div className="flex items-center justify-between px-4 py-3 bg-[#005fa3] text-white border-b border-[#004776]">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-xs font-extrabold bg-white/20 text-white">
+                <span className="px-2 py-0.5 rounded text-xs font-extrabold bg-[#004776] text-white">
                   Dòng {editingRowIndex + 1}/{rows.length}
                 </span>
                 <h3 className="text-sm font-bold text-white truncate max-w-[180px]">
                   {meta.sheetName} — {getPrimaryCode(editingRow) || 'Chi tiết'}
                 </h3>
               </div>
-              <button type="button" onClick={() => setEditingRowId(null)} className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/10 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <button type="button" onClick={() => setEditingRowId(null)} className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-[#004776] cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -193,10 +194,13 @@ export function ExcelRowCardEditor({
                         {val !== undefined && val !== '' ? String(val) : '—'}
                       </div>
                     ) : col.type === 'select' || selectOpts.length > 0 ? (
-                      <select value={String(val ?? '')} onFocus={() => onCellTouch?.(cellKey)} onChange={(e) => { onCellTouch?.(cellKey); onCellChange(editingRow.id, col.field, e.target.value); }} className={inputCls}>
-                        <option value="">-- Chọn --</option>
-                        {selectOpts.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-                      </select>
+                      <ShadcnSelect
+                        value={String(val ?? '')}
+                        onValueChange={(v) => { onCellTouch?.(cellKey); onCellChange(editingRow.id, col.field, v); }}
+                        options={selectOpts.map((opt) => ({ value: opt, label: opt }))}
+                        placeholder="-- Chọn --"
+                        size="md"
+                      />
                     ) : col.type === 'number' ? (
                       <input type="number" value={val !== undefined ? String(val) : ''} onFocus={() => onCellTouch?.(cellKey)} onChange={(e) => { onCellTouch?.(cellKey); onCellChange(editingRow.id, col.field, Number(e.target.value)); }} className={`${inputCls} text-right`} />
                     ) : (

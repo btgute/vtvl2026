@@ -124,7 +124,7 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
                 <tr key={item.step}>
                   <td className="py-2 px-3 font-bold text-[var(--foreground)]">{item.title}</td>
                   <td className="py-2 px-3 font-semibold text-[var(--primary)] whitespace-nowrap">{item.appendix}</td>
-                  <td className="py-2 px-3 font-mono font-bold text-[var(--primary)] whitespace-nowrap">{item.sheets}</td>
+                  <td className="py-2 px-3 font-bold text-[var(--primary)] whitespace-nowrap">{item.sheets}</td>
                   <td className="py-2 px-3 font-semibold whitespace-nowrap">{item.webStage}</td>
                   <td className="py-2 px-3 text-[11px] text-[var(--ink-muted)]"><span className="text-[var(--foreground)] font-medium">{item.result}</span> <span className="block italic mt-0.5">Điều kiện: {item.condition}</span></td>
                 </tr>
@@ -161,7 +161,7 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
               <tbody className="divide-y divide-[var(--border-subtle)]">
                 {filteredNd232.map((item) => (
                   <tr key={item.maDanhMucNd232}>
-                    <td className="py-2 px-2.5 font-mono font-bold text-[var(--primary)] whitespace-nowrap">{item.ttToanTruong} <span className="text-[10px] text-[var(--ink-muted)]">({item.ttTrongNhom})</span></td>
+                    <td className="py-2 px-2.5 font-bold text-[var(--primary)] whitespace-nowrap">{item.ttToanTruong} <span className="text-[10px] text-[var(--ink-muted)]">({item.ttTrongNhom})</span></td>
                     <td className="py-2 px-2.5 font-semibold whitespace-nowrap">{item.appendix}</td>
                     <td className="py-2 px-2.5 font-bold text-[var(--foreground)]">{item.positionName}</td>
                     <td className="py-2 px-2.5 font-semibold text-[var(--fix)] whitespace-nowrap">{item.careerLevel}</td>
@@ -190,11 +190,11 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
             <tbody className="divide-y divide-[var(--border-subtle)]">
               {ERD_ENTITIES_CATALOG.map((ent) => (
                 <tr key={ent.tableCode}>
-                  <td className="py-2 px-3 whitespace-nowrap"><code className="font-mono font-bold text-[var(--primary)]">{ent.tableCode}</code><span className="block text-[11px] text-[var(--ink-muted)]">{ent.tableNameVi}</span></td>
-                  <td className="py-2 px-3 font-mono font-semibold whitespace-nowrap">{ent.excelSheet}</td>
-                  <td className="py-2 px-3 font-mono text-[11px]"><span className="font-bold text-[var(--fix)]">PK: {ent.primaryKey}</span>{ent.foreignKeys !== '—' && <span className="block text-[var(--ink-muted)]">FK: {ent.foreignKeys}</span>}</td>
-                  <td className="py-2 px-3 text-right font-mono font-bold tabular-nums">{ent.columnCount}</td>
-                  <td className="py-2 px-3 text-[11px] text-[var(--ink-muted)]"><span className="font-mono text-[var(--foreground)]">{ent.keyColumnsSummary}</span><span className="block italic mt-0.5">{ent.legalBasis}</span></td>
+                  <td className="py-2 px-3 whitespace-nowrap"><code className="font-bold text-[var(--primary)]">{ent.tableCode}</code><span className="block text-[11px] text-[var(--ink-muted)]">{ent.tableNameVi}</span></td>
+                  <td className="py-2 px-3 font-semibold whitespace-nowrap">{ent.excelSheet}</td>
+                  <td className="py-2 px-3 text-[11px]"><span className="font-bold text-[var(--fix)]">PK: {ent.primaryKey}</span>{ent.foreignKeys !== '—' && <span className="block text-[var(--ink-muted)]">FK: {ent.foreignKeys}</span>}</td>
+                  <td className="py-2 px-3 text-right font-bold tabular-nums">{ent.columnCount}</td>
+                  <td className="py-2 px-3 text-[11px] text-[var(--ink-muted)]"><span className="text-[var(--foreground)]">{ent.keyColumnsSummary}</span><span className="block italic mt-0.5">{ent.legalBasis}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -218,11 +218,11 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
             <tbody className="divide-y divide-[var(--border-subtle)]">
               {DM_CHUC_DANH_TT31_TABLE.map((row) => (
                 <tr key={row.maSoChucDanh}>
-                  <td className="py-2 px-3 font-mono font-bold text-[var(--primary)] whitespace-nowrap">{row.maSoChucDanh}</td>
+                  <td className="py-2 px-3 font-bold text-[var(--primary)] whitespace-nowrap">{row.maSoChucDanh}</td>
                   <td className="py-2 px-3 font-bold text-[var(--foreground)]">{row.tenChucDanh}</td>
-                  <td className="py-2 px-3 font-mono text-[11px] whitespace-nowrap">{row.khoanDieuTt31}</td>
-                  <td className="py-2 px-3 font-mono whitespace-nowrap">{row.loaiVienChuc}</td>
-                  <td className="py-2 px-3 font-mono font-semibold text-[var(--fix)] whitespace-nowrap">{row.khungHeSoLuong}</td>
+                  <td className="py-2 px-3 text-[11px] whitespace-nowrap">{row.khoanDieuTt31}</td>
+                  <td className="py-2 px-3 whitespace-nowrap">{row.loaiVienChuc}</td>
+                  <td className="py-2 px-3 font-semibold text-[var(--fix)] whitespace-nowrap">{row.khungHeSoLuong}</td>
                   <td className="py-2 px-3 text-[11px] text-[var(--ink-muted)]">{row.ghiChuBoNhiem}</td>
                 </tr>
               ))}
@@ -236,7 +236,7 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
           {HD07_12_STEP_ORDER.map((item) => (
             <div key={item.step} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-2.5 flex items-start gap-2.5">
               <span className="w-5 h-5 rounded-md bg-[var(--primary)] text-white font-bold text-[11px] flex items-center justify-center shrink-0 tabular-nums mt-0.5">{item.step}</span>
-              <div><code className="font-mono font-bold text-[var(--primary)] text-[11px]">{item.sheet}</code><p className="text-[var(--foreground)] leading-snug mt-0.5">{item.title}</p></div>
+              <div><code className="font-bold text-[var(--primary)] text-[11px]">{item.sheet}</code><p className="text-[var(--foreground)] leading-snug mt-0.5">{item.title}</p></div>
             </div>
           ))}
         </div>
@@ -279,7 +279,7 @@ Nơi nhận:                                      ${unit.headTitleVi.toUpperCase
             <strong className="text-xs sm:text-sm font-bold text-[var(--foreground)]">Xem trước nội dung dự thảo Tờ trình — {unit.nameVi} ({unit.code})</strong>
             <button type="button" onClick={() => setShowPreviewModal(false)} aria-label="Đóng khung xem trước" className="min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--sheet)] cursor-pointer"><X className="w-4 h-4" /></button>
           </div>
-          <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed bg-[var(--sheet)] border border-[var(--border-subtle)] rounded-xl p-4 max-h-80 overflow-y-auto text-[var(--foreground)]">{toTrinhText}</pre>
+          <pre className="whitespace-pre-wrap text-xs leading-relaxed bg-[var(--sheet)] border border-[var(--border-subtle)] rounded-xl p-4 max-h-80 overflow-y-auto text-[var(--foreground)]">{toTrinhText}</pre>
         </div>
       )}
     </div>

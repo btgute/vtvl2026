@@ -197,7 +197,7 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
                     <span className="w-9 h-9 rounded-xl bg-[var(--surface-tint)] text-[var(--primary)] font-bold text-sm inline-flex items-center justify-center shrink-0 tabular-nums">{numBadge}</span>
                     <div className="min-w-0 flex-1">
                       <div className="text-sm sm:text-base font-bold text-[var(--foreground)] truncate">{pos.specificName || '(Chưa đặt tên vị trí)'}</div>
-                      <div className="text-xs text-[var(--ink-muted)] truncate"><span className="font-mono font-semibold text-[var(--foreground)]">{unitCode}-{pos.vtvlSuffix}</span> · Khung Trường: {pos.frameworkTitle}</div>
+                      <div className="text-xs text-[var(--ink-muted)] truncate"><span className="font-semibold text-[var(--foreground)]">{unitCode}-{pos.vtvlSuffix}</span> · Khung Trường: {pos.frameworkTitle}</div>
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 sm:gap-4 shrink-0 pt-2.5 lg:pt-0 border-t lg:border-t-0 border-[var(--border-subtle)]">
@@ -223,7 +223,7 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
                   <span className="hidden sm:block h-8 w-[1px] bg-[var(--border)] shrink-0" />
                   <div className="min-w-0">
                     <h4 className="text-base sm:text-lg font-bold text-[var(--foreground)] leading-snug truncate">{pos.specificName || '(Chưa đặt tên vị trí)'}</h4>
-                    <p className="text-xs text-[var(--ink-muted)] truncate"><span className="font-mono font-semibold text-[var(--foreground)]">{unitCode}-{pos.vtvlSuffix}</span> · Khung Trường: {pos.frameworkTitle}</p>
+                    <p className="text-xs text-[var(--ink-muted)] truncate"><span className="font-semibold text-[var(--foreground)]">{unitCode}-{pos.vtvlSuffix}</span> · Khung Trường: {pos.frameworkTitle}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 ml-auto">
@@ -248,7 +248,7 @@ export function Step1PositionList({ unitCode, positions, forceShowErrors = false
                   <div className="lg:col-span-2 flex items-center gap-2 rounded-xl bg-[var(--surface-secondary)] px-3.5 py-3 lg:min-h-[64px] text-xs font-bold uppercase tracking-wide text-[var(--foreground)]"><Info className="w-4 h-4 text-[var(--primary)] shrink-0" /><span>Thông tin vị trí</span></div>
                   <div className="lg:col-span-5"><label htmlFor={`desk-name-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Tên vị trí việc làm cụ thể tại đơn vị (Biểu C1) <span className="text-[var(--fix)]">*</span></label><TextInput id={`desk-name-${pos.id}`} state={showErr && !pos.specificName.trim() ? 'error' : 'default'} value={pos.specificName} onChange={(e) => triggerRowChange(pos.id, { specificName: e.target.value })} className="font-semibold" /></div>
                   <div className="lg:col-span-3"><label htmlFor={`desk-fw-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Khung Trường</label><Select id={`desk-fw-${pos.id}`} value={pos.frameworkId} onChange={(e) => { const fw = ND232_2026_VTVL_CATALOG.find((x) => x.maDanhMucNd232 === e.target.value); if (fw) triggerRowChange(pos.id, { frameworkId: fw.maDanhMucNd232, frameworkTitle: fw.positionName, vtvlGroup4: fw.vtvlGroup4, careerLevel: fw.careerLevel, allowedLevels: fw.allowedLevels }); }}>{ND232_2026_VTVL_CATALOG.map((fw) => <option key={fw.maDanhMucNd232} value={fw.maDanhMucNd232}>{fw.positionName}</option>)}</Select></div>
-                  <div className="lg:col-span-2"><label htmlFor={`desk-code-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Mã vị trí đơn vị ({unitCode}-...) <span className="text-[var(--fix)]">*</span></label><div className="flex items-center gap-1.5"><span className="px-2.5 min-h-[44px] inline-flex items-center rounded-xl bg-[var(--surface-secondary)] text-xs font-mono font-bold text-[var(--ink-muted)] shrink-0">{unitCode}-</span><TextInput id={`desk-code-${pos.id}`} state={showErr && !pos.vtvlSuffix.trim() ? 'error' : 'default'} value={pos.vtvlSuffix} onChange={(e) => triggerRowChange(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="font-mono font-bold text-[var(--primary)]" /></div></div>
+                  <div className="lg:col-span-2"><label htmlFor={`desk-code-${pos.id}`} className="block text-xs font-bold text-[var(--foreground)] mb-1">Mã vị trí đơn vị ({unitCode}-...) <span className="text-[var(--fix)]">*</span></label><div className="flex items-center gap-1.5"><span className="px-2.5 min-h-[44px] inline-flex items-center rounded-xl bg-[var(--surface-secondary)] text-xs font-bold text-[var(--ink-muted)] shrink-0">{unitCode}-</span><TextInput id={`desk-code-${pos.id}`} state={showErr && !pos.vtvlSuffix.trim() ? 'error' : 'default'} value={pos.vtvlSuffix} onChange={(e) => triggerRowChange(pos.id, { vtvlSuffix: e.target.value.toUpperCase() })} className="font-bold text-[var(--primary)]" /></div></div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start pt-2 border-t border-[var(--border-subtle)]">

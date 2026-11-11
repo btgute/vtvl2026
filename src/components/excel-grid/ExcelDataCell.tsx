@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ExcelColumnDef } from './excel-grid-types';
 import { FunctionSquare, AlertCircle } from 'lucide-react';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 
 interface ExcelDataCellProps {
   col: ExcelColumnDef;
@@ -39,8 +40,8 @@ export function ExcelDataCell({
   const cellStyle = isEmptyRequired
     ? 'border-[var(--fix)] bg-[var(--fix-soft)] text-[var(--fix)] focus:ring-2 focus:ring-[var(--fix)]/25 focus:border-[var(--fix)]'
     : isTouched
-      ? 'border-[#005fa3]/50 bg-[#f8fbff] text-[#004776] focus:ring-2 focus:ring-[#004776]/20 focus:border-[#004776]'
-      : 'border-[#cbd5e1] bg-white hover:border-[#94a3b8] text-[#004776] focus:ring-2 focus:ring-[#004776]/20 focus:border-[#004776] transition-colors';
+      ? 'border-[#005fa3]/50 bg-[#f8fbff] text-[#004776] focus:ring-2 focus:ring-[#005fa3]/20 focus:border-[#005fa3]'
+      : 'border-[#cbd5e1] bg-white hover:border-[#94a3b8] text-[#004776] focus:ring-2 focus:ring-[#005fa3]/20 focus:border-[#005fa3] transition-colors';
 
   const colStyle = {
     minWidth: col.width || '150px',
@@ -48,14 +49,15 @@ export function ExcelDataCell({
   };
 
   const isCompact = density === 'compact';
+  const uniformHeightClass = isCompact ? 'h-8' : 'h-9';
 
   // 1. Trạng thái Status (ĐẠT / CHƯA ĐẠT)
   if (col.type === 'status') {
     const isOk = val === 'ĐẠT' || val === 'Hoàn thành';
     return (
-      <td style={colStyle} className="py-2 px-2 border-r border-[#f1f5f9] text-center align-top whitespace-normal">
+      <td style={colStyle} className="py-1 px-1.5 border-r border-[#f1f5f9] text-center align-middle">
         <span
-          className={`inline-block px-2.5 py-0.5 text-xs font-medium rounded-md break-words leading-tight ${
+          className={`inline-flex items-center justify-center px-2.5 h-7 text-xs font-medium rounded-md leading-tight ${
             isOk ? 'bg-[var(--ok-soft)] text-[var(--ok)] border border-[var(--ok)]/30' : 'bg-[var(--fix-soft)] text-[var(--fix)] border border-[var(--fix)]/30'
           }`}
         >
@@ -70,44 +72,45 @@ export function ExcelDataCell({
     return (
       <td
         style={colStyle}
-        className="py-2 px-2.5 border-r border-[#f1f5f9] bg-[#f8fafc] font-normal text-[#004776] align-top whitespace-normal break-words"
+        className="py-1 px-1.5 border-r border-[#f1f5f9] bg-[#f8fafc] font-normal text-[#004776] align-middle"
         title={col.formulaHint || strVal}
       >
-        <div className="flex items-start justify-between gap-1">
-          <span className={`whitespace-normal break-words leading-relaxed text-[#004776] ${col.type === 'number' ? 'tabular-nums text-right w-full' : ''}`}>
+        <div className={`w-full ${uniformHeightClass} px-2.5 rounded-md border border-[#e2e8f0] bg-[#f8fafc] flex items-center justify-between gap-1`}>
+          <span className={`truncate text-[13px] text-[#004776] ${col.type === 'number' ? 'tabular-nums text-right w-full' : ''}`}>
             {strVal !== '' ? strVal : '—'}
           </span>
           {col.formulaHint && (
-            <FunctionSquare className="w-3.5 h-3.5 text-[#94a3b8] shrink-0 opacity-50 group-hover:opacity-100 mt-0.5" />
+            <FunctionSquare className="w-3.5 h-3.5 text-[#94a3b8] shrink-0 opacity-60 group-hover:opacity-100" />
           )}
         </div>
       </td>
     );
   }
 
-  // 3. Dropdown / Select cell
+  // 3. Shadcn Dropdown / Select cell
   if (col.type === 'select' || (dynamicOptions && dynamicOptions.length > 0)) {
-    const selectOptions = dynamicOptions && dynamicOptions.length > 0 ? dynamicOptions : (col.selectOptions || []);
+    const rawOptions = dynamicOptions && dynamicOptions.length > 0 ? dynamicOptions : (col.selectOptions || []);
+    const shadcnOptions = [
+      { value: '', label: '-- Chọn --' },
+      ...rawOptions.map((opt) => ({ value: opt, label: opt }))
+    ];
     return (
-      <td style={colStyle} className="py-1 px-1 border-r border-[#f1f5f9] align-top relative">
-        <select
+      <td style={colStyle} className="py-1 px-1.5 border-r border-[#f1f5f9] align-middle relative">
+        <ShadcnSelect
           value={strVal}
-          aria-label={col.headerName}
-          aria-invalid={isEmptyRequired || undefined}
-          aria-describedby={isEmptyRequired ? errorId : undefined}
+          options={shadcnOptions}
+          ariaLabel={col.headerName}
+          hasError={isEmptyRequired}
+          ariaDescribedBy={isEmptyRequired ? errorId : undefined}
+          size={isCompact ? 'cell-compact' : 'cell-comfortable'}
+          placeholder="-- Chọn --"
           onFocus={() => { setIsFocused(true); onCellTouch?.(cellKey); }}
           onBlur={() => { setIsFocused(false); setHasBlurred(true); }}
-          onChange={(e) => {
+          onChange={(nextVal) => {
             onCellTouch?.(cellKey);
-            onCellChange(rowId, col.field, e.target.value);
+            onCellChange(rowId, col.field, nextVal);
           }}
-          className={`w-full ${isCompact ? 'h-8 py-0.5' : 'h-9 py-1'} px-2 rounded-md border text-[13px] font-normal outline-hidden ${cellStyle}`}
-        >
-          <option value="">-- Chọn --</option>
-          {selectOptions.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        />
         {isEmptyRequired && (
           <span id={errorId} className="text-[11px] text-[var(--fix)] mt-0.5 px-1 font-medium flex items-center gap-0.5">
             <AlertCircle className="w-3 h-3 shrink-0" /> Bắt buộc chọn
@@ -117,10 +120,10 @@ export function ExcelDataCell({
     );
   }
 
-  // 4. Number input cell
+  // 4. Number input cell (Uniform height h-9 / h-8)
   if (col.type === 'number') {
     return (
-      <td style={colStyle} className="py-1 px-1 border-r border-[#f1f5f9] align-top relative">
+      <td style={colStyle} className="py-1 px-1.5 border-r border-[#f1f5f9] align-middle relative">
         <input
           type="number"
           value={strVal}
@@ -133,7 +136,7 @@ export function ExcelDataCell({
             onCellTouch?.(cellKey);
             onCellChange(rowId, col.field, Number(e.target.value));
           }}
-          className={`w-full ${isCompact ? 'h-8' : 'h-9'} px-2.5 rounded-md border text-[13px] font-normal text-right outline-hidden tabular-nums ${cellStyle}`}
+          className={`w-full ${uniformHeightClass} px-2.5 rounded-md border text-[13px] font-normal text-right outline-hidden tabular-nums ${cellStyle}`}
         />
         {isEmptyRequired && (
           <span id={errorId} className="text-[11px] text-[var(--fix)] mt-0.5 px-1 font-medium flex items-center gap-0.5">
@@ -144,44 +147,13 @@ export function ExcelDataCell({
     );
   }
 
-  // 5. Short code input (maNhiemVu, maCongViec, ky...)
-  const isShortCode = col.field === 'maNhiemVu' || col.field === 'maCongViec' || col.field === 'ky';
-  if (isShortCode) {
-    return (
-      <td style={colStyle} className="py-1 px-1 border-r border-[#f1f5f9] align-top relative">
-        <input
-          type="text"
-          value={strVal}
-          aria-label={col.headerName}
-          aria-invalid={isEmptyRequired || undefined}
-          aria-describedby={isEmptyRequired ? errorId : undefined}
-          onFocus={() => { setIsFocused(true); onCellTouch?.(cellKey); }}
-          onBlur={() => { setIsFocused(false); setHasBlurred(true); }}
-          onChange={(e) => {
-            onCellTouch?.(cellKey);
-            onCellChange(rowId, col.field, e.target.value);
-          }}
-          className={`w-full ${isCompact ? 'h-8' : 'h-9'} px-2.5 rounded-md border text-[13px] font-mono font-medium outline-hidden ${cellStyle}`}
-        />
-        {isEmptyRequired && (
-          <span id={errorId} className="text-[11px] text-[var(--fix)] mt-0.5 px-1 font-medium flex items-center gap-0.5">
-            <AlertCircle className="w-3 h-3 shrink-0" /> Bắt buộc nhập
-          </span>
-        )}
-      </td>
-    );
-  }
-
-  // 6. Descriptive text (textarea tự tăng chiều cao)
-  const estimatedLines = isCompact
-    ? Math.min(4, Math.max(1, Math.ceil(strVal.length / 44)))
-    : Math.min(6, Math.max(2, Math.ceil(strVal.length / 40)));
-
+  // 5. Text & Code input cell — Chiều cao đồng nhất (h-9 / h-8)
   return (
-    <td style={colStyle} className="py-1 px-1 border-r border-[#f1f5f9] align-top relative">
-      <textarea
-        rows={estimatedLines}
+    <td style={colStyle} className="py-1 px-1.5 border-r border-[#f1f5f9] align-middle relative">
+      <input
+        type="text"
         value={strVal}
+        title={strVal}
         aria-label={col.headerName}
         aria-invalid={isEmptyRequired || undefined}
         aria-describedby={isEmptyRequired ? errorId : undefined}
@@ -191,7 +163,7 @@ export function ExcelDataCell({
           onCellTouch?.(cellKey);
           onCellChange(rowId, col.field, e.target.value);
         }}
-        className={`w-full ${isCompact ? 'min-h-[34px] py-1' : 'min-h-[40px] py-1.5'} px-2.5 rounded-md border text-[13.5px] font-normal outline-hidden leading-snug whitespace-pre-wrap break-words resize-y ${cellStyle}`}
+        className={`w-full ${uniformHeightClass} px-2.5 rounded-md border text-[13px] font-normal outline-hidden ${cellStyle}`}
         placeholder="Nhập nội dung..."
       />
       {isEmptyRequired && (

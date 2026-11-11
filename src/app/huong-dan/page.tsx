@@ -96,7 +96,7 @@ export default function HuongDanDonViPage() {
                   </ul>
                 </InfoTip>
               </div>
-              <div className="text-[11px] font-mono font-medium text-[var(--primary)] bg-white px-2 py-0.5 rounded border border-[#e2e8f0]">
+              <div className="text-[11px] font-medium text-[var(--primary)] bg-white px-2 py-0.5 rounded border border-[#e2e8f0]">
                 {card.sheets}
               </div>
               <p className="text-xs text-[var(--ink-muted)] leading-relaxed">{card.summary}</p>
@@ -121,7 +121,7 @@ export default function HuongDanDonViPage() {
                 className="rounded-lg border border-[var(--border-subtle)] bg-white hover:bg-[#f8fafc] p-2.5 flex items-center justify-between gap-2 transition-colors"
               >
                 <div className="min-w-0">
-                  <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[var(--surface-tint)] text-[var(--primary)] mr-1">{doc.badge}</span>
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[var(--surface-tint)] text-[var(--primary)] mr-1">{doc.badge}</span>
                   <span className="text-xs font-medium text-[var(--foreground)] block mt-0.5 truncate">{doc.title}</span>
                 </div>
                 <Download className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" />
@@ -177,7 +177,7 @@ export default function HuongDanDonViPage() {
                           <input type="checkbox" checked={done} onChange={() => {}} className="w-3.5 h-3.5 accent-[var(--primary)] mt-0.5 shrink-0" />
                           <div className="min-w-0">
                             <span className="font-medium text-[var(--foreground)] block leading-snug">{s.title}</span>
-                            <span className="text-[11px] font-mono text-[var(--primary)]">{s.sheets}</span>
+                            <span className="text-[11px] text-[var(--primary)]">{s.sheets}</span>
                           </div>
                         </div>
                         <InfoTip title={s.title} align="right">
@@ -200,7 +200,7 @@ export default function HuongDanDonViPage() {
                         <div className="flex items-center gap-2 min-w-0">
                           <input type="checkbox" checked={done} onChange={() => {}} className="w-3.5 h-3.5 accent-[var(--primary)]" />
                           <span className="font-medium text-[var(--foreground)] shrink-0">Bước {s.step}:</span>
-                          <span className="font-mono text-[var(--primary)] truncate">{s.sheet}</span>
+                          <span className="text-[var(--primary)] truncate">{s.sheet}</span>
                         </div>
                         <InfoTip title={`Bước ${s.step}: ${s.sheet}`} align="right">
                           <p>{s.title}</p>
@@ -220,7 +220,7 @@ export default function HuongDanDonViPage() {
               {COMMON_PITFALLS.map((err) => (
                 <div key={err.code} className="p-3 flex items-start justify-between gap-2 hover:bg-[#f8fafc] transition-colors">
                   <div className="space-y-0.5">
-                    <span className="text-[11px] font-mono font-semibold text-[var(--fix)] block">{err.code}</span>
+                    <span className="text-[11px] font-semibold text-[var(--fix)] block">{err.code}</span>
                     <strong className="text-xs text-[var(--foreground)] font-medium block">{err.title}</strong>
                   </div>
                   <InfoTip title="Cách khắc phục" align="right">

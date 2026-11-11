@@ -7,9 +7,10 @@ import { OperatorSession } from '@/services/telemetry/operator-session';
 import { ValidationReport } from '@/services/validation/vtvl-validation-types';
 import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import {
-  Download, Building2, Sparkles, ShieldCheck, CheckCircle2, RefreshCw,
+  Download, Building2, ShieldCheck, CheckCircle2, RefreshCw,
   UserCheck, Briefcase, ArrowLeftRight, MoreHorizontal, ArrowRight, Save
 } from 'lucide-react';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 
 interface ExcelWorkbookToolbarProps {
   session: OperatorSession | null;
@@ -62,35 +63,32 @@ export function ExcelWorkbookToolbar({
       {/* Phía trái: Hộp chọn đơn vị + Cán bộ thực hiện */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Unit Selector */}
-        <div className="flex items-center gap-1.5 bg-[#f1f5f9] px-2.5 py-1 rounded-xl border border-[#cbd5e1]">
+        <div className="flex items-center gap-1.5 bg-[#f1f5f9] px-2.5 py-1 rounded-xl border border-[#cbd5e1] min-w-[240px]">
           <span className="text-xs font-bold text-[#004776] shrink-0">Đơn vị:</span>
-          <select
+          <ShadcnSelect
             value={unitCode}
-            onChange={(e) => onUnitChange(e.target.value)}
-            className="bg-white border border-[#cbd5e1] rounded-lg px-2 py-1 text-xs font-bold text-[#004776] cursor-pointer max-w-[210px] sm:max-w-[280px]"
-            title="Chọn đơn vị để xem và nhập dữ liệu 15 sheet"
-          >
-            {QD2266_GROUPED_UNITS_CATALOG.map((group) => (
-              <optgroup key={group.groupLabel} label={group.groupLabel}>
-                {group.units.map((u) => (
-                  <option key={u.code} value={u.code}>
-                    [{u.code}] {u.nameVi} {u.plLabel ? `(${u.plLabel})` : ''}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+            onValueChange={onUnitChange}
+            options={QD2266_GROUPED_UNITS_CATALOG.flatMap((group) =>
+              group.units.map((u) => ({
+                value: u.code,
+                label: `[${u.code}] ${u.nameVi}${u.plLabel ? ` (${u.plLabel})` : ''}`,
+                group: group.groupLabel
+              }))
+            )}
+            searchable={true}
+            size="sm"
+          />
         </div>
 
         {/* Khối Cán bộ thực hiện */}
         {session ? (
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-linear-to-r from-blue-50/70 via-white to-sky-50/70 border border-[#004776]/25 shadow-2xs text-xs shrink-0">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-sky-50 border border-[#004776]/25 shadow-2xs text-xs shrink-0">
             <span className="relative flex h-2 w-2 shrink-0" title="Đang đồng bộ trực tuyến">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
             </span>
 
-            <span className="font-mono font-bold text-[#004776] tracking-tight">{session.email}</span>
+            <span className="font-bold text-[#004776] tracking-tight">{session.email}</span>
             <span className="text-[#cbd5e1]">|</span>
             <span className="font-semibold text-[#004776]/85">{session.title}</span>
 
@@ -177,7 +175,7 @@ export function ExcelWorkbookToolbar({
                 onClick={() => { setShowMoreMenu(false); onLoadTcnsData(); }}
                 className="w-full text-left px-3 py-2 text-xs font-semibold text-[#004776] hover:bg-sky-50 flex items-center gap-2 cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <RefreshCw className="w-3.5 h-3.5 text-[#005fa3]" />
                 <span>Nạp mẫu chuẩn TCNS</span>
               </button>
 
@@ -196,7 +194,7 @@ export function ExcelWorkbookToolbar({
                     onClick={() => { setShowMoreMenu(false); if (!isC1Unlocked) onOpenUnlockModal(); else onLoadFullPl1Catalog(); }}
                     className="w-full text-left px-3 py-2 text-xs font-semibold text-[#004776] hover:bg-sky-50 flex items-center gap-2 cursor-pointer"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#005fa3]" />
                     <span>Nạp trọn bộ 56 VTVL (PL1)</span>
                   </button>
                 </>

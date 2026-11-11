@@ -50,28 +50,28 @@ export function DataQualityReportModal({
     >
       <div className="relative w-full max-w-4xl max-h-[92dvh] sm:max-h-[90dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-[#cbd5e1] bg-linear-to-r from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-[#cbd5e1] bg-[#005fa3] text-white shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#004776] text-white flex items-center justify-center shadow-xs">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              <ShieldCheck className="w-5 h-5 text-emerald-300" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 id="quality-modal-title" className="text-base font-bold text-[#004776]">
+                <h3 id="quality-modal-title" className="text-base font-bold text-white">
                   Kiểm soát chất lượng dữ liệu (Data Quality Checker)
                 </h3>
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#004776]/10 text-[#004776]">
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#004776] text-white">
                   Đơn vị: {unitCode}
                 </span>
               </div>
-              <p className="text-xs text-[#64748b]">{unitName} — Theo chuẩn Hướng dẫn 07-HD/BTCTW</p>
+              <p className="text-xs text-white/90">{unitName} — Theo chuẩn Hướng dẫn 07-HD/BTCTW</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Đóng cửa sổ"
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#64748b] hover:text-[#004776] hover:bg-white/80 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white/80 hover:text-white hover:bg-[#004776] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -204,13 +204,13 @@ export function DataQualityReportModal({
                           {issue.ruleId}
                         </span>
                         <span className="font-bold text-[#004776]">{issue.title}</span>
-                        <span className="text-[11px] px-2 py-0.2 rounded bg-white border border-[#cbd5e1] font-mono text-[#334155]">
+                        <span className="text-[11px] px-2 py-0.2 rounded bg-white border border-[#cbd5e1] font-bold text-[#334155]">
                           {issue.cellRef}
                         </span>
                       </div>
                       <p className="text-[#334155]">
                         <strong className="font-semibold text-[#004776]">Giá trị hiện tại:</strong>{' '}
-                        <span className="font-mono text-red-700 bg-red-100/50 px-1 rounded">{issue.currentValue}</span>
+                        <span className="font-bold text-red-700 bg-red-100/50 px-1 rounded">{issue.currentValue}</span>
                       </p>
                       <p className="text-[#334155]">
                         <strong className="font-semibold text-emerald-800">Hướng dẫn khắc phục:</strong> {issue.suggestion}

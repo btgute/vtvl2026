@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Search, Plus, CheckSquare, Square, Filter, CheckCircle2 } from 'lucide-react';
 import { ND232_2026_VTVL_CATALOG, Nd232PositionCatalogItem } from '@/configs/hcmute-nd232-catalog';
 import { HcmuteVtvlGroup4, UnitGroupKind } from '@/types/vtvl';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
+import { useQueryFilter } from '@/services/query/use-query-filter';
 
 const FOUR_GROUPS: HcmuteVtvlGroup4[] = [
   'I. Nhóm VTVL Quản lý',
@@ -68,29 +70,39 @@ export function Step1CatalogSelector({
   existingFrameworkIds,
   onAddMultiplePositions
 }: Step1CatalogSelectorProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [groupFilter, setGroupFilter] = useState<string>('ALL');
-  const [levelFilter, setLevelFilter] = useState<string>('Tất cả bậc');
   const [priorityOnly, setPriorityOnly] = useState<boolean>(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [addedBanner, setAddedBanner] = useState<string>('');
 
-  const filteredCatalog = useMemo(() => {
-    return ND232_2026_VTVL_CATALOG.filter((item) => {
-      if (priorityOnly && !isRecommendedForUnitGroup(item, kind)) return false;
-      if (groupFilter !== 'ALL' && item.vtvlGroup4 !== groupFilter) return false;
-      if (levelFilter !== 'Tất cả bậc') {
-        const matchLvl = item.careerLevel.includes(levelFilter) || item.allowedLevels.some((l) => l.includes(levelFilter));
-        if (!matchLvl) return false;
-      }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const hay = `${item.positionName} ${item.maDanhMucNd232} ${item.maChucDanhTt31} ${item.linkedCodeHint}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [priorityOnly, kind, groupFilter, levelFilter, searchQuery]);
+  const { params, setParam, data: filteredCatalog } = useQueryFilter<
+    Nd232PositionCatalogItem,
+    { cq: string; cgroup: string; clevel: string }
+  >({
+    queryKey: ['step1-catalog', kind, String(priorityOnly)],
+    initialParams: { cq: '', cgroup: 'ALL', clevel: 'Tất cả bậc' },
+    data: ND232_2026_VTVL_CATALOG,
+    syncUrl: false,
+    queryFn: ({ params: p, data }) =>
+      data.filter((item) => {
+        if (priorityOnly && !isRecommendedForUnitGroup(item, kind)) return false;
+        if (p.cgroup !== 'ALL' && item.vtvlGroup4 !== p.cgroup) return false;
+        if (p.clevel !== 'Tất cả bậc') {
+          const matchLvl = item.careerLevel.includes(p.clevel) || item.allowedLevels.some((l) => l.includes(p.clevel));
+          if (!matchLvl) return false;
+        }
+        if (p.cq.trim()) {
+          const q = p.cq.toLowerCase();
+          if (!`${item.positionName} ${item.maDanhMucNd232} ${item.maChucDanhTt31} ${item.linkedCodeHint}`.toLowerCase().includes(q)) return false;
+        }
+        return true;
+      })
+  });
+  const searchQuery = params.cq;
+  const groupFilter = params.cgroup;
+  const levelFilter = params.clevel;
+  const setSearchQuery = (v: string) => setParam('cq', v);
+  const setGroupFilter = (v: string) => setParam('cgroup', v);
+  const setLevelFilter = (v: string) => setParam('clevel', v);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -152,33 +164,26 @@ export function Step1CatalogSelector({
           <label htmlFor="filter-vtvl-group" className="block text-sm font-bold text-[var(--foreground)] mb-1">
             Lọc theo nhóm vị trí việc làm
           </label>
-          <select
+          <ShadcnSelect
             id="filter-vtvl-group"
             value={groupFilter}
-            onChange={(e) => setGroupFilter(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm font-semibold"
-          >
-            <option value="ALL">Tất cả 04 nhóm vị trí việc làm</option>
-            {FOUR_GROUPS.map((g) => (
-              <option key={g} value={g}>{g}</option>
-            ))}
-          </select>
+            onValueChange={setGroupFilter}
+            options={[{ value: 'ALL', label: 'Tất cả 04 nhóm vị trí việc làm' }, ...FOUR_GROUPS.map((g) => ({ value: g, label: g }))]}
+            size="md"
+          />
         </div>
 
         <div className="sm:col-span-3">
           <label htmlFor="filter-vtvl-level" className="block text-sm font-bold text-[var(--foreground)] mb-1">
             Lọc theo bậc nghề nghiệp
           </label>
-          <select
+          <ShadcnSelect
             id="filter-vtvl-level"
             value={levelFilter}
-            onChange={(e) => setLevelFilter(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm font-semibold"
-          >
-            {LEVEL_FILTERS.map((lvl) => (
-              <option key={lvl} value={lvl}>{lvl}</option>
-            ))}
-          </select>
+            onValueChange={setLevelFilter}
+            options={LEVEL_FILTERS.map((lvl) => ({ value: lvl, label: lvl }))}
+            size="md"
+          />
         </div>
       </div>
 
@@ -222,7 +227,7 @@ export function Step1CatalogSelector({
                   <strong className={`text-sm font-extrabold ${isAdded ? 'text-[var(--ok)]' : 'text-[var(--foreground)]'}`}>
                     {item.positionName}
                   </strong>
-                  <span className={`text-xs font-mono font-bold ${isAdded ? 'text-[var(--ok)]' : 'text-[var(--primary)]'}`}>
+                  <span className={`text-xs font-bold ${isAdded ? 'text-[var(--ok)]' : 'text-[var(--primary)]'}`}>
                     {item.maChucDanhTt31}
                   </span>
                 </div>

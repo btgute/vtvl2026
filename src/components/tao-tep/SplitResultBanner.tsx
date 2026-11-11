@@ -59,7 +59,7 @@ export function SplitFileNamesPreview({
                 </div>
                 <div className="min-w-0 space-y-0.5">
                   <div className="font-bold text-[var(--foreground)] text-sm">{it.title}</div>
-                  <div className="font-mono text-xs text-[var(--primary)] break-all sm:break-words">{it.fileName}</div>
+                  <div className="text-xs font-semibold text-[var(--primary)] break-all sm:break-words">{it.fileName}</div>
                   <div className="text-xs text-[var(--ink-muted)]">{it.meta}</div>
                 </div>
               </div>
@@ -164,7 +164,7 @@ export function SplitResultBanner({ result, onDownload }: Props) {
               </div>
               <div className="min-w-0 space-y-0.5">
                 <div className="text-sm font-bold text-[var(--foreground)]">{f.title}</div>
-                <div className="font-mono text-xs text-[var(--primary)] break-all sm:break-words">{f.fileName}</div>
+                <div className="text-xs font-semibold text-[var(--primary)] break-all sm:break-words">{f.fileName}</div>
                 <div className="text-xs text-[var(--ink-muted)]">{f.meta}</div>
               </div>
             </div>

@@ -47,8 +47,8 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-[#cbd5e1] overflow-hidden">
-        <div className="bg-linear-to-r from-[#004776] to-[#00385c] p-6 text-white text-center relative">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/20 flex items-center justify-center text-amber-300 shadow-inner mb-3">
+        <div className="bg-[#005fa3] p-6 text-white text-center relative border-b border-[#004776]">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-[#004776] flex items-center justify-center text-amber-300 shadow-inner mb-3">
             <ShieldAlert className="w-7 h-7" />
           </div>
           <h2 className="text-lg font-bold text-white tracking-tight">

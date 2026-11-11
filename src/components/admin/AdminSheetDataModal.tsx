@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { X, FileSpreadsheet, Download, Table2, Calendar, User, Building } from 'lucide-react';
+import { X, FileSpreadsheet, Download, Table2, Calendar, User, Building, BarChart3 } from 'lucide-react';
 import { EmailSessionRecord, loadSessionData } from '@/services/telemetry/operator-session';
 import { EXCEL_NATURAL_SHEET_ORDER, ExcelSheetKey, GenericGridRow } from '@/components/excel-grid/excel-grid-types';
 import { EXCEL_SHEET_METAS } from '@/components/excel-grid/excel-sheet-metas';
 import { buildDefaultGridWorkbook } from '@/components/excel-grid/excel-grid-defaults';
 import { exportUserWorkbookToExcel } from '@/services/excel-export/user-workbook-exporter';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
+import { WorkforceStructureChartModal } from '@/components/excel-grid/WorkforceStructureChartModal';
 
 interface AdminSheetDataModalProps {
   session: EmailSessionRecord | null;
@@ -17,6 +18,7 @@ interface AdminSheetDataModalProps {
 export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalProps) {
   const [selectedSheet, setSelectedSheet] = useState<ExcelSheetKey>('A1');
   const [isExporting, setIsExporting] = useState(false);
+  const [showChartModal, setShowChartModal] = useState(false);
 
   const unitName = useMemo(() => {
     if (!session) return '';
@@ -63,23 +65,23 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
     >
-      <div className="relative w-full max-w-6xl max-h-[94dvh] sm:max-h-[92dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
-        {/* Header Modal */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 sm:px-5 py-3 sm:py-3.5 bg-linear-to-r from-[#004776] to-[#00385c] text-white shrink-0">
+      <div className="relative w-full max-w-6xl max-h-[94dvh] sm:max-h-[92dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-xl border border-[#cbd5e1] overflow-hidden flex flex-col">
+        {/* Header Modal — Solid Primary Fresh Blue (#005fa3), no gradient, no white outline */}
+        <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 sm:px-5 py-3 sm:py-3.5 bg-[#005fa3] text-white shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
-              <Table2 className="w-5 h-5 text-emerald-300" />
+            <div className="w-10 h-10 rounded-xl bg-[#004776] flex items-center justify-center shrink-0">
+              <Table2 className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-bold text-white">
                   Chi tiết bảng biểu phiên làm việc
                 </h3>
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-white/20 text-white">
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#004776] text-white">
                   {session.unitCode}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-white/80 mt-0.5">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-white/90 mt-0.5">
                 <span className="flex items-center gap-1">
                   <User className="w-3.5 h-3.5" />
                   {session.email} ({session.title || 'Người thực hiện'})
@@ -101,9 +103,17 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => setShowChartModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-lg transition-colors cursor-pointer"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Biểu đồ C1–D2</span>
+            </button>
+            <button
+              type="button"
               onClick={handleExport}
               disabled={isExporting}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
             >
               <Download className="w-3.5 h-3.5" />
               <span>{isExporting ? 'Đang xuất...' : 'Xuất Excel'}</span>
@@ -111,9 +121,9 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
             <button
               type="button"
               onClick={onClose}
-              className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              className="text-white/90 hover:text-white p-1.5 rounded-lg bg-[#004776] hover:bg-[#00385c] transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -233,6 +243,16 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
             Đóng cửa sổ
           </button>
         </div>
+
+        <WorkforceStructureChartModal
+          isOpen={showChartModal}
+          onClose={() => setShowChartModal(false)}
+          unitCode={session.unitCode}
+          unitNameVi={unitName}
+          c1Rows={fullData.C1 || []}
+          d2Rows={fullData.D2 || []}
+          onSelectSheet={(s) => setSelectedSheet(s)}
+        />
       </div>
     </div>
   );

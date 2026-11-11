@@ -4,6 +4,8 @@ import React, { useState, useMemo } from 'react';
 import { Search, AlertOctagon, AlertCircle, Eye, ExternalLink } from 'lucide-react';
 import { AuditReportResult, AuditSeverity } from '@/types/vtvl';
 import { AUDIT_RULES_CATALOG } from '@/services/excel-audit/audit-engine';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
+import { useQueryFilter } from '@/services/query/use-query-filter';
 
 export type AuditTabKey = 'issues' | 'vtvl' | 'evidence' | 'template' | 'rules';
 
@@ -37,26 +39,37 @@ interface Props {
 
 export function AuditResultTabs({ report }: Props) {
   const [activeTab, setActiveTab] = useState<AuditTabKey>('issues');
-  const [severityFilter, setSeverityFilter] = useState<'all' | AuditSeverity>('all');
-  const [sheetFilter, setSheetFilter] = useState<string>('all');
-  const [fileFilter, setFileFilter] = useState<string>('all');
-  const [query, setQuery] = useState<string>('');
   const [vtvlOnlyWithData, setVtvlOnlyWithData] = useState<boolean>(true);
   const [vtvlQuery, setVtvlQuery] = useState<string>('');
 
-  const filteredIssues = useMemo(() => {
-    return report.issues.filter((item) => {
-      if (severityFilter !== 'all' && item.severity !== severityFilter) return false;
-      if (sheetFilter !== 'all' && item.sheet !== sheetFilter) return false;
-      if (fileFilter !== 'all' && item.fileName !== fileFilter) return false;
-      if (query.trim()) {
-        const q = query.toLowerCase();
-        const hay = `${item.unitCode} ${item.ruleId} ${item.cellRef} ${item.title} ${item.suggestion}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [report.issues, severityFilter, sheetFilter, fileFilter, query]);
+  const { params, setParam, data: filteredIssues } = useQueryFilter<
+    typeof report.issues[number],
+    { sev: string; sheet: string; file: string; aq: string }
+  >({
+    queryKey: ['audit-issues'],
+    initialParams: { sev: 'all', sheet: 'all', file: 'all', aq: '' },
+    data: report.issues,
+    syncUrl: true,
+    queryFn: ({ params: p, data }) =>
+      data.filter((item) => {
+        if (p.sev !== 'all' && item.severity !== p.sev) return false;
+        if (p.sheet !== 'all' && item.sheet !== p.sheet) return false;
+        if (p.file !== 'all' && item.fileName !== p.file) return false;
+        if (p.aq.trim()) {
+          const q = p.aq.toLowerCase();
+          if (!`${item.unitCode} ${item.ruleId} ${item.cellRef} ${item.title} ${item.suggestion}`.toLowerCase().includes(q)) return false;
+        }
+        return true;
+      })
+  });
+  const severityFilter = params.sev as 'all' | AuditSeverity;
+  const sheetFilter = params.sheet;
+  const fileFilter = params.file;
+  const query = params.aq;
+  const setSeverityFilter = (v: 'all' | AuditSeverity) => setParam('sev', v);
+  const setSheetFilter = (v: string) => setParam('sheet', v);
+  const setFileFilter = (v: string) => setParam('file', v);
+  const setQuery = (v: string) => setParam('aq', v);
 
   const filteredVtvlRows = useMemo(() => {
     return report.vtvlRecalcRows.filter((r) => {
@@ -123,15 +136,13 @@ export function AuditResultTabs({ report }: Props) {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {report.unitSummaries.length > 1 && (
-                <select aria-label="Lọc theo tệp" value={fileFilter} onChange={(e) => setFileFilter(e.target.value)} className="h-8 rounded-lg border border-[#cbd5e1] bg-white px-2 text-xs font-normal">
-                  <option value="all">Mọi tệp ({report.unitSummaries.length})</option>
-                  {report.unitSummaries.map((u) => <option key={u.fileName} value={u.fileName}>[{u.unitCode}] {u.fileName}</option>)}
-                </select>
+                <div className="w-44">
+                  <ShadcnSelect ariaLabel="Lọc theo tệp" value={fileFilter} onValueChange={setFileFilter} options={[{ value: 'all', label: `Mọi tệp (${report.unitSummaries.length})` }, ...report.unitSummaries.map((u) => ({ value: u.fileName, label: `[${u.unitCode}] ${u.fileName}` }))]} size="sm" />
+                </div>
               )}
-              <select aria-label="Lọc theo biểu" value={sheetFilter} onChange={(e) => setSheetFilter(e.target.value)} className="h-8 rounded-lg border border-[#cbd5e1] bg-white px-2 text-xs font-normal">
-                <option value="all">Mọi biểu (A1–D2)</option>
-                {Object.keys(report.countsBySheet).map((sh) => <option key={sh} value={sh}>Biểu {sh} ({report.countsBySheet[sh]})</option>)}
-              </select>
+              <div className="w-40">
+                <ShadcnSelect ariaLabel="Lọc theo biểu" value={sheetFilter} onValueChange={setSheetFilter} options={[{ value: 'all', label: 'Mọi biểu (A1–D2)' }, ...Object.keys(report.countsBySheet).map((sh) => ({ value: sh, label: `Biểu ${sh} (${report.countsBySheet[sh]})` }))]} size="sm" />
+              </div>
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[#94a3b8]" />
                 <input id="task-5-filter" type="search" aria-label="Tìm mã hoặc nội dung" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm mã, nội dung…" className="h-8 rounded-lg border border-[#cbd5e1] bg-white pl-7 pr-2.5 text-xs w-44 sm:w-48" />
@@ -153,7 +164,7 @@ export function AuditResultTabs({ report }: Props) {
                         <Icon className="w-3.5 h-3.5 shrink-0" /><span>{meta.label}</span>
                       </span>
                       <div className="min-w-0 space-y-0.5">
-                        <div className="font-mono text-xs font-semibold text-[var(--foreground)]">
+                        <div className="text-xs font-semibold text-[var(--foreground)]">
                           {issue.unitCode} · Biểu {issue.sheet} · {issue.cellRef}
                         </div>
                         <p className="text-xs text-[var(--foreground)] font-normal">{issue.title}</p>
@@ -161,7 +172,7 @@ export function AuditResultTabs({ report }: Props) {
                       </div>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
-                      <code title={issue.currentValue} className="font-mono text-xs bg-[#f8fafc] px-2 py-0.5 rounded border border-[#e2e8f0] max-w-[180px] truncate">{issue.currentValue}</code>
+                      <code title={issue.currentValue} className="text-xs bg-[#f8fafc] px-2 py-0.5 rounded border border-[#e2e8f0] max-w-[180px] truncate">{issue.currentValue}</code>
                       <button
                         type="button"
                         onClick={() => setActiveTab(issue.severity === 'evidence' ? 'evidence' : 'rules')}
@@ -210,10 +221,10 @@ export function AuditResultTabs({ report }: Props) {
               <tbody className="divide-y divide-[var(--border-subtle)] bg-white">
                 {filteredVtvlRows.map((r) => (
                   <tr key={`${r.unitCode}-${r.vtvlCode}`} className="hover:bg-[#f8fafc]">
-                    <td className="py-2 px-3 font-mono font-medium text-[var(--primary)]">{r.vtvlCode}</td>
+                    <td className="py-2 px-3 font-medium text-[var(--primary)]">{r.vtvlCode}</td>
                     <td className="py-2 px-3 font-medium text-[var(--foreground)]">{r.vtvlName}</td>
                     <td className="py-2 px-2 text-[var(--fix)] font-normal">{r.careerLevel}</td>
-                    <td className="py-2 px-2 font-mono">{r.method}</td>
+                    <td className="py-2 px-2">{r.method}</td>
                     <td className="py-2 px-2 text-right tabular-nums">{r.recalcB1Hours}h</td>
                     <td className="py-2 px-2 text-right font-medium tabular-nums">{r.recalcNetHours}h</td>
                     <td className="py-2 px-2.5 text-right font-semibold text-[var(--primary)] tabular-nums">{r.recalcPp2Fte}</td>
@@ -237,7 +248,7 @@ export function AuditResultTabs({ report }: Props) {
             {report.evidenceItems.map((ev, idx) => (
               <div key={idx} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                 <div className="space-y-0.5">
-                  <div className="font-semibold text-[var(--foreground)]"><span className="font-mono text-[var(--primary)]">[{ev.unitCode}] {ev.cellRef}</span> · {ev.refCode} — {ev.taskOrPositionName}</div>
+                  <div className="font-semibold text-[var(--foreground)]"><span className="text-[var(--primary)]">[{ev.unitCode}] {ev.cellRef}</span> · {ev.refCode} — {ev.taskOrPositionName}</div>
                   <p className="text-xs text-[var(--ink-muted)]">Gợi ý nguyên nhân: {ev.reasonHint}</p>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-md bg-[var(--warn-soft)] text-[var(--warn)] font-medium text-xs shrink-0">{ev.currentSourceText}</span>
@@ -272,7 +283,7 @@ export function AuditResultTabs({ report }: Props) {
             {AUDIT_RULES_CATALOG.map((r) => (
               <div key={r.code} className="rounded-lg border border-[var(--border-subtle)] bg-white p-3 space-y-1 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono font-semibold text-[var(--primary)]">{r.code} ({r.sheet})</span>
+                  <span className="font-semibold text-[var(--primary)]">{r.code} ({r.sheet})</span>
                   <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[var(--surface-secondary)]">{r.level}</span>
                 </div>
                 <p className="text-[var(--foreground)]">{r.desc}</p>

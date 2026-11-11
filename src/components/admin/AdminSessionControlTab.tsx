@@ -15,6 +15,7 @@ import { getActivityLogs, ActivityLogEntry } from '@/services/telemetry/activity
 import { getActiveHcmuteUnits } from '@/configs/hcmute-units';
 import { HcmuteUnit } from '@/types/vtvl';
 import { AdminActivityLogsCard } from './AdminActivityLogsCard';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 
 const PRESET_TITLES = [
   'Trưởng phòng', 'Phó Trưởng phòng', 'Trưởng khoa', 'Phó Trưởng khoa',
@@ -202,31 +203,26 @@ export function AdminSessionControlTab() {
 
           <div className="space-y-1">
             <label className="block text-xs font-medium text-[#004776]">Đơn vị công tác:</label>
-            <select
+            <ShadcnSelect
               value={newUnitCode}
-              onChange={(e) => setNewUnitCode(e.target.value)}
-              className="w-full h-10 px-3 text-xs bg-white border border-[#cbd5e1] rounded-lg text-[#004776] font-normal focus:ring-2 focus:ring-[#004776]/20 focus:outline-none"
-            >
-              {availableUnits.map((u) => (
-                <option key={u.code} value={u.code}>
-                  [{u.code}] {u.nameVi}
-                </option>
-              ))}
-            </select>
+              onValueChange={setNewUnitCode}
+              options={availableUnits.map((u) => ({ value: u.code, label: `[${u.code}] ${u.nameVi}` }))}
+              size="md"
+              searchable={true}
+            />
           </div>
 
           <div className="space-y-1">
             <label className="block text-xs font-medium text-[#004776]">Chức vụ người điền:</label>
             <div className="flex gap-2">
-              <select
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                className="w-full h-10 px-3 text-xs bg-white border border-[#cbd5e1] rounded-lg text-[#004776] font-normal focus:ring-2 focus:ring-[#004776]/20 focus:outline-none"
-              >
-                {PRESET_TITLES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+              <div className="flex-1">
+                <ShadcnSelect
+                  value={newTitle}
+                  onValueChange={setNewTitle}
+                  options={PRESET_TITLES.map((t) => ({ value: t, label: t }))}
+                  size="md"
+                />
+              </div>
               <button
                 type="submit"
                 className="inline-flex items-center gap-1.5 h-10 px-4 bg-[#004776] hover:bg-[#00385c] text-white font-medium rounded-lg text-xs transition-colors cursor-pointer shrink-0 shadow-2xs"

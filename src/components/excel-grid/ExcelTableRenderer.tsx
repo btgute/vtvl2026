@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { ExcelSheetMeta, GenericGridRow } from './excel-grid-types';
 import { ExcelDataCell } from './ExcelDataCell';
 import { ExcelRowCardEditor } from './ExcelRowCardEditor';
 import { TableDeleteConfirmModal } from './TableDeleteConfirmModal';
 import { TableControlBar } from './TableControlBar';
 import { ArrowUpDown, Plus, Trash2, Copy } from 'lucide-react';
+import { useQueryFilter } from '@/services/query/use-query-filter';
 
 interface ExcelTableRendererProps {
   meta: ExcelSheetMeta;
@@ -26,59 +27,67 @@ interface ExcelTableRendererProps {
   canNext?: boolean;
 }
 
+type TableQueryFilterParams = {
+  q: string;
+  filter: 'all' | 'touched' | 'incomplete';
+  sort: string;
+  order: 'asc' | 'desc';
+};
+
 export function ExcelTableRenderer({
   meta, rows, dynamicOptionsMap,
   isC1Unlocked = false, touchedCells, onCellTouch, onCellChange,
   onAddRow, onSplitRow, onDeleteRow
 }: ExcelTableRendererProps) {
-  const [searchTerm, setSearchTerm] = useState('');
   const [density, setDensity] = useState<'compact' | 'comfortable'>('comfortable');
-  const [filterMode, setFilterMode] = useState<'all' | 'touched' | 'incomplete'>('all');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
-  const [sortField, setSortField] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletedRowBackup, setDeletedRowBackup] = useState<{ row: GenericGridRow; index: number } | null>(null);
   const [mobileViewMode, setMobileViewMode] = useState<'table' | 'cards'>('table');
 
   const isC1Locked = meta.key === 'C1' && !isC1Unlocked;
 
+  const { params, setParam, setParams, data: processedRows } = useQueryFilter<GenericGridRow, TableQueryFilterParams>({
+    queryKey: ['excel-sheet-rows', meta.key],
+    initialParams: { q: '', filter: 'all', sort: '', order: 'asc' },
+    data: rows,
+    syncUrl: true,
+    queryFn: ({ params: p, data }) => {
+      let res = [...data];
+      if (p.filter === 'touched') {
+        res = res.filter((r) => meta.columns.some((c) => touchedCells?.has(`${r.id}_${c.field}`)));
+      } else if (p.filter === 'incomplete') {
+        res = res.filter((r) => meta.columns.some((c) => c.required && !String(r[c.field] ?? '').trim()));
+      }
+      if (p.q.trim()) {
+        const term = p.q.trim().toLowerCase();
+        res = res.filter((r) => Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(term)));
+      }
+      if (p.sort) {
+        res.sort((a, b) => {
+          const valA = a[p.sort] ?? '';
+          const valB = b[p.sort] ?? '';
+          if (typeof valA === 'number' && typeof valB === 'number') {
+            return p.order === 'asc' ? valA - valB : valB - valA;
+          }
+          return p.order === 'asc'
+            ? String(valA).localeCompare(String(valB), 'vi')
+            : String(valB).localeCompare(String(valA), 'vi');
+        });
+      }
+      return res;
+    }
+  });
+
   const handleSort = (field: string) => {
-    if (sortField === field) {
-      if (sortOrder === 'asc') setSortOrder('desc');
-      else { setSortField(null); setSortOrder('asc'); }
+    if (params.sort === field) {
+      if (params.order === 'asc') setParam('order', 'desc');
+      else setParams({ sort: '', order: 'asc' });
     } else {
-      setSortField(field);
-      setSortOrder('asc');
+      setParams({ sort: field, order: 'asc' });
     }
   };
-
-  const processedRows = useMemo(() => {
-    let res = [...rows];
-    if (filterMode === 'touched') {
-      res = res.filter((r) => meta.columns.some((c) => touchedCells?.has(`${r.id}_${c.field}`)));
-    } else if (filterMode === 'incomplete') {
-      res = res.filter((r) => meta.columns.some((c) => c.required && !String(r[c.field] ?? '').trim()));
-    }
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      res = res.filter((r) => Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(term)));
-    }
-    if (sortField) {
-      res.sort((a, b) => {
-        const valA = a[sortField] ?? '';
-        const valB = b[sortField] ?? '';
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          return sortOrder === 'asc' ? valA - valB : valB - valA;
-        }
-        return sortOrder === 'asc'
-          ? String(valA).localeCompare(String(valB), 'vi')
-          : String(valB).localeCompare(String(valA), 'vi');
-      });
-    }
-    return res;
-  }, [rows, searchTerm, filterMode, sortField, sortOrder, meta.columns, touchedCells]);
 
   const allSelected = processedRows.length > 0 && processedRows.every((r) => selectedRowIds.has(r.id));
   const toggleSelectAll = () => {
@@ -118,15 +127,15 @@ export function ExcelTableRenderer({
         rowsCount={processedRows.length}
         selectedCount={selectedRowIds.size}
         isC1Locked={isC1Locked}
-        searchTerm={searchTerm}
-        filterMode={filterMode}
+        searchTerm={params.q}
+        filterMode={params.filter}
         density={density}
         isFullscreen={isFullscreen}
         mobileViewMode={mobileViewMode}
         onMobileViewModeChange={setMobileViewMode}
         onAddRow={onAddRow}
-        onSearchChange={setSearchTerm}
-        onFilterModeChange={setFilterMode}
+        onSearchChange={(val) => setParam('q', val)}
+        onFilterModeChange={(mode) => setParam('filter', mode)}
         onDensityChange={setDensity}
         onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
       />

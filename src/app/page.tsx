@@ -134,7 +134,7 @@ export default function HomePage() {
                 <Building2 className="w-3.5 h-3.5 text-[var(--primary)]" />
                 <span>Đơn vị đang thực hiện</span>
               </span>
-              <span className="font-mono font-semibold text-[var(--primary)]">[{activeUnit.code}]</span>
+              <span className="font-semibold text-[var(--primary)]">[{activeUnit.code}]</span>
             </div>
             <div className="text-sm font-semibold text-[var(--foreground)]">
               {activeUnit.nameVi}
@@ -199,7 +199,7 @@ export default function HomePage() {
               {logs.slice(0, 5).map((log) => (
                 <li key={log.id} className="py-2 text-xs">
                   <div className="font-medium text-[var(--foreground)]">
-                    <span className="font-mono font-semibold text-[var(--primary)] mr-1">[{log.unitCode}]</span>
+                    <span className="font-semibold text-[var(--primary)] mr-1">[{log.unitCode}]</span>
                     <span>{log.details}</span>
                   </div>
                   <div className="text-[11px] text-[var(--ink-muted)] mt-0.5">

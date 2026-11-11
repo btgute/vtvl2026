@@ -145,7 +145,7 @@ export default function RaSoatPage() {
               <div className="flex flex-wrap items-center gap-2 min-w-0">
                 <div className="inline-flex items-center gap-1.5 text-xs text-[#476885]">
                   <span className="w-5 h-5 rounded bg-emerald-600 text-white font-semibold text-[10px] flex items-center justify-center shrink-0">X</span>
-                  <span className="font-mono font-medium text-[var(--foreground)] truncate max-w-[200px]">{currentFileName}</span>
+                  <span className="font-medium text-[var(--foreground)] truncate max-w-[200px]">{currentFileName}</span>
                   <span>· Lúc {checkedAtTime}</span>
                 </div>
                 <button id="task-5-run" type="button" onClick={() => void handleAuditActiveUnit(activeUnit, false)} disabled={auditing} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-[#cbd5e1] bg-white text-xs font-medium text-[var(--foreground)] cursor-pointer hover:bg-[#f8fafc]">

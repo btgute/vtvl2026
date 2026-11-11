@@ -30,6 +30,7 @@ interface ScientificWorkspaceCardProps {
   onToggleOrderMode: (mode: SheetOrderMode) => void;
   onOpenGuidance: () => void;
   onOpenQualityModal: () => void;
+  onOpenChartModal?: () => void;
   onSaveSheet: () => void;
   onSaveAndNext: () => void;
   onExportWorkbook: () => void;
@@ -69,6 +70,7 @@ export function ScientificWorkspaceCard(props: ScientificWorkspaceCardProps) {
         onSwitchSession={props.onSwitchSession}
         onToggleOrderMode={props.onToggleOrderMode}
         onOpenQualityModal={props.onOpenQualityModal}
+        onOpenChartModal={props.onOpenChartModal}
         onSaveSheet={props.onSaveSheet}
         onSaveAndNext={props.onSaveAndNext}
         onExportWorkbook={props.onExportWorkbook}

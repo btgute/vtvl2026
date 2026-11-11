@@ -10,8 +10,9 @@ import {
 } from '@/services/telemetry/operator-session';
 import {
   UserCheck, Building2, Briefcase, Mail, History,
-  ArrowRight, X, ChevronDown, Sparkles, AlertCircle
+  ArrowRight, X, Info, AlertCircle
 } from 'lucide-react';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 import {
   OperatorServerWorkbookPicker,
   ServerLookupItem
@@ -118,17 +119,17 @@ export function OperatorSessionModal({
       tabIndex={-1}
     >
       <div
-        className="relative w-full max-w-xl max-h-[92dvh] sm:max-h-[88dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-xl max-h-[92dvh] sm:max-h-[88dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-xl border border-[#cbd5e1] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-linear-to-r from-[#004776] to-[#00385c] text-white shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-[#005fa3] text-white shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
-              <UserCheck className="w-5 h-5 text-emerald-300" />
+            <div className="w-10 h-10 rounded-xl bg-[#004776] flex items-center justify-center shrink-0">
+              <UserCheck className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white">Thông tin phiên làm việc</h3>
-              <p className="text-xs text-white/80">
+              <p className="text-xs text-white/90">
                 Email người thực hiện dùng để tra cứu hồ sơ cũ và ghi nhật ký thao tác
               </p>
             </div>
@@ -138,9 +139,9 @@ export function OperatorSessionModal({
               type="button"
               onClick={onClose}
               aria-label="Đóng cửa sổ"
-              className="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              className="text-white/90 hover:text-white p-1.5 rounded-lg bg-[#004776] hover:bg-[#00385c] transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -208,7 +209,7 @@ export function OperatorSessionModal({
             />
             {!isSearching && !lookupError && email.trim().length >= 5 && serverWorkbooks.length === 0 && (
               <p className="text-[11px] text-[#64748b] bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1 mt-1 font-medium">
-                <Sparkles className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                <Info className="w-3.5 h-3.5 text-[#005fa3] shrink-0" />
                 <span>Chưa có hồ sơ máy chủ cho email này. Bạn có thể chọn đơn vị bên dưới để tạo phiên mới.</span>
               </p>
             )}
@@ -217,49 +218,25 @@ export function OperatorSessionModal({
             <label className="block text-xs font-bold text-[#004776]">
               Đơn vị công tác <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#004776]">
-                <Building2 className="w-4 h-4" />
-              </div>
-              <select
-                value={unitCode}
-                onChange={(e) => { setUnitCode(e.target.value); setSelectedWorkbookId(undefined); }}
-                className="w-full pl-10 pr-9 py-2.5 bg-white border border-[#cbd5e1] rounded-xl text-xs sm:text-sm font-semibold text-[#004776] focus:ring-2 focus:ring-[#004776] focus:border-[#004776] outline-none cursor-pointer appearance-none shadow-2xs truncate"
-              >
-                {QD2266_GROUPED_UNITS_CATALOG.map((group) => (
-                  <optgroup key={group.groupLabel} label={group.groupLabel}>
-                    {group.units.map((u) => (
-                      <option key={u.code} value={u.code}>[{u.code}] {u.nameVi}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-[#64748b]">
-                <ChevronDown className="w-4 h-4" />
-              </div>
-            </div>
+            <ShadcnSelect
+              value={unitCode}
+              ariaLabel="Đơn vị công tác"
+              options={QD2266_GROUPED_UNITS_CATALOG.flatMap((group) =>
+                group.units.map((u) => ({ value: u.code, label: `[${u.code}] ${u.nameVi}` }))
+              )}
+              onChange={(val) => { setUnitCode(val); setSelectedWorkbookId(undefined); }}
+            />
           </div>
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-[#004776]">
               Chức vụ người điền <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#004776]">
-                <Briefcase className="w-4 h-4" />
-              </div>
-              <select
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 bg-white border border-[#cbd5e1] rounded-xl text-xs sm:text-sm font-semibold text-[#004776] focus:ring-2 focus:ring-[#004776] focus:border-[#004776] outline-none cursor-pointer appearance-none shadow-2xs"
-              >
-                {COMMON_TITLES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-[#64748b]">
-                <ChevronDown className="w-4 h-4" />
-              </div>
-            </div>
+            <ShadcnSelect
+              value={title}
+              ariaLabel="Chức vụ người điền"
+              options={COMMON_TITLES.map((t) => ({ value: t, label: t }))}
+              onChange={(val) => setTitle(val)}
+            />
             {title === 'Khác (tự nhập)' && (
               <input
                 type="text"
@@ -267,7 +244,7 @@ export function OperatorSessionModal({
                 value={customTitle}
                 onChange={(e) => setCustomTitle(e.target.value)}
                 placeholder="Nhập tên chức vụ cụ thể..."
-                className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#004776] outline-hidden text-[#004776] font-semibold mt-1.5 shadow-2xs"
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-[#cbd5e1] focus:ring-2 focus:ring-[#005fa3] outline-hidden text-[#004776] font-semibold mt-1.5 shadow-2xs"
               />
             )}
           </div>
@@ -283,7 +260,7 @@ export function OperatorSessionModal({
             )}
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-xl shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#005fa3] hover:bg-[#004776] rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <span>{serverWorkbooks.length > 0 ? 'Tiếp tục hồ sơ' : 'Xác nhận & Bắt đầu'}</span>
               <ArrowRight className="w-4 h-4" />

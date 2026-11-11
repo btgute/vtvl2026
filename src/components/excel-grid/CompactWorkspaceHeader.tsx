@@ -5,7 +5,7 @@ import { ExcelSheetMeta } from './excel-grid-types';
 import { HcmuteUnit } from '@/types/vtvl';
 import {
   BookOpen, HelpCircle, Building2, CheckCircle2,
-  Clock, AlertTriangle, Layers, ChevronRight, X, Sparkles
+  Clock, AlertTriangle, Layers
 } from 'lucide-react';
 
 interface CompactWorkspaceHeaderProps {

@@ -11,6 +11,7 @@ import { ExcelSheetKey } from './excel-grid-types';
 import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
 import { DataQualityReportModal } from './DataQualityReportModal';
 import { OperatorSessionModal } from './OperatorSessionModal';
+import { WorkforceStructureChartModal } from './WorkforceStructureChartModal';
 import { SyncStatusBar } from './SyncStatusBar';
 import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
@@ -44,6 +45,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showQualityModal, setShowQualityModal] = useState(false);
   const [showGuidanceModal, setShowGuidanceModal] = useState(false);
+  const [showChartModal, setShowChartModal] = useState(false);
   const [dirtySheets, setDirtySheets] = useState<Set<ExcelSheetKey>>(new Set());
 
   const markSheetDirty = (sheetKey: ExcelSheetKey) => {
@@ -137,6 +139,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onToggleOrderMode={setOrderMode}
         onOpenGuidance={() => setShowGuidanceModal(true)}
         onOpenQualityModal={() => setShowQualityModal(true)}
+        onOpenChartModal={() => setShowChartModal(true)}
         onSaveSheet={handleSave}
         onSaveAndNext={handleSaveAndNext}
         onExportWorkbook={exportFullWorkbook}
@@ -221,6 +224,16 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         isOpen={showQualityModal}
         onClose={() => setShowQualityModal(false)}
         report={qualityReport}
+        onSelectSheet={handleSelectSheetSafe}
+      />
+
+      <WorkforceStructureChartModal
+        isOpen={showChartModal}
+        onClose={() => setShowChartModal(false)}
+        unitCode={unitCode}
+        unitNameVi={currentUnit.nameVi}
+        c1Rows={data.C1 || []}
+        d2Rows={data.D2 || []}
         onSelectSheet={handleSelectSheetSafe}
       />
 

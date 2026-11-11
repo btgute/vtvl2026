@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Split, Plus, Trash2, ArrowDownToLine, Calculator, CheckCircle2 } from 'lucide-react';
 import { DM_CHUC_DANH_TT31_TABLE } from '@/configs/hcmute-erd-tables';
 import { NgachAllocationRow, ProposedVtvlRow, UnitGroupKind, UnitScaleMetrics } from '@/types/vtvl';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 
 interface Props {
   unitCode: string;
@@ -200,7 +201,7 @@ export function UnitScaleAndNgachTool({
               B. Nhân sự theo mã ngạch đối chiếu bảng lương tháng 9/2026
             </h3>
             <p className="text-xs text-[var(--ink-muted)]">
-              Gõ số người từng mã ngạch như trên bảng lương (ví dụ <code className="font-mono font-bold">V.07.01.01</code>, <code className="font-mono font-bold">V.07.01.02</code>, <code className="font-mono font-bold">01.003</code>). Trưởng/Phó đơn vị hoặc người giữ ngạch giảng viên nhưng làm vị trí khác: bấm <strong>Tách</strong> rồi chọn vị trí việc làm đang đảm nhận.
+              Gõ số người từng mã ngạch như trên bảng lương (ví dụ <code className="font-bold">V.07.01.01</code>, <code className="font-bold">V.07.01.02</code>, <code className="font-bold">01.003</code>). Trưởng/Phó đơn vị hoặc người giữ ngạch giảng viên nhưng làm vị trí khác: bấm <strong>Tách</strong> rồi chọn vị trí việc làm đang đảm nhận.
             </p>
           </div>
 
@@ -215,20 +216,18 @@ export function UnitScaleAndNgachTool({
               <div key={row.id} className={`grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2.5 rounded-xl border ${row.isSplitRow ? 'border-[var(--primary)]/40 bg-[var(--primary)]/5' : 'border-[var(--border)] bg-[var(--sheet)]'}`}>
                 <div className="sm:col-span-2">
                   <label className="block sm:hidden text-xs font-bold mb-0.5">Mã ngạch</label>
-                  <input type="text" list="hcmute-ngach-datalist" aria-label={`Mã ngạch dòng ${idx + 1}`} value={row.ngachCode} onChange={(e) => handleUpdateNgachRow(row.id, { ngachCode: e.target.value })} placeholder="V.07.01.02" className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs sm:text-sm font-mono font-bold text-[var(--primary)]" />
+                  <input type="text" list="hcmute-ngach-datalist" aria-label={`Mã ngạch dòng ${idx + 1}`} value={row.ngachCode} onChange={(e) => handleUpdateNgachRow(row.id, { ngachCode: e.target.value })} placeholder="V.07.01.02" className="w-full h-9 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 text-xs sm:text-sm font-bold text-[var(--primary)]" />
                 </div>
                 <div className="sm:col-span-3">
                   <span className="text-xs font-semibold text-[var(--foreground)] block truncate" title={row.ngachName}>{row.isSplitRow ? `↳ [Dòng tách] ${row.ngachName}` : row.ngachName}</span>
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block sm:hidden text-xs font-bold mb-0.5">Số người</label>
-                  <input type="number" min={0} aria-label={`Số người mã ngạch ${row.ngachCode}`} value={row.count} onChange={(e) => handleUpdateNgachRow(row.id, { count: Math.max(0, Number(e.target.value)) })} className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs sm:text-sm font-extrabold text-right tabular-nums" />
+                  <input type="number" min={0} aria-label={`Số người mã ngạch ${row.ngachCode}`} value={row.count} onChange={(e) => handleUpdateNgachRow(row.id, { count: Math.max(0, Number(e.target.value)) })} className="w-full h-9 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 text-xs sm:text-sm font-extrabold text-right tabular-nums" />
                 </div>
                 <div className="sm:col-span-3">
                   <label className="block sm:hidden text-xs font-bold mb-0.5">Xếp vào vị trí việc làm</label>
-                  <select aria-label={`Vị trí việc làm của mã ngạch ${row.ngachCode}`} value={row.targetPositionId} onChange={(e) => handleUpdateNgachRow(row.id, { targetPositionId: e.target.value })} className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs sm:text-sm font-semibold">
-                    {positions.map((pos) => <option key={pos.id} value={pos.id}>[{unitCode}-{pos.vtvlSuffix}] {pos.specificName}</option>)}
-                  </select>
+                  <ShadcnSelect ariaLabel={`Vị trí việc làm của mã ngạch ${row.ngachCode}`} value={row.targetPositionId} onValueChange={(v) => handleUpdateNgachRow(row.id, { targetPositionId: v })} options={positions.map((pos) => ({ value: pos.id, label: `[${unitCode}-${pos.vtvlSuffix}] ${pos.specificName}` }))} size="cell-comfortable" />
                 </div>
                 <div className="sm:col-span-2 flex items-center justify-end gap-1.5">
                   <button type="button" onClick={() => handleSplitNgachRow(row, idx)} title="Tách dòng mã ngạch này để xếp cho Lãnh đạo / Kiêm nhiệm vị trí khác" className="inline-flex items-center gap-1 min-h-[38px] px-2.5 rounded-lg border border-[var(--primary)]/40 bg-[var(--background)] hover:border-[var(--primary)] text-xs font-bold text-[var(--primary)] cursor-pointer">

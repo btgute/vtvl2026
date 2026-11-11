@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Building2, Save, AlertCircle } from 'lucide-react';
 import { HcmuteUnit, UnitGroupKind } from '@/types/vtvl';
 import { saveAdminUnit } from '@/services/units/unit-management';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 
 interface AdminUnitEditModalProps {
   isOpen: boolean;
@@ -93,16 +94,16 @@ export function AdminUnitEditModal({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
     >
       <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[88dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 bg-linear-to-r from-[#004776] to-[#00385c] text-white shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 bg-[#005fa3] text-white shrink-0 border-b border-[#004776]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+            <div className="w-9 h-9 rounded-xl bg-[#004776] flex items-center justify-center">
               <Building2 className="w-5 h-5 text-emerald-300" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-white">
                 {isEditing ? `Chỉnh sửa đơn vị [${unit?.code}]` : 'Thêm đơn vị mới'}
               </h3>
-              <p className="text-[11px] text-white/80">
+              <p className="text-[11px] text-white/90">
                 Đồng bộ vào danh mục đơn vị trong toàn bộ 15 bảng tính
               </p>
             </div>
@@ -110,7 +111,7 @@ export function AdminUnitEditModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-[#004776] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -139,15 +140,12 @@ export function AdminUnitEditModal({
 
             <div className="space-y-1">
               <label className="block text-xs font-bold text-[#004776]">Khối phân nhóm *</label>
-              <select
+              <ShadcnSelect
                 value={group}
-                onChange={(e) => setGroup(e.target.value as UnitGroupKind)}
-                className="w-full px-3 py-2 text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-semibold focus:ring-2 focus:ring-[#004776] focus:outline-none"
-              >
-                {UNIT_GROUPS_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id}>{opt.label}</option>
-                ))}
-              </select>
+                onValueChange={(v) => setGroup(v as UnitGroupKind)}
+                options={UNIT_GROUPS_OPTIONS.map((opt) => ({ value: opt.id, label: opt.label }))}
+                size="md"
+              />
             </div>
           </div>
 

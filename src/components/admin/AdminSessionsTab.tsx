@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search, FileSpreadsheet, Eye, Download, LogIn, Trash2,
@@ -13,6 +13,7 @@ import {
 import { exportUserWorkbookToExcel } from '@/services/excel-export/user-workbook-exporter';
 import { AdminSheetDataModal } from './AdminSheetDataModal';
 import { AdminLocalDraftsCard } from './AdminLocalDraftsCard';
+import { useQueryFilter } from '@/services/query/use-query-filter';
 
 export interface AdminDisplaySession extends EmailSessionRecord {
   id?: string;
@@ -27,7 +28,6 @@ export function AdminSessionsTab() {
   const router = useRouter();
   const [sessions, setSessions] = useState<AdminDisplaySession[]>([]);
   const [localDrafts, setLocalDrafts] = useState<EmailSessionRecord[]>([]);
-  const [search, setSearch] = useState('');
   const [viewingSession, setViewingSession] = useState<EmailSessionRecord | null>(null);
   const [exportingEmail, setExportingEmail] = useState<string | null>(null);
   const [viewingId, setViewingId] = useState<string | null>(null);
@@ -66,16 +66,17 @@ export function AdminSessionsTab() {
     loadSessions();
   }, [loadSessions]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return sessions;
-    return sessions.filter((s) =>
-      s.email.toLowerCase().includes(q) ||
-      s.unitCode.toLowerCase().includes(q) ||
-      s.unitNameVi.toLowerCase().includes(q) ||
-      s.title.toLowerCase().includes(q)
-    );
-  }, [sessions, search]);
+  const { params, setParam, data: filtered } = useQueryFilter<AdminDisplaySession, { sq: string }>({
+    queryKey: ['admin-sessions'], initialParams: { sq: '' }, data: sessions, syncUrl: true,
+    queryFn: ({ params: p, data }) => {
+      const q = p.sq.trim().toLowerCase();
+      return !q ? data : data.filter((s) =>
+        s.email.toLowerCase().includes(q) || s.unitCode.toLowerCase().includes(q) ||
+        s.unitNameVi.toLowerCase().includes(q) || s.title.toLowerCase().includes(q)
+      );
+    }
+  });
+  const search = params.sq;
 
   const handleExport = async (session: AdminDisplaySession) => {
     setExportingEmail(session.email);
@@ -144,7 +145,7 @@ export function AdminSessionsTab() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setParam('sq', e.target.value)}
             placeholder="Tìm theo email, mã đơn vị hoặc tên đơn vị..."
             className="w-full h-10 pl-9 pr-3 text-sm sm:text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
           />

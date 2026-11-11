@@ -10,6 +10,7 @@ import { buildDefaultSpecificVtvlName } from '@/configs/hcmute-nd232-catalog';
 import { TimeSessionRow, ProposedVtvlRow } from '@/types/vtvl';
 import { buildPersonalTimerWorkbookFile, exportPersonalTimerWorkbook } from '@/services/excel-split/personal-timer-export';
 import { getActiveUnitSession, getRealtimeDateYYYYMMDD, recordActivity, saveActiveUnitSession } from '@/services/telemetry/activity-log';
+import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 
 export default function BamGioPage() {
   const [stepMode, setStepMode] = useState<3 | 4>(3);
@@ -171,9 +172,7 @@ export default function BamGioPage() {
               <div className="md:col-span-8 flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <UserCheck className="w-4 h-4 text-[var(--primary)] shrink-0" />
-                  <select id="task-3-vtvl" aria-label="Chọn vị trí việc làm cần đo" value={selectedVtvlSuffix} onChange={(e) => setSelectedVtvlSuffix(e.target.value)} className="w-full h-10 rounded-lg border border-[#cbd5e1] bg-white px-2.5 text-xs sm:text-sm font-medium text-[var(--foreground)] truncate">
-                    {vtvlOptions.map((v) => <option key={v.suffix} value={v.suffix}>{v.code} · {v.name} ({v.level})</option>)}
-                  </select>
+                  <ShadcnSelect id="task-3-vtvl" ariaLabel="Chọn vị trí việc làm cần đo" value={selectedVtvlSuffix} onValueChange={setSelectedVtvlSuffix} options={vtvlOptions.map((v) => ({ value: v.suffix, label: `${v.code} · ${v.name} (${v.level})` }))} size="md" />
                 </div>
                 <input type="text" aria-label="Chức danh và bậc kê khai" value={performerTitle} onChange={(e) => setPerformerTitle(e.target.value)} className="sm:w-44 h-10 rounded-lg border border-[#cbd5e1] bg-white px-2.5 text-xs font-medium text-[var(--ink-muted)]" />
               </div>
@@ -188,13 +187,13 @@ export default function BamGioPage() {
                 {activeTask && (
                   <div className="space-y-2">
                     <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--surface-tint)] px-3.5 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="min-w-0"><span className="font-mono font-semibold text-xs text-[var(--primary)]">{activeTask.fullTaskCode}</span><p className="text-xs sm:text-sm font-medium text-[var(--foreground)]">{activeTask.taskName}</p></div>
+                      <div className="min-w-0"><span className="font-semibold text-xs text-[var(--primary)]">{activeTask.fullTaskCode}</span><p className="text-xs sm:text-sm font-medium text-[var(--foreground)]">{activeTask.taskName}</p></div>
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--foreground)] shrink-0"><Timer className="w-4 h-4 text-[var(--primary)]" /><span className="tabular-nums">{activeTask.defaultMinutesPerProduct.toLocaleString('vi-VN')} phút/SP</span></div>
                     </div>
                     {tasksForPosition.length > 1 && (
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className="text-[11px] font-medium text-[var(--ink-muted)]">Đổi việc:</span>
-                        {tasksForPosition.map((t) => <button key={t.fullTaskCode} type="button" aria-pressed={activeTaskCode === t.fullTaskCode} onClick={() => setActiveTaskCode(t.fullTaskCode)} className={`px-2 py-0.5 rounded-md text-xs font-mono font-semibold border cursor-pointer ${activeTaskCode === t.fullTaskCode ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--foreground)] border-[#cbd5e1]'}`}>{t.fullTaskCode}</button>)}
+                        {tasksForPosition.map((t) => <button key={t.fullTaskCode} type="button" aria-pressed={activeTaskCode === t.fullTaskCode} onClick={() => setActiveTaskCode(t.fullTaskCode)} className={`px-2 py-0.5 rounded-md text-xs font-semibold border cursor-pointer ${activeTaskCode === t.fullTaskCode ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--foreground)] border-[#cbd5e1]'}`}>{t.fullTaskCode}</button>)}
                       </div>
                     )}
                   </div>
@@ -204,7 +203,7 @@ export default function BamGioPage() {
                   <button type="button" onClick={() => setInputMode('manual')} className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-semibold cursor-pointer ${inputMode === 'manual' ? 'bg-[var(--primary)] text-white shadow-2xs' : 'text-[var(--foreground)]'}`}><Edit3 className="w-3.5 h-3.5" /><span>Nhập thủ công</span></button>
                 </div>
                 <div className={inputMode === 'live' ? 'rounded-xl bg-[var(--surface-tint)]/70 border border-[var(--primary)]/20 p-4 grid grid-cols-1 md:grid-cols-12 items-center gap-3' : 'sr-only'}>
-                  <div className="md:col-span-5 text-center space-y-0.5"><div className="text-xs font-medium text-[var(--ink-muted)]">Đồng hồ đo</div><div className="text-3xl font-semibold font-mono text-[var(--foreground)] tracking-wider tabular-nums">{formatTimer(elapsedSec)}</div></div>
+                  <div className="md:col-span-5 text-center space-y-0.5"><div className="text-xs font-medium text-[var(--ink-muted)]">Đồng hồ đo</div><div className="text-3xl font-semibold text-[var(--foreground)] tracking-wider tabular-nums">{formatTimer(elapsedSec)}</div></div>
                   <div className="md:col-span-3 md:border-l md:border-[var(--border-subtle)] md:pl-4 space-y-1"><label htmlFor="live-prod-count" className="block text-xs font-medium text-[var(--ink-muted)]">Số sản phẩm</label><input id="live-prod-count" type="number" min={1} value={productCountInput} onChange={(e) => setProductCountInput(Math.max(1, parseInt(e.target.value || '1', 10)))} className="w-full h-10 rounded-lg border border-[#cbd5e1] bg-white px-3 text-sm font-semibold tabular-nums" /></div>
                   <div className="md:col-span-4 flex items-center justify-end gap-2">
                     <button id="task-3-timer" type="button" onClick={() => setRunning(!running)} className="h-10 px-4 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold cursor-pointer inline-flex items-center gap-1.5">{running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}<span>{running ? 'Tạm dừng' : 'Bắt đầu'}</span></button>
@@ -227,7 +226,7 @@ export default function BamGioPage() {
                       <table className="w-full text-xs border-collapse">
                         <thead className="sticky top-0 z-10"><tr className="bg-[var(--surface-secondary)] border-b border-[var(--border-subtle)]"><th className="py-2 px-3 text-left">Mã CV</th><th className="py-2 px-3 text-left">Lượt</th><th className="py-2 px-3 text-left">Thời gian</th><th className="py-2 px-3 text-right">Phút</th><th className="py-2 px-3 text-right">SP</th><th className="py-2 px-3 text-right">Phút/SP</th><th className="py-2 px-3 text-center">Xóa</th></tr></thead>
                         <tbody className="divide-y divide-[var(--border-subtle)] bg-white">
-                          {sessions.map((s) => (<tr key={s.id}><td className="py-1.5 px-3 font-mono font-medium text-[var(--primary)]">{s.taskCode}</td><td className="py-1.5 px-3 tabular-nums">Lần {s.runNumber}</td><td className="py-1.5 px-3">{s.startTime} – {s.endTime}</td><td className="py-1.5 px-3 text-right tabular-nums">{s.durationMinutes}</td><td className="py-1.5 px-3 text-right tabular-nums">{s.productCount}</td><td className="py-1.5 px-3 text-right font-semibold text-[var(--ok)] tabular-nums">{s.minutesPerProduct}</td><td className="py-1.5 px-3 text-center"><button type="button" onClick={() => commitSessions(sessions.filter((x) => x.id !== s.id))} aria-label={`Xóa bản ghi ${s.taskCode}`} className="text-[var(--fix)] hover:opacity-80 cursor-pointer"><Trash2 className="w-3.5 h-3.5 inline" /></button></td></tr>))}
+                          {sessions.map((s) => (<tr key={s.id}><td className="py-1.5 px-3 font-medium text-[var(--primary)]">{s.taskCode}</td><td className="py-1.5 px-3 tabular-nums">Lần {s.runNumber}</td><td className="py-1.5 px-3">{s.startTime} – {s.endTime}</td><td className="py-1.5 px-3 text-right tabular-nums">{s.durationMinutes}</td><td className="py-1.5 px-3 text-right tabular-nums">{s.productCount}</td><td className="py-1.5 px-3 text-right font-semibold text-[var(--ok)] tabular-nums">{s.minutesPerProduct}</td><td className="py-1.5 px-3 text-center"><button type="button" onClick={() => commitSessions(sessions.filter((x) => x.id !== s.id))} aria-label={`Xóa bản ghi ${s.taskCode}`} className="text-[var(--fix)] hover:opacity-80 cursor-pointer"><Trash2 className="w-3.5 h-3.5 inline" /></button></td></tr>))}
                         </tbody>
                       </table>
                     </div>
@@ -250,12 +249,12 @@ export default function BamGioPage() {
                         const updateRow = (patch: Partial<typeof row>) => setB2Impacts((p) => ({ ...p, [t.fullTaskCode]: { ...row, ...patch } }));
                         return (
                           <tr key={t.fullTaskCode}>
-                            <td className="py-2 px-3"><span className="font-mono font-medium text-[var(--primary)] block">{t.fullTaskCode}</span><span>{t.taskName}</span></td>
-                            <td className="py-2 px-3"><select value={row.factor} onChange={(e) => updateRow({ factor: e.target.value })} className="h-8 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-medium"><option>Số hóa</option><option>Cải tiến quy trình</option><option>Thuê dịch vụ/đặt hàng</option><option>Tự chủ</option><option>Xã hội hóa</option><option>Công việc mới phát sinh</option></select></td>
-                            <td className="py-2 px-3"><select value={row.digitalLevel} onChange={(e) => updateRow({ digitalLevel: e.target.value })} className="h-8 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-medium"><option>Toàn trình</option><option>Một phần</option><option>Chưa số hóa</option></select></td>
-                            <td className="py-2 px-3 text-right"><select value={row.adjustPct} onChange={(e) => updateRow({ adjustPct: Number(e.target.value) })} className="h-8 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-medium tabular-nums"><option value={-30}>-30%</option><option value={-20}>-20%</option><option value={-15}>-15%</option><option value={-10}>-10%</option><option value={0}>0%</option><option value={10}>+10%</option></select></td>
-                            <td className="py-2 px-3 text-right font-mono font-semibold text-[var(--ok)] tabular-nums">{newMinutes} phút/SP</td>
-                            <td className="py-2 px-3"><input type="text" value={row.note} onChange={(e) => updateRow({ note: e.target.value })} className="w-full min-w-[140px] h-8 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-normal" /></td>
+                            <td className="py-2 px-3 align-middle"><span className="font-medium text-[var(--primary)] block">{t.fullTaskCode}</span><span>{t.taskName}</span></td>
+                            <td className="py-2 px-3 align-middle"><ShadcnSelect value={row.factor} onValueChange={(v) => updateRow({ factor: v })} options={['Số hóa', 'Cải tiến quy trình', 'Thuê dịch vụ/đặt hàng', 'Tự chủ', 'Xã hội hóa', 'Công việc mới phát sinh'].map((x) => ({ value: x, label: x }))} size="cell-comfortable" /></td>
+                            <td className="py-2 px-3 align-middle"><ShadcnSelect value={row.digitalLevel} onValueChange={(v) => updateRow({ digitalLevel: v })} options={['Toàn trình', 'Một phần', 'Chưa số hóa'].map((x) => ({ value: x, label: x }))} size="cell-comfortable" /></td>
+                            <td className="py-2 px-3 text-right align-middle"><ShadcnSelect value={String(row.adjustPct)} onValueChange={(v) => updateRow({ adjustPct: Number(v) })} options={[-30, -20, -15, -10, 0, 10].map((x) => ({ value: String(x), label: `${x > 0 ? '+' : ''}${x}%` }))} size="cell-comfortable" /></td>
+                            <td className="py-2 px-3 text-right align-middle font-semibold text-[var(--ok)] tabular-nums">{newMinutes} phút/SP</td>
+                            <td className="py-2 px-3 align-middle"><input type="text" value={row.note} onChange={(e) => updateRow({ note: e.target.value })} className="w-full min-w-[140px] h-9 rounded-md border border-[#cbd5e1] bg-white px-2 text-xs font-normal" /></td>
                           </tr>
                         );
                       })}

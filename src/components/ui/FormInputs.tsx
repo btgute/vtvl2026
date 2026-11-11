@@ -1,8 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Lock } from 'lucide-react';
 import { FormFieldState } from './FormFeedbackPrimitives';
+import { ShadcnSelect, ShadcnSelectOption } from './ShadcnSelect';
+
+export { ShadcnSelect };
+export type { ShadcnSelectOption };
 
 export function resolveControlStateClass(
   externalState: FormFieldState = 'default',
@@ -69,7 +73,7 @@ export function TextInput({
           hasError,
           disabled || state === 'disabled',
           isRo
-        )} ${isRo ? 'pr-8 font-mono font-medium text-[var(--primary)]' : ''} ${className}`}
+        )} ${isRo ? 'pr-8 font-medium text-[var(--primary)]' : ''} ${className}`}
         {...rest}
       />
       {isRo && (
@@ -189,39 +193,47 @@ export function Select({
   onBlur,
   disabled,
   children,
+  value,
+  onChange,
   ...rest
 }: BaseControlProps & React.SelectHTMLAttributes<HTMLSelectElement>) {
-  const [focused, setFocused] = useState(false);
   const hasError = Boolean(errorMessage) || state === 'error';
   const describedBy = hasError ? errorId || `${id}-error` : rest['aria-describedby'];
 
+  const parsedOptions = useMemo<ShadcnSelectOption[]>(() => {
+    const list: ShadcnSelectOption[] = [];
+    React.Children.forEach(children, (child) => {
+      if (React.isValidElement<{ value?: string; children?: React.ReactNode; disabled?: boolean }>(child) && child.type === 'option') {
+        const val = child.props.value !== undefined ? String(child.props.value) : String(child.props.children ?? '');
+        const label = String(React.Children.toArray(child.props.children).join('') || val);
+        list.push({ value: val, label, disabled: child.props.disabled });
+      }
+    });
+    return list;
+  }, [children]);
+
   return (
-    <select
+    <ShadcnSelect
       id={id}
+      value={value !== undefined ? String(value) : ''}
+      options={parsedOptions}
       disabled={disabled || state === 'disabled'}
-      aria-invalid={hasError ? true : undefined}
-      aria-describedby={describedBy}
-      onFocus={(e) => {
-        setFocused(true);
+      hasError={hasError}
+      ariaLabel={rest['aria-label']}
+      ariaDescribedBy={describedBy}
+      className={className}
+      onFocus={() => {
         onFocusChange?.(true);
-        onFocus?.(e);
+        onFocus?.({} as React.FocusEvent<HTMLSelectElement>);
       }}
-      onBlur={(e) => {
-        setFocused(false);
+      onBlur={() => {
         onFocusChange?.(false);
-        onBlur?.(e);
+        onBlur?.({} as React.FocusEvent<HTMLSelectElement>);
       }}
-      className={`w-full h-11 sm:h-10 rounded-lg px-3 text-base sm:text-sm font-normal ${resolveControlStateClass(
-        state,
-        focused,
-        hasError,
-        disabled || state === 'disabled',
-        false
-      )} ${className}`}
-      {...rest}
-    >
-      {children}
-    </select>
+      onChange={(nextVal) => {
+        onChange?.({ target: { value: nextVal } } as React.ChangeEvent<HTMLSelectElement>);
+      }}
+    />
   );
 }
 
@@ -278,7 +290,7 @@ export function SearchableSelect({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="font-mono font-medium text-[var(--primary)] text-xs"
+          className="font-medium text-[var(--primary)] text-xs"
         />
       </div>
     </div>

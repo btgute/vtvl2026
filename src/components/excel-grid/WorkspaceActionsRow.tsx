@@ -9,7 +9,8 @@ import {
   ArrowRight,
   MoreHorizontal,
   RefreshCw,
-  Sparkles,
+  Database,
+  BarChart3,
   Download,
   KeyRound,
   FileSpreadsheet,
@@ -32,6 +33,7 @@ interface WorkspaceActionsRowProps {
   onSwitchSession: () => void;
   onToggleOrderMode: (mode: SheetOrderMode) => void;
   onOpenQualityModal: () => void;
+  onOpenChartModal?: () => void;
   onSaveSheet: () => void;
   onSaveAndNext: () => void;
   onExportWorkbook: () => void;
@@ -50,6 +52,7 @@ export function WorkspaceActionsRow({
   onSwitchSession,
   onToggleOrderMode,
   onOpenQualityModal,
+  onOpenChartModal,
   onSaveSheet,
   onSaveAndNext,
   onExportWorkbook,
@@ -143,6 +146,18 @@ export function WorkspaceActionsRow({
           )}
         </div>
 
+        {onOpenChartModal && (
+          <button
+            type="button"
+            onClick={onOpenChartModal}
+            className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 bg-[#eef5ff] hover:bg-[#e1edf8] border border-[#005fa3]/30 rounded-lg text-xs font-semibold text-[#005fa3] cursor-pointer transition-colors"
+            title="Xem biểu đồ trực quan cơ cấu nhân lực từ Biểu C1 và D2"
+          >
+            <BarChart3 className="w-3.5 h-3.5 text-[#005fa3]" />
+            <span>Biểu đồ C1–D2</span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={onOpenQualityModal}
@@ -165,7 +180,7 @@ export function WorkspaceActionsRow({
           type="button"
           onClick={onSaveAndNext}
           disabled={!canNext}
-          className="inline-flex items-center justify-center gap-1.5 h-10 sm:h-9 px-3.5 bg-[#004776] hover:bg-[#00385c] text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all flex-1 sm:flex-initial"
+          className="inline-flex items-center justify-center gap-1.5 h-10 sm:h-9 px-3.5 bg-[#005fa3] hover:bg-[#004776] text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all flex-1 sm:flex-initial"
         >
           <span>Lưu & sang biểu tiếp</span>
           <ArrowRight className="w-3.5 h-3.5 shrink-0" />
@@ -183,6 +198,16 @@ export function WorkspaceActionsRow({
 
           {showMoreMenu && (
             <div className="absolute right-0 top-full mt-1.5 w-[min(16rem,calc(100vw-2rem))] bg-white rounded-lg border border-[#cbd5e1] shadow-lg z-50 py-1.5">
+              {onOpenChartModal && (
+                <button
+                  type="button"
+                  onClick={() => { onOpenChartModal(); setShowMoreMenu(false); }}
+                  className="w-full text-left px-3.5 py-2.5 sm:py-2 text-xs text-[#005fa3] font-semibold hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+                >
+                  <BarChart3 className="w-3.5 h-3.5 text-[#005fa3]" />
+                  <span>Biểu đồ cơ cấu nhân lực (C1–D2)</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => { onOpenQualityModal(); setShowMoreMenu(false); }}
@@ -212,7 +237,7 @@ export function WorkspaceActionsRow({
                 onClick={() => { onLoadRecommendedVtvls(); setShowMoreMenu(false); }}
                 className="w-full text-left px-3.5 py-2.5 sm:py-2 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[var(--warn)]" />
+                <Database className="w-3.5 h-3.5 text-[#005fa3]" />
                 <span>Nạp gợi ý danh mục VTVL</span>
               </button>
               {activeSheet === 'C1' && !isC1Unlocked && (
