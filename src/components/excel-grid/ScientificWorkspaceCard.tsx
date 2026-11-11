@@ -31,6 +31,7 @@ interface ScientificWorkspaceCardProps {
   onOpenGuidance: () => void;
   onOpenQualityModal: () => void;
   onOpenChartModal?: () => void;
+  onOpenOrgTreeModal?: () => void;
   onSaveSheet: () => void;
   onSaveAndNext: () => void;
   onExportWorkbook: () => void;
@@ -71,6 +72,7 @@ export function ScientificWorkspaceCard(props: ScientificWorkspaceCardProps) {
         onToggleOrderMode={props.onToggleOrderMode}
         onOpenQualityModal={props.onOpenQualityModal}
         onOpenChartModal={props.onOpenChartModal}
+        onOpenOrgTreeModal={props.onOpenOrgTreeModal}
         onSaveSheet={props.onSaveSheet}
         onSaveAndNext={props.onSaveAndNext}
         onExportWorkbook={props.onExportWorkbook}

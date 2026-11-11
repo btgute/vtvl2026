@@ -2,13 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, FileSpreadsheet, LogOut, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, FileSpreadsheet, LogOut, Network } from 'lucide-react';
 
 interface AdminHeaderProps {
   onLogout: () => void;
+  onOpenOrgTree?: () => void;
 }
 
-export function AdminHeader({ onLogout }: AdminHeaderProps) {
+export function AdminHeader({ onLogout, onOpenOrgTree }: AdminHeaderProps) {
   return (
     <div className="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-[#f1f5f9] flex flex-wrap items-center justify-between gap-3 min-h-[64px] sm:min-h-[72px]">
       <div className="flex items-center gap-3 min-w-0">
@@ -31,6 +32,18 @@ export function AdminHeader({ onLogout }: AdminHeaderProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+        {onOpenOrgTree && (
+          <button
+            type="button"
+            onClick={onOpenOrgTree}
+            className="h-10 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#005fa3] hover:bg-[#004776] border border-[#005fa3] rounded-xl transition-colors cursor-pointer flex-1 sm:flex-initial whitespace-nowrap shadow-2xs"
+            title="Xem sơ đồ cây vị trí việc làm và dự kiến công việc của đơn vị"
+          >
+            <Network className="w-4 h-4 text-white shrink-0" />
+            <span>Sơ đồ VTVL dự kiến</span>
+          </button>
+        )}
+
         <Link
           href="/bang-tinh"
           className="h-10 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-semibold text-[#004776] bg-[#f8fafc] hover:bg-[#e2e8f0] border border-[#cbd5e1] rounded-xl transition-colors cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"

@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Database,
   BarChart3,
+  Network,
   Download,
   KeyRound,
   FileSpreadsheet,
@@ -34,6 +35,7 @@ interface WorkspaceActionsRowProps {
   onToggleOrderMode: (mode: SheetOrderMode) => void;
   onOpenQualityModal: () => void;
   onOpenChartModal?: () => void;
+  onOpenOrgTreeModal?: () => void;
   onSaveSheet: () => void;
   onSaveAndNext: () => void;
   onExportWorkbook: () => void;
@@ -53,6 +55,7 @@ export function WorkspaceActionsRow({
   onToggleOrderMode,
   onOpenQualityModal,
   onOpenChartModal,
+  onOpenOrgTreeModal,
   onSaveSheet,
   onSaveAndNext,
   onExportWorkbook,
@@ -146,6 +149,18 @@ export function WorkspaceActionsRow({
           )}
         </div>
 
+        {onOpenOrgTreeModal && (
+          <button
+            type="button"
+            onClick={onOpenOrgTreeModal}
+            className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 bg-[#eef5ff] hover:bg-[#e1edf8] border border-[#005fa3]/30 rounded-lg text-xs font-semibold text-[#005fa3] cursor-pointer transition-colors"
+            title="Xem sơ đồ cây vị trí việc làm và dự kiến công việc của đơn vị"
+          >
+            <Network className="w-3.5 h-3.5 text-[#005fa3]" />
+            <span>Sơ đồ VTVL</span>
+          </button>
+        )}
+
         {onOpenChartModal && (
           <button
             type="button"
@@ -198,7 +213,18 @@ export function WorkspaceActionsRow({
 
           {showMoreMenu && (
             <div className="absolute right-0 top-full mt-1.5 w-[min(16rem,calc(100vw-2rem))] bg-white rounded-lg border border-[#cbd5e1] shadow-lg z-50 py-1.5">
-              {onOpenChartModal && (
+              {onOpenOrgTreeModal && (
+                <button
+                  type="button"
+                  onClick={() => { onOpenOrgTreeModal(); setShowMoreMenu(false); }}
+                  className="w-full text-left px-3.5 py-2.5 sm:py-2 text-xs text-[#005fa3] font-semibold hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+                >
+                  <Network className="w-3.5 h-3.5 text-[#005fa3]" />
+                  <span>Sơ đồ VTVL dự kiến</span>
+                </button>
+              )}
+
+        {onOpenChartModal && (
                 <button
                   type="button"
                   onClick={() => { onOpenChartModal(); setShowMoreMenu(false); }}

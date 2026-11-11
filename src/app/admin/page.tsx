@@ -9,6 +9,7 @@ import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSessionsTab } from '@/components/admin/AdminSessionsTab';
 import { AdminSessionControlTab } from '@/components/admin/AdminSessionControlTab';
 import { AdminUnitsTab } from '@/components/admin/AdminUnitsTab';
+import { UnitOrgTreeModal } from '@/components/admin/UnitOrgTreeModal';
 import { getCurrentOperatorSession } from '@/services/telemetry/operator-session';
 import { getAdminUnits } from '@/services/units/unit-management';
 
@@ -23,6 +24,7 @@ export default function AdminPage() {
   const [activeUnitCode, setActiveUnitCode] = useState('Chưa kích hoạt');
   const [unitCount, setUnitCount] = useState(51);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isOrgTreeModalOpen, setIsOrgTreeModalOpen] = useState(false);
 
   const checkAuthAndLoadStats = useCallback(async () => {
     try {
@@ -134,7 +136,10 @@ export default function AdminPage() {
         {/* Khối Workspace Admin Thống Nhất */}
         <div className="bg-white rounded-[14px] border border-[#e2e8f0] shadow-2xs overflow-hidden min-w-0 max-w-full">
           {/* 1. Phần Tiêu Đề Rút Gọn */}
-          <AdminHeader onLogout={handleLogout} />
+          <AdminHeader
+            onLogout={handleLogout}
+            onOpenOrgTree={() => setIsOrgTreeModalOpen(true)}
+          />
 
           {/* 2. Hàng Status Chips (KPI Rút Gọn) */}
           <div className="px-4 sm:px-5 py-2.5 bg-slate-50/50 border-b border-[#f1f5f9] flex flex-wrap items-center gap-2 min-w-0">
@@ -217,6 +222,13 @@ export default function AdminPage() {
             {activeTab === 'units' && <AdminUnitsTab />}
           </div>
         </div>
+
+        {/* 5. Modal Sơ đồ VTVL dự kiến & Công việc */}
+        <UnitOrgTreeModal
+          isOpen={isOrgTreeModalOpen}
+          onClose={() => setIsOrgTreeModalOpen(false)}
+          defaultUnitCode={getCurrentOperatorSession()?.unitCode || 'FIT'}
+        />
       </div>
     </main>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { X, FileSpreadsheet, Download, Table2, Calendar, User, Building, BarChart3 } from 'lucide-react';
+import { X, FileSpreadsheet, Download, Table2, Calendar, User, Building, BarChart3, Network } from 'lucide-react';
 import { EmailSessionRecord, loadSessionData } from '@/services/telemetry/operator-session';
 import { EXCEL_NATURAL_SHEET_ORDER, ExcelSheetKey, GenericGridRow } from '@/components/excel-grid/excel-grid-types';
 import { EXCEL_SHEET_METAS } from '@/components/excel-grid/excel-sheet-metas';
@@ -9,6 +9,7 @@ import { buildDefaultGridWorkbook } from '@/components/excel-grid/excel-grid-def
 import { exportUserWorkbookToExcel } from '@/services/excel-export/user-workbook-exporter';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
 import { WorkforceStructureChartModal } from '@/components/excel-grid/WorkforceStructureChartModal';
+import { UnitOrgTreeModal } from './UnitOrgTreeModal';
 
 interface AdminSheetDataModalProps {
   session: EmailSessionRecord | null;
@@ -19,6 +20,7 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
   const [selectedSheet, setSelectedSheet] = useState<ExcelSheetKey>('A1');
   const [isExporting, setIsExporting] = useState(false);
   const [showChartModal, setShowChartModal] = useState(false);
+  const [showOrgTreeModal, setShowOrgTreeModal] = useState(false);
 
   const unitName = useMemo(() => {
     if (!session) return '';
@@ -101,6 +103,15 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowOrgTreeModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-lg transition-colors cursor-pointer"
+              title="Xem sơ đồ cây vị trí việc làm và dự kiến công việc của đơn vị"
+            >
+              <Network className="w-3.5 h-3.5" />
+              <span>Sơ đồ VTVL</span>
+            </button>
             <button
               type="button"
               onClick={() => setShowChartModal(true)}
@@ -252,6 +263,13 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
           c1Rows={fullData.C1 || []}
           d2Rows={fullData.D2 || []}
           onSelectSheet={(s) => setSelectedSheet(s)}
+        />
+
+        <UnitOrgTreeModal
+          isOpen={showOrgTreeModal}
+          onClose={() => setShowOrgTreeModal(false)}
+          defaultUnitCode={session.unitCode}
+          workbookData={fullData}
         />
       </div>
     </div>

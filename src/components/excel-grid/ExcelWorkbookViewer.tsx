@@ -12,6 +12,7 @@ import { C1AdminStatusBanner, C1AdminLockModal } from './C1AdminLockModal';
 import { DataQualityReportModal } from './DataQualityReportModal';
 import { OperatorSessionModal } from './OperatorSessionModal';
 import { WorkforceStructureChartModal } from './WorkforceStructureChartModal';
+import { UnitOrgTreeModal } from '@/components/admin/UnitOrgTreeModal';
 import { SyncStatusBar } from './SyncStatusBar';
 import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
@@ -46,6 +47,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   const [showQualityModal, setShowQualityModal] = useState(false);
   const [showGuidanceModal, setShowGuidanceModal] = useState(false);
   const [showChartModal, setShowChartModal] = useState(false);
+  const [showOrgTreeModal, setShowOrgTreeModal] = useState(false);
   const [dirtySheets, setDirtySheets] = useState<Set<ExcelSheetKey>>(new Set());
 
   const markSheetDirty = (sheetKey: ExcelSheetKey) => {
@@ -140,6 +142,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onOpenGuidance={() => setShowGuidanceModal(true)}
         onOpenQualityModal={() => setShowQualityModal(true)}
         onOpenChartModal={() => setShowChartModal(true)}
+        onOpenOrgTreeModal={() => setShowOrgTreeModal(true)}
         onSaveSheet={handleSave}
         onSaveAndNext={handleSaveAndNext}
         onExportWorkbook={exportFullWorkbook}
@@ -235,6 +238,13 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         c1Rows={data.C1 || []}
         d2Rows={data.D2 || []}
         onSelectSheet={handleSelectSheetSafe}
+      />
+
+      <UnitOrgTreeModal
+        isOpen={showOrgTreeModal}
+        onClose={() => setShowOrgTreeModal(false)}
+        defaultUnitCode={unitCode}
+        workbookData={data}
       />
 
       <OperatorSessionModal
