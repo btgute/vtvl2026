@@ -113,7 +113,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
   }, [data, unitCode, currentUnit.nameVi]);
 
   return (
-    <div className="w-full max-w-full min-w-0 bg-white border border-[var(--border)] rounded-xl overflow-hidden flex flex-col">
+    <div className="w-full max-w-full min-w-0 bg-white border border-[var(--border)] rounded-xl flex flex-col">
       {/* 1. HEADER & THANH CÔNG CỤ THỐNG NHẤT */}
       <ScientificWorkspaceCard
         activeSheet={activeSheet}

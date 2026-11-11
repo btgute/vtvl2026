@@ -16,7 +16,7 @@ export function GuidanceDrawerModal({ isOpen, onClose, meta }: GuidanceDrawerMod
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -24,11 +24,11 @@ export function GuidanceDrawerModal({ isOpen, onClose, meta }: GuidanceDrawerMod
       tabIndex={-1}
     >
       <div
-        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[85dvh] animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 bg-linear-to-r from-[#004776] to-[#00385c] text-white">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 bg-linear-to-r from-[#004776] to-[#00385c] text-white shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
               <BookOpen className="w-4 h-4 text-sky-200" />

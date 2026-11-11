@@ -110,7 +110,7 @@ export function OperatorSessionModal({
   if (!isOpen) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -118,10 +118,10 @@ export function OperatorSessionModal({
       tabIndex={-1}
     >
       <div
-        className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-xl max-h-[92dvh] sm:max-h-[88dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 bg-linear-to-r from-[#004776] to-[#00385c] text-white">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-linear-to-r from-[#004776] to-[#00385c] text-white shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
               <UserCheck className="w-5 h-5 text-emerald-300" />
@@ -144,7 +144,7 @@ export function OperatorSessionModal({
             </button>
           )}
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
           {historySessions.length > 0 && !currentSession && (
             <div className="p-3 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#004776]">

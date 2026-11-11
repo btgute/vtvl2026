@@ -76,27 +76,27 @@ export function AdminUnitsTab() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 min-w-0">
       {/* 5. Command bar gộp Tìm kiếm, Bộ lọc và Thao tác */}
-      <div className="flex flex-wrap items-center justify-between gap-3 min-h-[48px] sm:min-h-[52px]">
-        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-          <div className="relative flex-1 min-w-[200px] max-w-md">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 min-h-[48px] sm:min-h-[52px]">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[220px] w-full sm:w-auto">
+          <div className="relative flex-1 min-w-[180px] sm:max-w-md w-full sm:w-auto">
             <Search className="w-4 h-4 text-[#64748b] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Tìm theo mã đơn vị hoặc tên đơn vị..."
-              className="w-full h-10 pl-9 pr-3 text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
+              className="w-full h-10 pl-9 pr-3 text-sm sm:text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
             />
           </div>
 
-          <div className="relative flex items-center">
+          <div className="relative flex items-center w-full sm:w-auto">
             <Filter className="w-3.5 h-3.5 text-[#64748b] absolute left-3 pointer-events-none" />
             <select
               value={selectedGroup}
               onChange={(e) => setSelectedGroup(e.target.value)}
-              className="h-10 pl-8 pr-7 text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none cursor-pointer"
+              className="w-full sm:w-auto h-10 pl-8 pr-7 text-sm sm:text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none cursor-pointer"
             >
               <option value="all">Tất cả các khối ({units.length})</option>
               <option value="khoa-vien">Khoa &amp; Viện đào tạo</option>
@@ -107,23 +107,23 @@ export function AdminUnitsTab() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <button
             type="button"
             onClick={handleResetToDefault}
-            className="h-10 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-[#64748b] hover:text-[#004776] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-xl transition-colors cursor-pointer"
+            className="h-10 inline-flex items-center justify-center gap-1.5 px-3 text-xs font-semibold text-[#64748b] hover:text-[#004776] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-xl transition-colors cursor-pointer"
             title="Khôi phục danh mục về 51 đơn vị chuẩn gốc của HCM-UTE"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
             <span>Khôi phục 51 đơn vị chuẩn</span>
           </button>
 
           <button
             type="button"
             onClick={handleCreate}
-            className="h-10 inline-flex items-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-xl transition-colors cursor-pointer shadow-2xs"
+            className="h-10 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#004776] hover:bg-[#00385c] rounded-xl transition-colors cursor-pointer shadow-2xs flex-1 sm:flex-initial"
           >
-            <PlusCircle className="w-4 h-4" />
+            <PlusCircle className="w-4 h-4 shrink-0" />
             <span>Thêm đơn vị mới</span>
           </button>
         </div>

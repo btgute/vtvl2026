@@ -90,10 +90,10 @@ export function AdminUnitEditModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
     >
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between px-5 py-4 bg-linear-to-r from-[#004776] to-[#00385c] text-white">
+      <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[88dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 bg-linear-to-r from-[#004776] to-[#00385c] text-white shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
               <Building2 className="w-5 h-5 text-emerald-300" />
@@ -116,7 +116,7 @@ export function AdminUnitEditModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-3.5 overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
           {error && (
             <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />

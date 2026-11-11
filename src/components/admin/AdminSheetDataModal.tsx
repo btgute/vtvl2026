@@ -61,11 +61,11 @@ export function AdminSheetDataModal({ session, onClose }: AdminSheetDataModalPro
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs select-none"
     >
-      <div className="relative w-full max-w-6xl max-h-[92vh] bg-white rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-6xl max-h-[94dvh] sm:max-h-[92dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
         {/* Header Modal */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-linear-to-r from-[#004776] to-[#00385c] text-white">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 sm:px-5 py-3 sm:py-3.5 bg-linear-to-r from-[#004776] to-[#00385c] text-white shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
               <Table2 className="w-5 h-5 text-emerald-300" />

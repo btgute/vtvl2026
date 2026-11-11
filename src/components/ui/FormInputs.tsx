@@ -63,7 +63,7 @@ export function TextInput({
           onFocusChange?.(false);
           onBlur?.(e);
         }}
-        className={`w-full h-10 rounded-lg px-3 text-sm font-normal ${resolveControlStateClass(
+        className={`w-full h-11 sm:h-10 rounded-lg px-3 text-base sm:text-sm font-normal ${resolveControlStateClass(
           state,
           focused,
           hasError,
@@ -118,7 +118,7 @@ export function NumberInput({
         onFocusChange?.(false);
         onBlur?.(e);
       }}
-      className={`w-full h-10 rounded-lg px-3 text-sm font-normal tabular-nums ${resolveControlStateClass(
+      className={`w-full h-11 sm:h-10 rounded-lg px-3 text-base sm:text-sm font-normal tabular-nums ${resolveControlStateClass(
         state,
         focused,
         hasError,
@@ -166,7 +166,7 @@ export function DateInput({
         onFocusChange?.(false);
         onBlur?.(e);
       }}
-      className={`w-full h-10 rounded-lg px-3 text-sm font-normal ${resolveControlStateClass(
+      className={`w-full h-11 sm:h-10 rounded-lg px-3 text-base sm:text-sm font-normal ${resolveControlStateClass(
         state,
         focused,
         hasError,
@@ -211,7 +211,7 @@ export function Select({
         onFocusChange?.(false);
         onBlur?.(e);
       }}
-      className={`w-full h-10 rounded-lg px-3 text-sm font-normal ${resolveControlStateClass(
+      className={`w-full h-11 sm:h-10 rounded-lg px-3 text-base sm:text-sm font-normal ${resolveControlStateClass(
         state,
         focused,
         hasError,

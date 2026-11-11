@@ -74,19 +74,24 @@ export function WorkspaceActionsRow({
   }, []);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2.5">
+    <div className="flex flex-wrap items-center justify-between gap-2.5 min-w-0">
       {/* Bên trái: Người thực hiện & đổi phiên (Hiển thị duy nhất tại đây) */}
-      <div className="flex flex-wrap items-center gap-2 text-xs text-[#476885]">
-        <div className="inline-flex items-center gap-1.5 bg-[#f8fafc] h-8 px-2.5 rounded-lg border border-[#e2e8f0]">
-          <User className="w-3.5 h-3.5 text-[#004776]" />
-          <span className="font-medium text-[#004776]">{session?.email || 'tcns@hcmute.edu.vn'}</span>
+      <div className="flex flex-wrap items-center gap-2 text-xs text-[#476885] min-w-0 max-w-full">
+        <div
+          className="inline-flex flex-wrap items-center gap-1.5 bg-[#f8fafc] min-h-[36px] py-1 px-2.5 rounded-lg border border-[#e2e8f0] min-w-0 max-w-full"
+          title={`${session?.email || 'tcns@hcmute.edu.vn'} · ${session?.title || 'Chuyên viên'}`}
+        >
+          <User className="w-3.5 h-3.5 text-[#004776] shrink-0" />
+          <span className="font-medium text-[#004776] truncate max-w-[180px] sm:max-w-[260px]">
+            {session?.email || 'tcns@hcmute.edu.vn'}
+          </span>
           <span className="text-[#94a3b8]">·</span>
-          <span>{session?.title || 'Chuyên viên'}</span>
+          <span className="truncate max-w-[130px] sm:max-w-[180px]">{session?.title || 'Chuyên viên'}</span>
           <span className="text-[#cbd5e1]">|</span>
           <button
             type="button"
             onClick={onSwitchSession}
-            className="font-semibold text-[#004776] hover:underline cursor-pointer"
+            className="font-semibold text-[#004776] hover:underline cursor-pointer shrink-0"
           >
             Đổi phiên
           </button>
@@ -94,8 +99,8 @@ export function WorkspaceActionsRow({
       </div>
 
       {/* Bên phải: Thứ tự biểu · Kiểm tra dữ liệu · Lưu biểu · Lưu & sang biểu tiếp · ⋯ */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative" ref={orderMenuRef}>
+      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+        <div className="relative hidden sm:block" ref={orderMenuRef}>
           <button
             type="button"
             onClick={() => setShowOrderMenu(!showOrderMenu)}
@@ -141,7 +146,7 @@ export function WorkspaceActionsRow({
         <button
           type="button"
           onClick={onOpenQualityModal}
-          className="inline-flex items-center gap-1.5 h-9 px-3 bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-lg text-xs font-medium text-[#004776] cursor-pointer transition-colors"
+          className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-lg text-xs font-medium text-[#004776] cursor-pointer transition-colors"
         >
           <ShieldCheck className="w-3.5 h-3.5 text-[#004776]" />
           <span>Kiểm tra dữ liệu</span>
@@ -150,7 +155,7 @@ export function WorkspaceActionsRow({
         <button
           type="button"
           onClick={onSaveSheet}
-          className="inline-flex items-center gap-1.5 h-9 px-3 bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-lg text-xs font-medium text-[#004776] cursor-pointer transition-colors"
+          className="inline-flex items-center justify-center gap-1.5 h-10 sm:h-9 px-3 bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-lg text-xs font-medium text-[#004776] cursor-pointer transition-colors"
         >
           <Save className="w-3.5 h-3.5 text-[#004776]" />
           <span>Lưu biểu</span>
@@ -160,10 +165,10 @@ export function WorkspaceActionsRow({
           type="button"
           onClick={onSaveAndNext}
           disabled={!canNext}
-          className="inline-flex items-center gap-1.5 h-9 px-3.5 bg-[#004776] hover:bg-[#00385c] text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          className="inline-flex items-center justify-center gap-1.5 h-10 sm:h-9 px-3.5 bg-[#004776] hover:bg-[#00385c] text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all flex-1 sm:flex-initial"
         >
           <span>Lưu & sang biểu tiếp</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 shrink-0" />
         </button>
 
         <div className="relative" ref={moreMenuRef}>
@@ -171,17 +176,33 @@ export function WorkspaceActionsRow({
             type="button"
             onClick={() => setShowMoreMenu(!showMoreMenu)}
             aria-label="Thêm thao tác khác"
-            className="w-9 h-9 inline-flex items-center justify-center bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-lg text-[#004776] cursor-pointer transition-colors"
+            className="w-10 h-10 sm:w-9 sm:h-9 inline-flex items-center justify-center bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-lg text-[#004776] cursor-pointer transition-colors"
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
 
           {showMoreMenu && (
-            <div className="absolute right-0 top-full mt-1.5 w-60 bg-white rounded-lg border border-[#cbd5e1] shadow-lg z-50 py-1.5">
+            <div className="absolute right-0 top-full mt-1.5 w-[min(16rem,calc(100vw-2rem))] bg-white rounded-lg border border-[#cbd5e1] shadow-lg z-50 py-1.5">
+              <button
+                type="button"
+                onClick={() => { onOpenQualityModal(); setShowMoreMenu(false); }}
+                className="sm:hidden w-full text-left px-3.5 py-2.5 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[#004776]" />
+                <span>Kiểm tra dữ liệu 15 biểu</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { onToggleOrderMode(orderMode === 'excel' ? 'technical' : 'excel'); setShowMoreMenu(false); }}
+                className="sm:hidden w-full text-left px-3.5 py-2.5 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+              >
+                <Layers className="w-3.5 h-3.5 text-[#004776]" />
+                <span>Đổi thứ tự ({orderMode === 'excel' ? 'Luồng kỹ thuật' : 'Theo file Excel'})</span>
+              </button>
               <button
                 type="button"
                 onClick={() => { onLoadTcnsData(); setShowMoreMenu(false); }}
-                className="w-full text-left px-3.5 py-2 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-3.5 py-2.5 sm:py-2 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-[#004776]" />
                 <span>Nạp mẫu chuẩn TCNS</span>
@@ -189,7 +210,7 @@ export function WorkspaceActionsRow({
               <button
                 type="button"
                 onClick={() => { onLoadRecommendedVtvls(); setShowMoreMenu(false); }}
-                className="w-full text-left px-3.5 py-2 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-3.5 py-2.5 sm:py-2 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-[var(--warn)]" />
                 <span>Nạp gợi ý danh mục VTVL</span>
@@ -198,7 +219,7 @@ export function WorkspaceActionsRow({
                 <button
                   type="button"
                   onClick={() => { onOpenUnlockModal(); setShowMoreMenu(false); }}
-                  className="w-full text-left px-3.5 py-2 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+                  className="w-full text-left px-3.5 py-2.5 sm:py-2 text-xs text-[#004776] hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
                 >
                   <KeyRound className="w-3.5 h-3.5 text-[var(--warn)]" />
                   <span>Mở khóa chỉnh sửa C1</span>
@@ -209,7 +230,7 @@ export function WorkspaceActionsRow({
                 type="button"
                 onClick={() => { onExportWorkbook(); setShowMoreMenu(false); }}
                 disabled={isExporting}
-                className="w-full text-left px-3.5 py-2 text-xs text-[#004776] font-semibold hover:bg-[#f0f9ff] flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-3.5 py-2.5 sm:py-2 text-xs text-[#004776] font-semibold hover:bg-[#f0f9ff] flex items-center gap-2 cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5 text-[#004776]" />
                 <span>{isExporting ? 'Đang xuất...' : 'Xuất tệp Excel (.xlsx)'}</span>

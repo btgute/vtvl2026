@@ -46,9 +46,9 @@ export function C1AdminLockModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="c1-lock-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-xs p-0 sm:p-4"
     >
-      <div className="bg-white rounded-2xl shadow-2xl border border-[#cbd5e1] w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] w-full max-w-md max-h-[90dvh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between px-5 py-4 bg-[#f8fafc] border-b border-[#e2e8f0]">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-lg bg-[#004776]/10 flex items-center justify-center text-[#004776]">

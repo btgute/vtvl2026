@@ -28,9 +28,29 @@ export function Header() {
     document.documentElement.classList.remove('dark');
   }, []);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) {
+      document.body.style.overflow = '';
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [mobileOpen]);
+
   return (
     <header className="sticky top-0 z-40 bg-[var(--sheet)] border-b border-[var(--border-subtle)]">
-      <div className="w-full max-w-none px-3.5 sm:px-5 lg:px-6 flex h-15 sm:h-16 items-center justify-between gap-3">
+      <div className="w-full max-w-none px-3 sm:px-5 lg:px-6 flex h-14 sm:h-15 lg:h-16 items-center justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-1 min-w-0 shrink-0">
           <Link
             href="/bang-tinh"
@@ -48,7 +68,7 @@ export function Header() {
             <img
               src="/horizontal-ute-logo.png"
               alt="HCM-UTE Logo"
-              className="hidden h-9 w-auto md:block object-contain shrink-0"
+              className="hidden h-8 lg:h-9 w-auto md:block object-contain shrink-0"
             />
           </Link>
           <InfoTip title="Căn cứ pháp lý & Cơ quan thường trực">
@@ -58,7 +78,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <nav aria-label="Điều hướng quy trình nghiệp vụ" className="hidden lg:flex items-center gap-1">
+          <nav aria-label="Điều hướng quy trình nghiệp vụ" className="hidden md:flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = item.href === '/bang-tinh'
@@ -71,7 +91,7 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-[13.5px] transition-colors border ${
+                  className={`inline-flex items-center gap-1.5 px-2.5 lg:px-3 h-9 rounded-lg text-[13px] lg:text-[13.5px] whitespace-nowrap transition-colors border ${
                     active
                       ? 'bg-[var(--surface-tint)] text-[var(--primary)] border-[var(--primary)]/25 font-semibold'
                       : 'text-[var(--foreground)] border-transparent font-medium hover:bg-[var(--surface-secondary)]'
@@ -89,7 +109,7 @@ export function Header() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? 'Đóng danh mục điều hướng' : 'Mở danh mục điều hướng'}
-            className="lg:hidden h-10 w-10 rounded-lg border border-[var(--border)] bg-[var(--sheet)] flex items-center justify-center cursor-pointer"
+            className="md:hidden h-10 w-10 rounded-lg border border-[var(--border)] bg-[var(--sheet)] flex items-center justify-center cursor-pointer"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -97,28 +117,60 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden border-t border-[var(--border-subtle)] bg-[var(--sheet)] px-3.5 py-2.5 space-y-1 shadow-md">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const active = item.href === '/bang-tinh'
-              ? pathname === '/bang-tinh' || pathname === '/tao-tep'
-              : item.href.startsWith('/?view=overview')
-                ? pathname === '/'
-                : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-2.5 px-3 h-10 rounded-lg text-sm ${
-                  active ? 'bg-[var(--primary)] text-white font-semibold' : 'text-[var(--foreground)] font-medium hover:bg-[var(--surface-secondary)]'
-                }`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Danh mục điều hướng"
+          className="md:hidden fixed inset-0 z-50 bg-black/45 flex justify-end"
+          onClick={() => setMobileOpen(false)}
+        >
+          <div
+            className="w-[min(20rem,86vw)] h-dvh bg-[var(--sheet)] border-l border-[var(--border)] p-4 flex flex-col justify-between shadow-xl overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-[var(--foreground)]">Hệ thống VTVL HCM-UTE</div>
+                  <div className="text-xs text-[var(--ink-muted)] truncate">Điều hướng nghiệp vụ</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(false)}
+                  aria-label="Đóng menu"
+                  className="h-10 w-10 rounded-lg border border-[var(--border)] inline-flex items-center justify-center cursor-pointer shrink-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <nav aria-label="Menu di động" className="space-y-1">
+                {NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const active = item.href === '/bang-tinh'
+                    ? pathname === '/bang-tinh' || pathname === '/tao-tep'
+                    : item.href.startsWith('/?view=overview')
+                      ? pathname === '/'
+                      : pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2.5 px-3.5 min-h-[44px] rounded-lg text-sm ${
+                        active ? 'bg-[var(--primary)] text-white font-semibold' : 'text-[var(--foreground)] font-medium hover:bg-[var(--surface-secondary)]'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+            <div className="pt-3 border-t border-[var(--border-subtle)] text-xs text-[var(--ink-subtle)]">
+              Phòng Tổ chức - Nhân sự (TCNS) · Trường Đại học Công nghệ Kỹ thuật TP.HCM (HCM-UTE)
+            </div>
+          </div>
         </div>
       )}
     </header>

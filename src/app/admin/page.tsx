@@ -129,18 +129,18 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f8fafc] py-5 px-3 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <main className="min-h-screen bg-[#f8fafc] py-3 sm:py-5 px-3 sm:px-5 lg:px-6">
+      <div className="max-w-[1680px] mx-auto min-w-0">
         {/* Khối Workspace Admin Thống Nhất */}
-        <div className="bg-white rounded-[14px] border border-[#e2e8f0] shadow-2xs overflow-hidden">
+        <div className="bg-white rounded-[14px] border border-[#e2e8f0] shadow-2xs overflow-hidden min-w-0 max-w-full">
           {/* 1. Phần Tiêu Đề Rút Gọn */}
           <AdminHeader onLogout={handleLogout} />
 
           {/* 2. Hàng Status Chips (KPI Rút Gọn) */}
-          <div className="px-5 py-2.5 bg-slate-50/50 border-b border-[#f1f5f9] flex flex-wrap items-center gap-2.5">
+          <div className="px-4 sm:px-5 py-2.5 bg-slate-50/50 border-b border-[#f1f5f9] flex flex-wrap items-center gap-2 min-w-0">
             {/* Chip 1: Số hồ sơ */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-[#004776] border border-blue-200/70">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-[#004776]" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-[#004776] shrink-0" />
               <span>{sessionCount} hồ sơ</span>
               <button
                 type="button"
@@ -154,7 +154,7 @@ export default function AdminPage() {
 
             {/* Chip 2: Phiên đang thao tác */}
             <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/70 max-w-xs sm:max-w-md truncate"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/70 max-w-[calc(100vw-3rem)] sm:max-w-md truncate min-w-0"
               title={activeUnitCode}
             >
               <UserCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
@@ -163,13 +163,13 @@ export default function AdminPage() {
 
             {/* Chip 3: Số đơn vị đồng bộ */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-800 border border-purple-200/70">
-              <Building2 className="w-3.5 h-3.5 text-purple-700" />
+              <Building2 className="w-3.5 h-3.5 text-purple-700 shrink-0" />
               <span>{unitCount} đơn vị</span>
             </div>
           </div>
 
           {/* 3. Thanh Tab Underline Gọn Gàng */}
-          <div className="px-5 border-b border-[#e2e8f0] flex flex-wrap items-center gap-2 sm:gap-6 bg-white overflow-x-auto scrollbar-none">
+          <div className="px-3.5 sm:px-5 border-b border-[#e2e8f0] flex items-center gap-2 sm:gap-6 bg-white overflow-x-auto no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveTab('sessions')}

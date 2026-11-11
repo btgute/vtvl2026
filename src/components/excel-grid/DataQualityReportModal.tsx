@@ -43,14 +43,14 @@ export function DataQualityReportModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs select-none"
       role="dialog"
       aria-modal="true"
       aria-labelledby="quality-modal-title"
     >
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-[#cbd5e1] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-4xl max-h-[92dvh] sm:max-h-[90dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#cbd5e1] bg-linear-to-r from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0]">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-[#cbd5e1] bg-linear-to-r from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#004776] text-white flex items-center justify-center shadow-xs">
               <ShieldCheck className="w-5 h-5 text-emerald-400" />

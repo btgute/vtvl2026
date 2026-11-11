@@ -75,10 +75,7 @@ export function WorkflowSidebar({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const isCollapsed = !alwaysExpanded && (typeof isCollapsedProp === 'boolean' ? isCollapsedProp : internalCollapsed);
-  const setCollapsed = (val: boolean) => {
-    setInternalCollapsed(val);
-    onToggleCollapse?.(val);
-  };
+  const setCollapsed = (val: boolean) => { setInternalCollapsed(val); onToggleCollapse?.(val); };
   const triggerBtnRef = useRef<HTMLButtonElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
 
@@ -109,7 +106,12 @@ export function WorkflowSidebar({
     };
   }, [unitCode]);
 
-  useEffect(() => { if (drawerOpen) closeBtnRef.current?.focus(); }, [drawerOpen]);
+  useEffect(() => {
+    if (!drawerOpen) { document.body.style.overflow = ''; return; }
+    document.body.style.overflow = 'hidden';
+    closeBtnRef.current?.focus();
+    return () => { document.body.style.overflow = ''; };
+  }, [drawerOpen]);
   const closeDrawer = () => { setDrawerOpen(false); setTimeout(() => triggerBtnRef.current?.focus(), 40); };
 
   const currentStep = activeStep ?? (pathname === '/bam-gio' ? 3 : pathname === '/ra-soat' ? 8 : 1);
@@ -207,28 +209,28 @@ export function WorkflowSidebar({
 
   return (
     <aside aria-label="Quy trình 08 bước HD 07" data-collapsed={isCollapsed ? 'true' : 'false'} className="workflow-sidebar w-full bg-[var(--sheet)] rounded-xl border border-[var(--border-subtle)] lg:sticky lg:top-20 select-none overflow-hidden">
-      {/* MOBILE BAR + BOTTOM SHEET DRAWER */}
-      <div className="lg:hidden px-3 py-2 flex items-center justify-between gap-2">
+      {/* MOBILE/TABLET BAR + BOTTOM SHEET DRAWER */}
+      <div className="lg:hidden px-3 py-2 flex items-center justify-between gap-2.5">
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center justify-between text-xs font-medium text-[var(--primary)]">
-            <span className="truncate">[{activeUnit.code}] Bước {currentStep}/8 — {activeStepObj.shortTitle}</span>
+            <span className="truncate">[{activeUnit.code}] Giai đoạn {currentStep}/8 · {activeStepObj.shortTitle}</span>
             <span className="tabular-nums shrink-0 ml-1">{progressPercent}%</span>
           </div>
           <div className="w-full h-1.5 rounded-full bg-[var(--border)] overflow-hidden" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
             <div className="h-full bg-[var(--primary)] rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
           </div>
         </div>
-        <button ref={triggerBtnRef} type="button" aria-expanded={drawerOpen} aria-haspopup="dialog" onClick={() => setDrawerOpen(true)} className="inline-flex items-center justify-center h-9 px-3 rounded-lg border border-[var(--primary)]/35 bg-[var(--surface-tint)] text-xs font-medium text-[var(--primary)] shrink-0 cursor-pointer">
-          Các bước
+        <button ref={triggerBtnRef} type="button" aria-expanded={drawerOpen} aria-haspopup="dialog" onClick={() => setDrawerOpen(true)} className="inline-flex items-center justify-center h-10 px-3 rounded-lg border border-[var(--primary)]/35 bg-[var(--surface-tint)] text-xs font-semibold text-[var(--primary)] shrink-0 cursor-pointer">
+          Tiến trình
         </button>
       </div>
 
       {drawerOpen && (
-        <div role="dialog" aria-modal="true" aria-label="Quy trình 08 bước Hướng dẫn số 07-HD/BTCTW" onKeyDown={(e) => { if (e.key === 'Escape') closeDrawer(); }} className="lg:hidden fixed inset-0 z-50 bg-black/45 flex items-end justify-center" onClick={closeDrawer}>
-          <div className="w-full max-h-[82vh] overflow-y-auto rounded-t-xl bg-[var(--sheet)] border-t border-[var(--border)] p-4 space-y-3 shadow-lg pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
+        <div role="dialog" aria-modal="true" aria-label="Quy trình 08 bước Hướng dẫn số 07-HD/BTCTW" onKeyDown={(e) => { if (e.key === 'Escape') closeDrawer(); }} className="lg:hidden fixed inset-0 z-50 bg-black/45 flex items-end sm:items-stretch sm:justify-start justify-center" onClick={closeDrawer}>
+          <div className="w-full sm:w-80 max-h-[85dvh] sm:max-h-dvh sm:h-dvh overflow-y-auto rounded-t-2xl sm:rounded-none bg-[var(--sheet)] border-t sm:border-t-0 sm:border-r border-[var(--border)] p-4 space-y-3 shadow-xl pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2.5">
-              <div><div className="text-sm font-semibold text-[var(--foreground)]">Quy trình 08 bước ({progressPercent}%)</div><div className="text-xs text-[var(--ink-muted)]">[{activeUnit.code}] {activeUnit.nameVi}</div></div>
-              <button ref={closeBtnRef} type="button" onClick={closeDrawer} aria-label="Đóng tiến trình" className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-[var(--border)]"><X className="w-4 h-4" /></button>
+              <div className="min-w-0"><div className="text-sm font-semibold text-[var(--foreground)]">Quy trình 08 bước ({progressPercent}%)</div><div className="text-xs text-[var(--ink-muted)] truncate">[{activeUnit.code}] {activeUnit.nameVi}</div></div>
+              <button ref={closeBtnRef} type="button" onClick={closeDrawer} aria-label="Đóng tiến trình" className="h-10 w-10 inline-flex items-center justify-center rounded-lg border border-[var(--border)] shrink-0"><X className="w-4 h-4" /></button>
             </div>
             {renderStagesList(false, true)}
           </div>

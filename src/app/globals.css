@@ -91,7 +91,7 @@ body {
   color: #ffffff !important;
 }
 
-/* Hệ thống phân cấp chữ chuẩn (Typography Hierarchy) */
+/* Hệ thống phân cấp chữ chuẩn (Typography Hierarchy & Responsive Scaling) */
 h1,
 .page-title {
   font-size: 1.5rem;
@@ -101,6 +101,14 @@ h1,
   letter-spacing: -0.015em;
 }
 
+@media (max-width: 639px) {
+  h1,
+  .page-title {
+    font-size: 1.3125rem;
+    line-height: 1.75rem;
+  }
+}
+
 h2,
 h3,
 .section-title {
@@ -108,6 +116,15 @@ h3,
   line-height: 1.625rem;
   font-weight: 600;
   color: var(--foreground);
+}
+
+@media (max-width: 639px) {
+  h2,
+  h3,
+  .section-title {
+    font-size: 1.0625rem;
+    line-height: 1.5rem;
+  }
 }
 
 label,
@@ -131,7 +148,20 @@ th {
   color: var(--foreground);
 }
 
-/* Chuẩn hóa kích thước Form Control: Desktop cao 40px, bo góc 6–8px */
+/* Chống che khuất khi cuộn đến trường lỗi dưới sticky topbar */
+[id],
+input,
+select,
+textarea {
+  scroll-margin-top: 5.25rem;
+}
+
+.overflow-wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Chuẩn hóa kích thước Form Control: Desktop cao 40px, Mobile >= 44px và font 16px chống iOS zoom */
 input:not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
@@ -153,8 +183,10 @@ textarea::placeholder {
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {
-    font-size: 16px;
-    min-height: 40px;
+    font-size: 16px !important;
+  }
+  .vtvl-control {
+    min-height: 44px;
   }
 }
 

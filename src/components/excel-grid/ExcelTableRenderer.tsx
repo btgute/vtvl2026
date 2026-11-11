@@ -40,6 +40,7 @@ export function ExcelTableRenderer({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletedRowBackup, setDeletedRowBackup] = useState<{ row: GenericGridRow; index: number } | null>(null);
+  const [mobileViewMode, setMobileViewMode] = useState<'table' | 'cards'>('table');
 
   const isC1Locked = meta.key === 'C1' && !isC1Unlocked;
 
@@ -121,6 +122,8 @@ export function ExcelTableRenderer({
         filterMode={filterMode}
         density={density}
         isFullscreen={isFullscreen}
+        mobileViewMode={mobileViewMode}
+        onMobileViewModeChange={setMobileViewMode}
         onAddRow={onAddRow}
         onSearchChange={setSearchTerm}
         onFilterModeChange={setFilterMode}
@@ -128,24 +131,26 @@ export function ExcelTableRenderer({
         onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
       />
 
-      {/* MOBILE (< 768px): Card Editor */}
-      <div className="block md:hidden p-3 bg-[#f8fafc]/50">
-        <ExcelRowCardEditor
-          meta={meta}
-          rows={processedRows}
-          dynamicOptionsMap={dynamicOptionsMap}
-          isC1Locked={isC1Locked}
-          touchedCells={touchedCells}
-          onCellTouch={onCellTouch}
-          onCellChange={onCellChange}
-          onAddRow={onAddRow}
-          onSplitRow={onSplitRow}
-          onDeleteRow={(id) => setConfirmDeleteId(id)}
-        />
-      </div>
+      {/* MOBILE CARD MODE (Optional toggle on < 768px) */}
+      {mobileViewMode === 'cards' && (
+        <div className="block md:hidden p-3 bg-[#f8fafc]/50">
+          <ExcelRowCardEditor
+            meta={meta}
+            rows={processedRows}
+            dynamicOptionsMap={dynamicOptionsMap}
+            isC1Locked={isC1Locked}
+            touchedCells={touchedCells}
+            onCellTouch={onCellTouch}
+            onCellChange={onCellChange}
+            onAddRow={onAddRow}
+            onSplitRow={onSplitRow}
+            onDeleteRow={(id) => setConfirmDeleteId(id)}
+          />
+        </div>
+      )}
 
-      {/* DESKTOP (>= 768px): BẢNG DỮ LIỆU */}
-      <div className="hidden md:block flex-1 overflow-x-auto overflow-y-auto max-h-[650px] select-text w-full max-w-full">
+      {/* BẢNG DỮ LIỆU CHÍNH (Cuộn ngang trên mobile/tablet/desktop, giữ khả năng đối chiếu dòng/cột) */}
+      <div className={`${mobileViewMode === 'cards' ? 'hidden md:block' : 'block'} flex-1 overflow-x-auto overflow-y-auto max-h-[650px] select-text w-full max-w-full`}>
         <table className="w-full text-[13.5px] border-collapse">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#f8fafc] text-[#004776] border-b border-[#cbd5e1]">
@@ -217,14 +222,14 @@ export function ExcelTableRenderer({
                     />
                   ))}
                   <td className="w-16 py-1 px-1.5 text-center sticky right-0 z-2 bg-inherit border-l border-[#f1f5f9]">
-                    <div className="flex items-center justify-center gap-1 opacity-75 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
                       {meta.key === 'A1' && (
                         <button
                           type="button"
                           onClick={() => onSplitRow?.(row.id)}
                           aria-label={`Tách nhiệm vụ dòng ${rIdx + 1}`}
                           title="Tách nhiệm vụ"
-                          className="w-7 h-7 inline-flex items-center justify-center text-[#004776] hover:bg-[#e6f0f8] rounded-md cursor-pointer"
+                          className="w-9 h-9 sm:w-8 sm:h-8 inline-flex items-center justify-center text-[#004776] hover:bg-[#e6f0f8] rounded-md cursor-pointer"
                         >
                           <Copy className="w-3.5 h-3.5" />
                         </button>
@@ -235,7 +240,7 @@ export function ExcelTableRenderer({
                           onClick={() => setConfirmDeleteId(row.id)}
                           aria-label={`Xóa dòng ${rIdx + 1}`}
                           title="Xóa dòng"
-                          className="w-7 h-7 inline-flex items-center justify-center text-[var(--fix)] hover:bg-[var(--fix-soft)] rounded-md cursor-pointer"
+                          className="w-9 h-9 sm:w-8 sm:h-8 inline-flex items-center justify-center text-[var(--fix)] hover:bg-[var(--fix-soft)] rounded-md cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

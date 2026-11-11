@@ -137,19 +137,19 @@ export function AdminSessionsTab() {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 min-h-[48px] sm:min-h-[52px]">
-        <div className="relative flex-1 min-w-[240px] max-w-md">
+    <div className="space-y-3 min-w-0">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 min-h-[48px] sm:min-h-[52px]">
+        <div className="relative flex-1 min-w-[200px] sm:max-w-md w-full sm:w-auto">
           <Search className="w-4 h-4 text-[#64748b] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm theo email, mã đơn vị hoặc tên đơn vị..."
-            className="w-full h-10 pl-9 pr-3 text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
+            className="w-full h-10 pl-9 pr-3 text-sm sm:text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <button
             type="button"
             onClick={loadSessions}
