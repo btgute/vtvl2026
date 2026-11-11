@@ -78,7 +78,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <nav aria-label="Điều hướng quy trình nghiệp vụ" className="hidden md:flex items-center gap-1">
+          <nav aria-label="Điều hướng quy trình nghiệp vụ" className="hidden lg:flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = item.href === '/bang-tinh'
@@ -91,7 +91,7 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`inline-flex items-center gap-1.5 px-2.5 lg:px-3 h-9 rounded-lg text-[13px] lg:text-[13.5px] whitespace-nowrap transition-colors border ${
+                  className={`inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-[13.5px] whitespace-nowrap transition-colors border ${
                     active
                       ? 'bg-[var(--surface-tint)] text-[var(--primary)] border-[var(--primary)]/25 font-semibold'
                       : 'text-[var(--foreground)] border-transparent font-medium hover:bg-[var(--surface-secondary)]'
@@ -104,12 +104,20 @@ export function Header() {
             })}
           </nav>
 
+          <Link
+            href="/bang-tinh"
+            className="hidden sm:inline-flex lg:hidden items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-semibold bg-[var(--surface-tint)] text-[var(--primary)] border border-[var(--primary)]/25 whitespace-nowrap"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />
+            <span>Bảng tính 15 sheet</span>
+          </Link>
+
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? 'Đóng danh mục điều hướng' : 'Mở danh mục điều hướng'}
-            className="md:hidden h-10 w-10 rounded-lg border border-[var(--border)] bg-[var(--sheet)] flex items-center justify-center cursor-pointer"
+            className="lg:hidden h-10 w-10 rounded-lg border border-[var(--border)] bg-[var(--sheet)] flex items-center justify-center cursor-pointer"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -121,7 +129,7 @@ export function Header() {
           role="dialog"
           aria-modal="true"
           aria-label="Danh mục điều hướng"
-          className="md:hidden fixed inset-0 z-50 bg-black/45 flex justify-end"
+          className="lg:hidden fixed inset-0 z-50 bg-black/45 flex justify-end"
           onClick={() => setMobileOpen(false)}
         >
           <div

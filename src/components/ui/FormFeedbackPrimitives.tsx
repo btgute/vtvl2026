@@ -135,7 +135,7 @@ export function FormField({
 }
 
 export function SegmentedControl<T extends string>({
-  ariaLabel, options, value, onChange, columnsClass = 'grid-cols-2 lg:grid-cols-4'
+  ariaLabel, options, value, onChange, columnsClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
 }: {
   ariaLabel: string; options: { id: T; label: string; subLabel?: string; disabled?: boolean }[]; value: T; onChange: (next: T) => void; columnsClass?: string;
 }) {
@@ -150,14 +150,14 @@ export function SegmentedControl<T extends string>({
             disabled={opt.disabled}
             aria-pressed={selected}
             onClick={() => onChange(opt.id)}
-            className={`relative flex items-center justify-center gap-1.5 rounded-md px-3 h-9 text-center transition-all duration-150 cursor-pointer ${
+            className={`relative flex items-center justify-center gap-1.5 rounded-md px-3 min-h-[40px] py-1.5 text-center transition-all duration-150 cursor-pointer ${
               selected
                 ? 'bg-[var(--sheet)] border border-[var(--primary)]/35 font-semibold text-[var(--primary)] shadow-2xs'
                 : 'border border-transparent bg-transparent font-medium text-[var(--foreground)] hover:bg-[var(--sheet)]/65 hover:text-[var(--primary)]'
             } disabled:opacity-45 disabled:cursor-not-allowed`}
           >
             {selected && <span className="w-3.5 h-3.5 rounded-full bg-[var(--primary)] text-white inline-flex items-center justify-center shrink-0" aria-hidden="true"><Check className="w-2.5 h-2.5" /></span>}
-            <span className="text-[13.5px] leading-snug">{opt.label}</span>
+            <span className="text-[13px] sm:text-[13.5px] leading-snug">{opt.label}</span>
           </button>
         );
       })}
