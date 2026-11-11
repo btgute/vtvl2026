@@ -1,11 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Search, FileSpreadsheet, Eye, Download, LogIn, Trash2,
-  Calendar, User, RefreshCw, AlertCircle
-} from 'lucide-react';
+import { FileSpreadsheet, AlertCircle } from 'lucide-react';
 import {
   EmailSessionRecord, getAllEmailSessions,
   saveCurrentOperatorSession, loadSessionData
@@ -13,6 +10,8 @@ import {
 import { exportUserWorkbookToExcel } from '@/services/excel-export/user-workbook-exporter';
 import { AdminSheetDataModal } from './AdminSheetDataModal';
 import { AdminLocalDraftsCard } from './AdminLocalDraftsCard';
+import { AdminSessionFilterBar, UserSummaryItem } from './AdminSessionFilterBar';
+import { AdminSessionTableRow } from './AdminSessionTableRow';
 import { useQueryFilter } from '@/services/query/use-query-filter';
 
 export interface AdminDisplaySession extends EmailSessionRecord {
@@ -66,17 +65,48 @@ export function AdminSessionsTab() {
     loadSessions();
   }, [loadSessions]);
 
-  const { params, setParam, data: filtered } = useQueryFilter<AdminDisplaySession, { sq: string }>({
-    queryKey: ['admin-sessions'], initialParams: { sq: '' }, data: sessions, syncUrl: true,
+  const users: UserSummaryItem[] = useMemo(() => {
+    const map = new Map<string, UserSummaryItem>();
+    sessions.forEach((s) => {
+      if (!s.email) return;
+      const cur = map.get(s.email);
+      if (cur) {
+        cur.count++;
+      } else {
+        map.set(s.email, { email: s.email, title: s.title || 'Cán bộ', count: 1 });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.email.localeCompare(b.email));
+  }, [sessions]);
+
+  const { params, setParam, data: filtered } = useQueryFilter<AdminDisplaySession, { sq: string; user: string }>({
+    queryKey: ['admin-sessions'],
+    initialParams: { sq: '', user: '' },
+    data: sessions,
+    syncUrl: true,
     queryFn: ({ params: p, data }) => {
-      const q = p.sq.trim().toLowerCase();
-      return !q ? data : data.filter((s) =>
-        s.email.toLowerCase().includes(q) || s.unitCode.toLowerCase().includes(q) ||
-        s.unitNameVi.toLowerCase().includes(q) || s.title.toLowerCase().includes(q)
-      );
+      let result = data;
+      if (p.user) {
+        const u = p.user.trim().toLowerCase();
+        result = result.filter((s) => s.email.toLowerCase() === u);
+      }
+      if (p.sq.trim()) {
+        const q = p.sq.trim().toLowerCase();
+        result = result.filter((s) =>
+          s.email.toLowerCase().includes(q) ||
+          s.unitCode.toLowerCase().includes(q) ||
+          s.unitNameVi.toLowerCase().includes(q) ||
+          s.title.toLowerCase().includes(q)
+        );
+      }
+      return result;
     }
   });
-  const search = params.sq;
+
+  const recentWorkbookId = useMemo(() => {
+    if (filtered.length === 0) return null;
+    return filtered[0]?.id || filtered[0]?.email;
+  }, [filtered]);
 
   const handleExport = async (session: AdminDisplaySession) => {
     setExportingEmail(session.email);
@@ -99,13 +129,17 @@ export function AdminSessionsTab() {
       }
       const fallbackData = loadSessionData(session.email, session.unitCode);
       exportUserWorkbookToExcel({
-        unitCode: session.unitCode, unitNameVi: session.unitNameVi,
-        reportingPeriod: session.reportingPeriod, operatorEmail: session.email,
+        unitCode: session.unitCode,
+        unitNameVi: session.unitNameVi,
+        reportingPeriod: session.reportingPeriod,
+        operatorEmail: session.email,
         data: fallbackData
       });
     } catch {
       alert('Không thể tạo file Excel cho phiên này, vui lòng thử lại.');
-    } finally { setExportingEmail(null); }
+    } finally {
+      setExportingEmail(null);
+    }
   };
 
   const handleView = async (session: AdminDisplaySession) => {
@@ -123,7 +157,11 @@ export function AdminSessionsTab() {
         }
       }
       setViewingSession(session);
-    } catch { setViewingSession(session); } finally { setViewingId(null); }
+    } catch {
+      setViewingSession(session);
+    } finally {
+      setViewingId(null);
+    }
   };
 
   const handleDelete = async (session: AdminDisplaySession) => {
@@ -133,37 +171,24 @@ export function AdminSessionsTab() {
         const res = await fetch(`/api/admin/sessions?id=${session.id}`, { method: 'DELETE' });
         if (res.ok) loadSessions();
         else alert('Không thể xóa hồ sơ máy chủ.');
-      } catch { alert('Lỗi kết nối khi gửi yêu cầu xóa.'); }
+      } catch {
+        alert('Lỗi kết nối khi gửi yêu cầu xóa.');
+      }
     }
   };
 
   return (
     <div className="space-y-3 min-w-0">
-      <div className="flex flex-wrap items-center justify-between gap-2.5 min-h-[48px] sm:min-h-[52px]">
-        <div className="relative flex-1 min-w-[200px] sm:max-w-md w-full sm:w-auto">
-          <Search className="w-4 h-4 text-[#64748b] absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setParam('sq', e.target.value)}
-            placeholder="Tìm theo email, mã đơn vị hoặc tên đơn vị..."
-            className="w-full h-10 pl-9 pr-3 text-sm sm:text-xs bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-[#004776] font-medium focus:ring-2 focus:ring-[#004776] focus:outline-none"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-          <button
-            type="button"
-            onClick={loadSessions}
-            className="h-10 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-[#004776] bg-slate-50 hover:bg-slate-100 border border-[#cbd5e1] rounded-xl transition-colors cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Làm mới từ máy chủ</span>
-          </button>
-          <span className="h-10 inline-flex items-center text-xs font-bold text-[#004776] bg-blue-50 border border-blue-200 px-3.5 rounded-xl">
-            Máy chủ: {sessions.length} hồ sơ
-          </span>
-        </div>
-      </div>
+      <AdminSessionFilterBar
+        search={params.sq}
+        onSearchChange={(val) => setParam('sq', val)}
+        selectedUser={params.user}
+        onUserChange={(val) => setParam('user', val)}
+        users={users}
+        totalCount={sessions.length}
+        loading={loading}
+        onRefresh={loadSessions}
+      />
 
       {loadError && (
         <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex items-center justify-between gap-3">
@@ -184,8 +209,12 @@ export function AdminSessionsTab() {
       {!loadError && filtered.length === 0 && (
         <div className="bg-white rounded-xl border border-[#cbd5e1] p-10 text-center text-[#64748b] shadow-2xs">
           <FileSpreadsheet className="w-10 h-10 text-[#cbd5e1] mx-auto mb-2" />
-          <p className="font-bold text-[#004776] text-sm">{search ? 'Không tìm thấy hồ sơ phù hợp.' : 'Máy chủ hiện chưa có hồ sơ.'}</p>
-          <p className="text-xs text-[#64748b] mt-1 max-w-md mx-auto">Khi cán bộ tại các đơn vị thao tác và lưu bảng biểu, toàn bộ 15 sheet sẽ được đồng bộ lên máy chủ.</p>
+          <p className="font-bold text-[#004776] text-sm">
+            {params.sq || params.user ? 'Không tìm thấy hồ sơ phù hợp với bộ lọc.' : 'Máy chủ hiện chưa có hồ sơ.'}
+          </p>
+          <p className="text-xs text-[#64748b] mt-1 max-w-md mx-auto">
+            Khi cán bộ tại các đơn vị thao tác và lưu bảng biểu, toàn bộ 15 sheet sẽ được đồng bộ lên máy chủ.
+          </p>
         </div>
       )}
 
@@ -206,78 +235,21 @@ export function AdminSessionsTab() {
               </thead>
               <tbody>
                 {filtered.map((s, idx) => (
-                  <tr key={s.id || idx} className="h-[48px] sm:h-[50px] border-b border-[#cbd5e1]/70 hover:bg-blue-50/30 transition-colors">
-                    <td className="p-2.5 text-center text-[#64748b] font-medium border-r border-[#cbd5e1] bg-[#f8fafc]/50">{idx + 1}</td>
-                    <td className="p-2.5 font-bold text-[#004776] border-r border-[#cbd5e1]">
-                      <div className="flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-[#004776]/70 shrink-0" />
-                        <div>
-                          <div>{s.email}</div>
-                          <div className="text-[10px] font-normal text-[#64748b]">{s.title || 'Người thực hiện'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-2.5 text-[#004776] border-r border-[#cbd5e1]">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold px-1.5 py-0.5 rounded bg-[#004776]/10 text-[#004776] text-[11px]">{s.unitCode}</span>
-                        <span className="truncate max-w-[180px]" title={s.unitNameVi}>{s.unitNameVi}</span>
-                      </div>
-                    </td>
-                    <td className="p-2.5 text-[#64748b] border-r border-[#cbd5e1]">
-                      <div className="text-[11px] font-medium">{s.reportingPeriod || '2025–2026'}</div>
-                      <div className="text-[10px] text-[#004776] font-bold">Revision v{s.currentRevision || 1}</div>
-                    </td>
-                    <td className="p-2.5 border-r border-[#cbd5e1]">
-                      <div className="text-[11px] text-[#004776] font-bold">{s.totalRows || 0} dòng</div>
-                      <div className="text-[10px] text-[#64748b]">{s.populatedSheetsCount || 0}/15 sheet</div>
-                    </td>
-                    <td className="p-2.5 text-[#64748b] border-r border-[#cbd5e1] whitespace-nowrap">
-                      <span className="flex items-center gap-1 text-[11px]">
-                        <Calendar className="w-3 h-3" />
-                        {s.lastSavedAt || '—'}
-                      </span>
-                    </td>
-                    <td className="p-2.5 text-center sticky right-0 bg-white/95 backdrop-blur-xs border-l border-[#cbd5e1]/60">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleView(s)}
-                          disabled={viewingId === (s.id || s.email)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[#004776] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-                          title="Xem dữ liệu 15 biểu"
-                        >
-                          <Eye className={`w-3.5 h-3.5 ${viewingId === (s.id || s.email) ? 'animate-spin' : ''}`} />
-                          <span>{viewingId === (s.id || s.email) ? '...' : 'Xem'}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleExport(s)}
-                          disabled={exportingEmail === s.email}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-                          title="Xuất file Excel từ dữ liệu đã điền"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>{exportingEmail === s.email ? '...' : 'Xuất'}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { saveCurrentOperatorSession(s.email, s.unitCode, s.title); router.push('/bang-tinh'); }}
-                          className="p-1.5 text-[#004776] hover:bg-[#e2e8f0] rounded-lg transition-colors cursor-pointer border border-[#cbd5e1]"
-                          title="Mở hồ sơ trên giao diện Bảng tính"
-                        >
-                          <LogIn className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(s)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer border border-red-200"
-                          title="Xóa hồ sơ máy chủ"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <AdminSessionTableRow
+                    key={s.id || idx}
+                    session={s}
+                    index={idx}
+                    isRecentlyUpdated={(s.id || s.email) === recentWorkbookId}
+                    viewingId={viewingId}
+                    exportingEmail={exportingEmail}
+                    onView={handleView}
+                    onExport={handleExport}
+                    onOpen={(item) => {
+                      saveCurrentOperatorSession(item.email, item.unitCode, item.title);
+                      router.push('/bang-tinh');
+                    }}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </tbody>
             </table>

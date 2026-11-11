@@ -2,47 +2,26 @@ import { ExcelSheetKey, GenericGridRow } from '@/components/excel-grid/excel-gri
 import { findHcmuteUnit } from '@/configs/hcmute-units';
 import { buildDefaultGridWorkbook } from '@/components/excel-grid/excel-grid-defaults';
 import { fetchWorkbooksFromSupabase, persistWorkbookToSupabase, deleteWorkbookFromSupabase } from './server-supabase-store';
+import { getInitialSeedWorkbooks } from './server-seed-workbooks';
 import fs from 'fs';
 import path from 'path';
 
 export interface ServerParticipant {
-  id: string;
-  sessionId: string;
-  workbookId: string;
-  displayName: string;
-  email: string;
-  emailNormalized: string;
-  roleLabel: string;
-  startedAt: string;
-  updatedAt: string;
+  id: string; sessionId: string; workbookId: string; displayName: string;
+  email: string; emailNormalized: string; roleLabel: string; startedAt: string; updatedAt: string;
 }
 
 export interface ServerRevision {
-  id: string;
-  workbookId: string;
-  revision: number;
-  data: Record<ExcelSheetKey, GenericGridRow[]>;
-  actorEmail: string;
-  actorTitle?: string;
-  sessionId?: string;
-  changeSummary?: string;
-  createdAt: string;
+  id: string; workbookId: string; revision: number; data: Record<ExcelSheetKey, GenericGridRow[]>;
+  actorEmail: string; actorTitle?: string; sessionId?: string; changeSummary?: string; createdAt: string;
 }
 
 export interface ServerWorkbook {
-  id: string;
-  unitId: string;
-  unitNameVi: string;
-  reportingPeriod: string;
+  id: string; unitId: string; unitNameVi: string; reportingPeriod: string;
   status: 'draft' | 'submitted' | 'reviewed' | 'approved' | 'archived';
-  currentRevision: number;
-  data: Record<ExcelSheetKey, GenericGridRow[]>;
-  touchedCells: string[];
-  createdAt: string;
-  updatedAt: string;
-  participants: ServerParticipant[];
-  revisions: ServerRevision[];
-  isDeleted?: boolean;
+  currentRevision: number; data: Record<ExcelSheetKey, GenericGridRow[]>;
+  touchedCells: string[]; createdAt: string; updatedAt: string;
+  participants: ServerParticipant[]; revisions: ServerRevision[]; isDeleted?: boolean;
 }
 
 export function normalizeEmail(raw: string): string {
@@ -71,6 +50,15 @@ function loadStore(): Map<string, ServerWorkbook> {
       list.forEach((wb) => memoryWorkbooks!.set(wb.id, wb));
     }
   } catch { /* ignore */ }
+
+  if (memoryWorkbooks.size === 0) {
+    try {
+      const seeds = getInitialSeedWorkbooks();
+      seeds.forEach((wb) => memoryWorkbooks!.set(wb.id, wb));
+      persistStore();
+    } catch { /* ignore */ }
+  }
+
   return memoryWorkbooks;
 }
 
@@ -161,9 +149,16 @@ export function findWorkbooksByEmail(email: string): ServerWorkbook[] {
 
 export function getWorkbookById(id: string): ServerWorkbook | null {
   const store = loadStore();
-  const wb = store.get(id);
-  if (!wb || wb.isDeleted) return null;
-  return wb;
+  let wb = store.get(id);
+  if (wb && !wb.isDeleted) return wb;
+
+  const unitMatch = id.match(/^wb_([A-Za-z0-9]+)/);
+  if (unitMatch) {
+    const unitCode = unitMatch[1];
+    wb = Array.from(store.values()).find((w) => !w.isDeleted && (w.unitId === unitCode || w.id === id));
+    if (wb) return wb;
+  }
+  return null;
 }
 
 export function getAllActiveServerWorkbooks(): ServerWorkbook[] {
@@ -181,10 +176,14 @@ export function saveServerWorkbook(params: {
   actorTitle?: string;
   touchedCells?: string[];
   changeSummary?: string;
+  unitCode?: string;
 }): { success: boolean; conflict?: boolean; currentRevision?: number; serverWorkbook?: ServerWorkbook } {
   const store = loadStore();
-  const wb = store.get(params.workbookId);
-  if (!wb || wb.isDeleted) return { success: false };
+  let wb = store.get(params.workbookId) || getWorkbookById(params.workbookId);
+  if (!wb || wb.isDeleted) {
+    const unitCode = params.unitCode || (params.workbookId.startsWith('wb_') ? params.workbookId.split('_')[1] : 'FIT');
+    wb = getOrCreateWorkbook(unitCode, '01/10/2025–30/9/2026', params.actorEmail, params.actorTitle || 'Chuyên viên');
+  }
 
   if (params.baseRevision > 0 && wb.currentRevision !== params.baseRevision) {
     return { success: false, conflict: true, currentRevision: wb.currentRevision, serverWorkbook: wb };

@@ -38,19 +38,37 @@ export function useOperatorSession() {
   const lastDataRef = useRef<Record<ExcelSheetKey, GenericGridRow[]> | null>(null);
 
   useEffect(() => {
-    const sync = () => {
+    let isMounted = true;
+    const sync = async () => {
       const cur = getCurrentOperatorSession();
+      if (!isMounted) return;
       if (cur) {
         setSession(cur);
         const saved = getSessionByEmail(cur.email);
         if (saved?.touchedCells) setTouchedCells(new Set(saved.touchedCells));
+        try {
+          const res = await fetch(`/api/workbooks/wb_${cur.unitCode}_2026`);
+          if (res.ok && isMounted) {
+            const json = await res.json();
+            if (json.workbook) {
+              setWorkbookId(json.workbook.id);
+              setCurrentRevision(json.workbook.currentRevision || 1);
+              setDataSource('server_synced');
+              setSyncStatus('synced');
+              setLastSyncedAt(new Date().toLocaleTimeString('vi-VN'));
+            }
+          }
+        } catch { /* offline fallback */ }
       } else {
         setIsModalOpen(true);
       }
     };
     sync();
     window.addEventListener('vtvl-operator-changed', sync);
-    return () => window.removeEventListener('vtvl-operator-changed', sync);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('vtvl-operator-changed', sync);
+    };
   }, []);
 
   const markCellTouched = useCallback((cellKey: string) => {
@@ -180,7 +198,8 @@ export function useOperatorSession() {
           body: JSON.stringify({
             data, touchedCells: touchedArray, baseRevision: currentRevision,
             commitMessage: `Lưu tự động lúc ${new Date().toLocaleTimeString('vi-VN')}`,
-            participant: { email: session.email, displayName: session.email.split('@')[0], roleLabel: session.title }
+            unitCode: session.unitCode,
+            participant: { email: session.email, displayName: session.email.split('@')[0], roleLabel: session.title, unitCode: session.unitCode }
           })
         });
 
@@ -194,7 +213,10 @@ export function useOperatorSession() {
 
         if (res.ok) {
           const json = await res.json();
-          if (json.workbook?.currentRevision) setCurrentRevision(json.workbook.currentRevision);
+          const targetWb = json.workbook?.serverWorkbook || json.workbook;
+          if (targetWb?.id) setWorkbookId(targetWb.id);
+          const nextRev = json.workbook?.currentRevision || targetWb?.currentRevision;
+          if (typeof nextRev === 'number') setCurrentRevision(nextRev);
           setSyncStatus('synced');
           setDataSource('server_synced');
           setApiError(null);

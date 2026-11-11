@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import {
   getWorkbookById,
+  getOrCreateWorkbook,
   saveServerWorkbook,
   deleteServerWorkbook,
   normalizeEmail,
@@ -61,7 +62,17 @@ export async function PUT(req: Request, context: RouteContext) {
     }
 
     if (!existingWb) {
-      return NextResponse.json({ error: 'Không tìm thấy hồ sơ để cập nhật.', code: 'WORKBOOK_NOT_FOUND' }, { status: 404 });
+      const normEmail = participant?.email ? normalizeEmail(participant.email) : 'tcns@hcmute.edu.vn';
+      const extractedUnitCode =
+        body.unitCode ||
+        participant?.unitCode ||
+        (id.startsWith('wb_') ? id.split('_')[1] : 'FIT');
+      existingWb = getOrCreateWorkbook(
+        extractedUnitCode,
+        body.reportingPeriod || '01/10/2025–30/9/2026',
+        normEmail,
+        participant?.roleLabel || 'Người thực hiện'
+      );
     }
 
     if (existingWb?.data?.C1 && data.C1) {
