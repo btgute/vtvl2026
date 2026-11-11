@@ -5,8 +5,9 @@ import { ExcelSheetKey, SheetOrderMode } from './excel-grid-types';
 import { HcmuteUnit } from '@/types/vtvl';
 import { ValidationReport } from '@/services/validation';
 import { OperatorSession } from '@/services/telemetry/operator-session';
+import { SyncStatusKind, DataSourceKind, ApiSyncError } from './useOperatorSession';
 import { WorkspaceHeaderRow } from './WorkspaceHeaderRow';
-import { WorkspaceActionsRow } from './WorkspaceActionsRow';
+import { ExcelCommandBar } from './ExcelCommandBar';
 
 interface ScientificWorkspaceCardProps {
   activeSheet: ExcelSheetKey;
@@ -17,9 +18,13 @@ interface ScientificWorkspaceCardProps {
   totalSheets: number;
   rowsCount: number;
   isDirty: boolean;
-  lastSaved: Date | null;
   qualityReport: ValidationReport;
   session: OperatorSession | null;
+  revision: number;
+  syncStatus: SyncStatusKind;
+  dataSource?: DataSourceKind;
+  apiError?: ApiSyncError | null;
+  lastSyncedAt: string | null;
   orderMode: SheetOrderMode;
   canNext: boolean;
   isExporting: boolean;
@@ -27,6 +32,7 @@ interface ScientificWorkspaceCardProps {
   onSelectSheet: (key: ExcelSheetKey) => void;
   onUnitChange: (code: string) => void;
   onSwitchSession: () => void;
+  onSaveNow: () => void;
   onToggleOrderMode: (mode: SheetOrderMode) => void;
   onOpenGuidance: () => void;
   onOpenQualityModal: () => void;
@@ -42,7 +48,8 @@ interface ScientificWorkspaceCardProps {
 
 export function ScientificWorkspaceCard(props: ScientificWorkspaceCardProps) {
   return (
-    <div className="bg-white border-b border-[var(--border-subtle)] px-4 py-3 flex flex-col gap-2.5 w-full max-w-full min-w-0">
+    <div className="bg-white border-b border-[#cbd5e1] flex flex-col w-full max-w-full min-w-0">
+      {/* 1. Page Header (cao ~52–56px): Mã biểu, Tiêu đề, Đơn vị, Bước, Cảnh báo QA, Hướng dẫn */}
       <WorkspaceHeaderRow
         activeSheet={props.activeSheet}
         currentUnit={props.currentUnit}
@@ -58,26 +65,31 @@ export function ScientificWorkspaceCard(props: ScientificWorkspaceCardProps) {
         onOpenQualityModal={props.onOpenQualityModal}
       />
 
-      <WorkspaceActionsRow
+      {/* 2. Command Bar (cao ~42–44px): Thông tin phiên, Máy chủ, Kiểm tra, Lưu biểu, Lưu & tiếp, Công cụ */}
+      <ExcelCommandBar
         activeSheet={props.activeSheet}
         session={props.session}
-        rowsCount={props.rowsCount}
+        revision={props.revision}
+        syncStatus={props.syncStatus}
+        dataSource={props.dataSource}
+        apiError={props.apiError}
+        lastSyncedAt={props.lastSyncedAt}
         isDirty={props.isDirty}
-        lastSaved={props.lastSaved}
         orderMode={props.orderMode}
         canNext={props.canNext}
         isExporting={props.isExporting}
         isC1Unlocked={props.isC1Unlocked}
         onSwitchSession={props.onSwitchSession}
-        onToggleOrderMode={props.onToggleOrderMode}
+        onSaveNow={props.onSaveNow}
         onOpenQualityModal={props.onOpenQualityModal}
-        onOpenChartModal={props.onOpenChartModal}
-        onOpenOrgTreeModal={props.onOpenOrgTreeModal}
         onSaveSheet={props.onSaveSheet}
         onSaveAndNext={props.onSaveAndNext}
-        onExportWorkbook={props.onExportWorkbook}
+        onToggleOrderMode={props.onToggleOrderMode}
+        onOpenOrgTreeModal={props.onOpenOrgTreeModal}
+        onOpenChartModal={props.onOpenChartModal}
         onLoadTcnsData={props.onLoadTcnsData}
         onLoadRecommendedVtvls={props.onLoadRecommendedVtvls}
+        onExportWorkbook={props.onExportWorkbook}
         onOpenUnlockModal={props.onOpenUnlockModal}
       />
     </div>

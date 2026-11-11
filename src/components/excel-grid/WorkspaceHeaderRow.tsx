@@ -71,18 +71,20 @@ export function WorkspaceHeaderRow({
   );
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-[var(--border-subtle)] min-w-0">
+    <div className="flex flex-wrap items-center justify-between gap-2.5 min-h-[52px] sm:min-h-[56px] px-3 sm:px-4 py-2 sm:py-2.5 border-b border-[#f1f5f9] bg-white min-w-0">
       <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-        {/* Badge mã biểu kèm dropdown chọn nhanh 15 biểu */}
-        <div className="relative" ref={sheetMenuRef}>
+        {/* 1. Dropdown mã biểu: Nút màu xanh thương hiệu #005fa3 */}
+        <div className="relative shrink-0" ref={sheetMenuRef}>
           <button
             type="button"
             onClick={() => setShowSheetMenu(!showSheetMenu)}
-            className="inline-flex items-center gap-1.5 h-10 sm:h-9 px-3 bg-[#004776] text-white rounded-lg text-xs font-semibold hover:bg-[#00385c] cursor-pointer transition-colors"
-            title="Nhấn để đổi nhanh biểu khác trong 15 sheet"
+            className="inline-flex items-center gap-1.5 h-8.5 px-3 bg-[#005fa3] text-white rounded-lg text-xs font-bold hover:bg-[#004776] cursor-pointer transition-colors shadow-2xs"
+            title="Đổi nhanh biểu khác trong 15 biểu mẫu"
+            aria-expanded={showSheetMenu}
+            aria-haspopup="listbox"
           >
             <span>{activeMeta.sheetName}</span>
-            <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+            <ChevronDown className="w-3.5 h-3.5 text-white/80" />
           </button>
 
           {showSheetMenu && (
@@ -111,20 +113,25 @@ export function WorkspaceHeaderRow({
           )}
         </div>
 
-        {/* Tên biểu đầy đủ (H1 duy nhất của trang bảng tính) */}
-        <h1 className="text-[20px] sm:text-xl font-semibold text-[#004776] leading-snug sm:truncate max-w-full sm:max-w-lg min-w-0" title={activeMeta.title}>
+        {/* 2. Tiêu đề biểu (rút gọn text, ellipsis và tooltip) */}
+        <h1
+          className="text-sm sm:text-base font-semibold text-[#004776] leading-snug truncate max-w-[220px] sm:max-w-xs md:max-w-md lg:max-w-lg min-w-0"
+          title={activeMeta.title}
+        >
           {activeMeta.title}
         </h1>
 
         <span className="hidden sm:inline text-[#cbd5e1]">|</span>
 
-        {/* Đơn vị thực hiện (Hiển thị duy nhất tại đây) */}
-        <div className="relative min-w-0 max-w-full" ref={unitMenuRef}>
+        {/* 3. Dropdown đơn vị: [Mã] Tên đơn vị */}
+        <div className="relative min-w-0 shrink-0" ref={unitMenuRef}>
           <button
             type="button"
             onClick={() => setShowUnitMenu(!showUnitMenu)}
-            className="inline-flex items-center gap-1.5 h-10 sm:h-9 px-2.5 bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded-lg text-xs font-medium text-[#004776] cursor-pointer transition-colors max-w-[calc(100vw-2.5rem)] sm:max-w-xs truncate"
-            title={`[${unitCode}] ${currentUnit.nameVi} — Bấm để đổi đơn vị công tác`}
+            className="inline-flex items-center gap-1.5 h-8.5 px-2.5 bg-white hover:bg-slate-50 border border-[#cbd5e1] rounded-lg text-xs font-semibold text-[#004776] cursor-pointer transition-colors max-w-[200px] sm:max-w-xs truncate"
+            title={`[${unitCode}] ${currentUnit.nameVi} — Nhấp để đổi đơn vị công tác`}
+            aria-expanded={showUnitMenu}
+            aria-haspopup="listbox"
           >
             <Building2 className="w-3.5 h-3.5 text-[#004776] shrink-0" />
             <span className="truncate font-semibold">[{unitCode}] {currentUnit.nameVi}</span>
@@ -138,7 +145,7 @@ export function WorkspaceHeaderRow({
                 value={unitSearch}
                 onChange={(e) => setUnitSearch(e.target.value)}
                 placeholder="Tìm mã hoặc tên đơn vị..."
-                className="w-full h-10 sm:h-9 px-2.5 text-sm sm:text-xs rounded-lg border border-[#cbd5e1] mb-1.5 focus:ring-2 focus:ring-[#004776]/20 focus:border-[#004776] outline-hidden"
+                className="w-full h-8.5 px-2.5 text-xs rounded-lg border border-[#cbd5e1] mb-1.5 focus:ring-2 focus:ring-[#004776]/20 focus:border-[#004776] outline-hidden"
               />
               <div className="max-h-60 overflow-y-auto space-y-0.5">
                 {filteredUnits.map((u: HcmuteUnit) => (
@@ -159,42 +166,45 @@ export function WorkspaceHeaderRow({
           )}
         </div>
 
-        {/* Chỉ báo bước & biểu */}
-        <span className="inline-flex items-center gap-1.5 h-8 px-2.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg text-xs font-normal text-[#476885]">
+        {/* 4. Trạng thái Bước & Biểu (nền nhạt) */}
+        <span className="hidden md:inline-flex items-center gap-1.5 h-8 px-2.5 bg-slate-50 border border-slate-200/80 rounded-md text-xs font-medium text-[#64748b] shrink-0">
           <Layers className="w-3.5 h-3.5 text-[#004776] shrink-0" />
           <span className="whitespace-nowrap">Bước {activeStep}/8 · Biểu {activeSheetIndex + 1}/{totalSheets}</span>
         </span>
 
-        {/* Cảnh báo QA theo màu ngữ nghĩa */}
+        {/* 5. Cảnh báo QA nền đỏ nhạt */}
         {fixCount > 0 ? (
           <button
             type="button"
             onClick={onOpenQualityModal}
-            className="inline-flex items-center gap-1.5 h-9 sm:h-8 px-2.5 bg-[var(--fix-soft)] hover:opacity-90 border border-[var(--fix)]/30 rounded-lg text-xs font-medium text-[var(--fix)] cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-2.5 bg-red-50 hover:bg-red-100/80 border border-red-200/80 rounded-md text-xs font-semibold text-red-700 cursor-pointer transition-colors shrink-0"
+            title="Xem chi tiết các điểm cần bổ sung hoặc xem lại"
           >
-            <AlertTriangle className="w-3.5 h-3.5 text-[var(--fix)] shrink-0" />
+            <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
             <span className="whitespace-nowrap">{fixCount} mục cần xem</span>
           </button>
         ) : (
           <button
             type="button"
             onClick={onOpenQualityModal}
-            className="inline-flex items-center gap-1.5 h-9 sm:h-8 px-2.5 bg-[var(--ok-soft)] hover:opacity-90 border border-[var(--ok)]/30 rounded-lg text-xs font-medium text-[var(--ok)] cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-2.5 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/80 rounded-md text-xs font-semibold text-emerald-700 cursor-pointer transition-colors shrink-0"
+            title="Dữ liệu biểu mẫu hoàn tất và đạt chuẩn"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-[var(--ok)] shrink-0" />
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span className="whitespace-nowrap">Dữ liệu hợp lệ</span>
           </button>
         )}
       </div>
 
-      {/* Nút hướng dẫn */}
+      {/* 6. Liên kết Hướng dẫn bên phải */}
       <button
         type="button"
         onClick={onOpenGuidance}
-        className="inline-flex items-center gap-1.5 h-10 sm:h-9 px-3 bg-white hover:bg-[#f8fafc] border border-[#cbd5e1] rounded-lg text-xs font-medium text-[#004776] cursor-pointer transition-colors shrink-0"
+        className="inline-flex items-center gap-1.5 h-8.5 px-3 text-xs font-semibold text-[#005fa3] hover:text-[#004776] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer shrink-0"
+        title="Xem căn cứ pháp lý, hướng dẫn chuẩn HD 07 và lưu ý biểu này"
       >
-        <HelpCircle className="w-3.5 h-3.5 text-[#004776] shrink-0" />
-        <span>Hướng dẫn biểu</span>
+        <HelpCircle className="w-4 h-4 text-[#005fa3] shrink-0" />
+        <span>Hướng dẫn</span>
       </button>
     </div>
   );

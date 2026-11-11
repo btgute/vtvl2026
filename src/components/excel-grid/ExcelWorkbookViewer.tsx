@@ -13,7 +13,6 @@ import { DataQualityReportModal } from './DataQualityReportModal';
 import { OperatorSessionModal } from './OperatorSessionModal';
 import { WorkforceStructureChartModal } from './WorkforceStructureChartModal';
 import { UnitOrgTreeModal } from '@/components/admin/UnitOrgTreeModal';
-import { SyncStatusBar } from './SyncStatusBar';
 import { useOperatorSession } from './useOperatorSession';
 import { validateWorkbookData } from '@/services/validation';
 
@@ -118,7 +117,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
 
   return (
     <div className="w-full max-w-full min-w-0 bg-white border border-[var(--border)] rounded-xl flex flex-col">
-      {/* 1. HEADER & THANH CÔNG CỤ THỐNG NHẤT */}
+      {/* 1. HEADER (Page Header & Command Bar thống nhất theo Mockup) */}
       <ScientificWorkspaceCard
         activeSheet={activeSheet}
         currentUnit={currentUnit}
@@ -128,9 +127,13 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         totalSheets={currentSheetOrder.length}
         rowsCount={activeRows.length}
         isDirty={dirtySheets.has(activeSheet)}
-        lastSaved={lastSaved ? new Date() : null}
         qualityReport={qualityReport}
         session={session}
+        revision={currentRevision}
+        syncStatus={syncStatus}
+        dataSource={dataSource}
+        apiError={apiError}
+        lastSyncedAt={lastSyncedAt}
         orderMode={orderMode}
         canNext={activeSheetIndex < currentSheetOrder.length - 1}
         isExporting={isExporting}
@@ -138,6 +141,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onSelectSheet={handleSelectSheetSafe}
         onUnitChange={(u) => { gridHandleUnitChange(u); updateSessionUnit(u); setDirtySheets(new Set()); }}
         onSwitchSession={switchSession}
+        onSaveNow={() => { handleSave(); persistDataForSession(data, true); }}
         onToggleOrderMode={setOrderMode}
         onOpenGuidance={() => setShowGuidanceModal(true)}
         onOpenQualityModal={() => setShowQualityModal(true)}
@@ -151,21 +155,7 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
         onOpenUnlockModal={() => setShowUnlockModal(true)}
       />
 
-      {/* 2. THANH TRẠNG THÁI LƯU & ĐỒNG BỘ DUY NHẤT */}
-      <SyncStatusBar
-        session={session}
-        unitNameVi={currentUnit.nameVi}
-        revision={currentRevision}
-        syncStatus={syncStatus}
-        dataSource={dataSource}
-        apiError={apiError}
-        lastSyncedAt={lastSyncedAt}
-        onSwitchSession={switchSession}
-        onRetry={retrySync}
-        onSaveNow={() => { handleSave(); persistDataForSession(data, true); }}
-      />
-
-      {/* 3. DẢI TAB 15 BIỂU CUỘN NGANG (UNDERLINE TABS) */}
+      {/* 2. DẢI TAB 15 BIỂU CUỘN NGANG (UNDERLINE TABS) */}
       <ExcelSheetTabs
         activeSheet={activeSheet}
         sheetOrder={currentSheetOrder}
