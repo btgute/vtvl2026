@@ -106,3 +106,4 @@ export function useQueryFilter<TData, TParams extends QueryParamsRecord>({
     filteredCount: filteredData.length
   };
 }
+
