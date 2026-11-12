@@ -117,3 +117,4 @@ export function checkAndHandleOAuthCallback(): GoogleAuthProfile | null {
   }
   return null;
 }
+

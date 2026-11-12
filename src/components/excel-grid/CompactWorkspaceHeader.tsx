@@ -4,9 +4,16 @@ import React from 'react';
 import { ExcelSheetMeta } from './excel-grid-types';
 import { HcmuteUnit } from '@/types/vtvl';
 import {
-  BookOpen, HelpCircle, Building2, CheckCircle2,
-  Clock, AlertTriangle, Layers
+  HelpCircle,
+  Building2,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Layers
 } from 'lucide-react';
+import { DotPattern } from '@/components/ui/DotPattern';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 
 interface CompactWorkspaceHeaderProps {
   activeMeta: ExcelSheetMeta;
@@ -38,104 +45,111 @@ export function CompactWorkspaceHeader({
   onOpenQualityModal
 }: CompactWorkspaceHeaderProps) {
   return (
-    <div className="bg-white border border-[#cbd5e1] rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-2xs w-full max-w-full min-w-0 space-y-2.5">
-      {/* DÒNG 1: Tên biểu hiện tại · Đơn vị · Bước & Tiến độ · Nút Hướng dẫn */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-[#f1f5f9] pb-2.5">
-        <div className="flex flex-wrap items-center gap-2 min-w-0">
-          {/* Badge mã biểu */}
-          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-[#004776] text-white shrink-0 tracking-wide">
-            {activeMeta.sheetName}
-          </span>
+    <div className="relative overflow-hidden bg-white border border-[#cbd5e1] rounded-2xl p-4 sm:p-5 shadow-xs w-full max-w-full min-w-0 space-y-3.5">
+      {/* Background DotPattern */}
+      <DotPattern
+        width={18}
+        height={18}
+        cr={1.2}
+        className="text-[#006cee]/15 [mask-image:radial-gradient(ellipse_at_top_right,white,transparent_70%)]"
+      />
 
-          {/* Tên biểu */}
-          <h1 className="text-sm sm:text-base font-bold text-[#004776] truncate max-w-[280px] sm:max-w-[420px] md:max-w-[560px]">
+      {/* DÒNG 1: Tên biểu hiện tại · Đơn vị · Bước & Tiến độ · Nút Hướng dẫn */}
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-[#f1f5f9] pb-3">
+        <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+          {/* Badge mã biểu */}
+          <Badge variant="default" className="text-sm font-extrabold px-3 py-1 shadow-xs">
+            {activeMeta.sheetName}
+          </Badge>
+
+          {/* Tên biểu - Chữ to, đậm, rõ nét */}
+          <h1 className="text-base sm:text-xl font-bold text-[#004776] tracking-tight truncate max-w-[300px] sm:max-w-[480px] md:max-w-[620px]">
             {activeMeta.title}
           </h1>
 
           <span className="hidden sm:inline-block text-[#cbd5e1]">|</span>
 
           {/* Đơn vị */}
-          <div className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#004776]/90 bg-[#004776]/5 px-2.5 py-0.5 rounded-md border border-[#004776]/15 shrink-0">
-            <Building2 className="w-3.5 h-3.5 text-[#004776]" />
-            <span className="font-bold">[{currentUnit.code}]</span>
-            <span className="truncate max-w-[200px]">{currentUnit.nameVi}</span>
+          <div className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#004776] bg-[#e1edf8] px-3 py-1 rounded-xl border border-[#cbd5e1] shrink-0">
+            <Building2 className="w-4 h-4 text-[#006cee]" />
+            <span className="text-[#006cee]">[{currentUnit.code}]</span>
+            <span className="truncate max-w-[220px]">{currentUnit.nameVi}</span>
           </div>
         </div>
 
         {/* Nhóm bên phải: Tiến độ bước + Nút Hướng dẫn */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="inline-flex items-center gap-1 text-xs font-bold text-[#004776] bg-[#f8fafc] px-2.5 py-1 rounded-lg border border-[#cbd5e1]">
-            <Layers className="w-3.5 h-3.5 text-[#004776]" />
+          <Badge variant="secondary" className="px-3 py-1 text-xs font-bold gap-1.5">
+            <Layers className="w-3.5 h-3.5 text-[#006cee]" />
             <span>Bước {activeStep}/8</span>
             <span className="text-[#94a3b8]">·</span>
             <span>Biểu {activeSheetIndex + 1}/{totalSheets}</span>
-          </div>
+          </Badge>
 
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onOpenGuidance}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[#004776] bg-sky-50 hover:bg-[#004776] hover:text-white border border-[#004776]/30 rounded-lg transition-all cursor-pointer shadow-2xs"
-            title="Xem căn cứ pháp lý, hướng dẫn chuẩn HD 07 và lưu ý biểu này"
+            className="text-xs font-bold border-[#cbd5e1] hover:border-[#006cee]"
           >
-            <HelpCircle className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Hướng dẫn</span>
-          </button>
+            <HelpCircle className="w-3.5 h-3.5 text-[#006cee]" />
+            <span className="hidden sm:inline">Căn cứ HD 07</span>
+          </Button>
         </div>
       </div>
 
       {/* DÒNG 2: Trạng thái lưu · Số dòng · Trạng thái QA / Cảnh báo */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Trạng thái lưu cố định, trực quan */}
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-2.5 text-xs sm:text-sm">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Trạng thái lưu */}
           {isSaving ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-bold text-sky-800 bg-sky-50 border border-sky-200">
+            <Badge variant="secondary" className="text-sky-800 bg-sky-50 border-sky-200 gap-1.5 font-bold">
               <span className="w-2 h-2 rounded-full bg-sky-500 animate-ping" />
-              <span>Đang lưu...</span>
-            </span>
+              <span>Đang lưu máy chủ...</span>
+            </Badge>
           ) : isDirty ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-bold text-amber-800 bg-amber-50 border border-amber-300 animate-pulse">
+            <Badge variant="warning" className="gap-1.5 font-bold animate-pulse">
               <span className="w-2 h-2 rounded-full bg-amber-500" />
               <span>Có thay đổi chưa lưu</span>
-            </span>
+            </Badge>
           ) : lastSaved ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200">
+            <Badge variant="success" className="gap-1.5 font-bold">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Tất cả thay đổi đã được lưu ({lastSaved})</span>
-            </span>
+              <span>Đã lưu an toàn ({lastSaved})</span>
+            </Badge>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0]">
+            <Badge variant="outline" className="gap-1 font-medium text-[#20446c]">
               <Clock className="w-3 h-3" />
               <span>Sẵn sàng thao tác</span>
-            </span>
+            </Badge>
           )}
 
           {/* Số dòng */}
-          <span className="text-[#64748b]">
-            Dữ liệu: <strong className="text-[#004776] tabular-nums">{rowsCount}</strong> dòng
+          <span className="text-[#20446c] font-medium">
+            Số hàng dữ liệu: <strong className="text-[#004776] font-bold tabular-nums">{rowsCount}</strong>
           </span>
         </div>
 
         {/* Trạng thái kiểm tra QA / Cảnh báo */}
         <div className="flex items-center gap-2">
           {fixCount > 0 ? (
-            <button
-              type="button"
+            <Button
+              variant="destructive"
+              size="sm"
               onClick={onOpenQualityModal}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors cursor-pointer"
-              title="Có mục cần bổ sung hoặc sửa lỗi theo chuẩn HD 07"
+              className="text-xs font-bold px-3 py-1 h-7"
             >
-              <AlertTriangle className="w-3 h-3 text-red-600" />
-              <span>{fixCount} mục cần xem</span>
-            </button>
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>{fixCount} cảnh báo cần xem</span>
+            </Button>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <Badge variant="success" className="font-bold">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               <span>Dữ liệu hợp chuẩn</span>
-            </span>
+            </Badge>
           )}
         </div>
       </div>
     </div>
   );
 }
-

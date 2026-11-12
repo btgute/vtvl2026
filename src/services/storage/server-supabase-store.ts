@@ -3,20 +3,30 @@ import { findHcmuteUnit } from '@/configs/hcmute-units';
 import { buildDefaultGridWorkbook } from '@/components/excel-grid/excel-grid-defaults';
 
 const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhjodwlvwzlaasvpkhkr.supabase.co').trim();
-const SUPABASE_KEY = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_Jq2OnP0ITDBi0wwBrPj7zw_36qiII2P').trim();
+// Prioritize service role key on server for secure, reliable operations bypassing RLS
+const SUPABASE_KEY = (
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  ''
+).trim();
 
-function getHeaders(): Record<string, string> {
+function getHeaders(customAuthToken?: string): Record<string, string> {
+  const token = customAuthToken || SUPABASE_KEY;
   return {
     apikey: SUPABASE_KEY,
-    Authorization: `Bearer ${SUPABASE_KEY}`,
+    Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json'
   };
 }
 
+/**
+ * Fetch active workbooks from Supabase with selective column projection & optimized ordering
+ */
 export async function fetchWorkbooksFromSupabase(): Promise<ServerWorkbook[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?select=*`, {
+    const query = 'select=ma_don_vi,ten_don_vi,phien_ban,updated_at,du_lieu_ho_so_json&order=updated_at.desc.nullslast&limit=100';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?${query}`, {
       headers: getHeaders(),
       cache: 'no-store'
     });
@@ -36,10 +46,10 @@ export async function fetchWorkbooksFromSupabase(): Promise<ServerWorkbook[]> {
               id: `part_${wb.unitId || r.ma_don_vi}`,
               sessionId: `sess_${wb.unitId || r.ma_don_vi}`,
               workbookId: wb.id || `wb_${r.ma_don_vi}_2026`,
-              displayName: r.du_lieu_ho_so_json?.actorTitle || 'Chuyên viên',
+              displayName: r.du_lieu_ho_so_json?.actorTitle || 'Chuyên viên phụ trách',
               email,
               emailNormalized: email.trim().toLowerCase(),
-              roleLabel: r.du_lieu_ho_so_json?.actorTitle || 'Chuyên viên',
+              roleLabel: r.du_lieu_ho_so_json?.actorTitle || 'Chuyên viên phụ trách',
               startedAt: wb.updatedAt || new Date().toISOString(),
               updatedAt: wb.updatedAt || new Date().toISOString()
             }];
@@ -55,7 +65,7 @@ export async function fetchWorkbooksFromSupabase(): Promise<ServerWorkbook[]> {
       const unitCode = r.ma_don_vi;
       const unit = findHcmuteUnit(unitCode);
       const email = r.du_lieu_ho_so_json?.actorEmail || 'tcns@hcmute.edu.vn';
-      const title = r.du_lieu_ho_so_json?.actorTitle || 'Chuyên viên';
+      const title = r.du_lieu_ho_so_json?.actorTitle || 'Chuyên viên phụ trách';
       const updated = r.updated_at ? new Date(r.updated_at).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
       const revNum = parseInt((r.phien_ban || '').replace('v', ''), 10) || 1;
 
@@ -100,12 +110,15 @@ export async function fetchWorkbooksFromSupabase(): Promise<ServerWorkbook[]> {
   }
 }
 
-export async function persistWorkbookToSupabase(wb: ServerWorkbook): Promise<boolean> {
+/**
+ * Persist workbook to Supabase t_tien_do with optimized payload
+ */
+export async function persistWorkbookToSupabase(wb: ServerWorkbook, userToken?: string): Promise<boolean> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return false;
   try {
     const latestPart = wb.participants[wb.participants.length - 1] || {
       email: 'tcns@hcmute.edu.vn',
-      roleLabel: 'Chuyên viên'
+      roleLabel: 'Chuyên viên phụ trách'
     };
 
     let a1Count = 0;
@@ -143,7 +156,7 @@ export async function persistWorkbookToSupabase(wb: ServerWorkbook): Promise<boo
     const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?on_conflict=ma_don_vi`, {
       method: 'POST',
       headers: {
-        ...getHeaders(),
+        ...getHeaders(userToken),
         Prefer: 'resolution=merge-duplicates,return=minimal'
       },
       body: JSON.stringify(payload)
@@ -155,6 +168,9 @@ export async function persistWorkbookToSupabase(wb: ServerWorkbook): Promise<boo
   }
 }
 
+/**
+ * Generic PostgREST upsert helper for any Supabase table
+ */
 export async function postServerRest(
   table: string,
   payload: unknown,

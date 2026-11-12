@@ -54,3 +54,4 @@ export function DotPattern({
     </svg>
   );
 }
+
