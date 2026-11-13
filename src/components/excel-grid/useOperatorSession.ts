@@ -8,6 +8,7 @@ import {
 } from '@/services/telemetry/operator-session';
 import { saveLocalDraft, queueOfflineSync } from '@/services/storage/indexeddb-storage';
 import { saveActiveUnitSession } from '@/services/telemetry/activity-log';
+import { consumeGoogleOAuthCallback } from '@/services/auth/google-auth';
 import { ExcelSheetKey, GenericGridRow } from './excel-grid-types';
 
 export type SyncStatusKind = 'synced' | 'saving' | 'offline' | 'conflict' | 'unsaved';
@@ -40,10 +41,12 @@ export function useOperatorSession() {
   useEffect(() => {
     let isMounted = true;
     const sync = async () => {
-      const cur = getCurrentOperatorSession();
+      const oauth = consumeGoogleOAuthCallback();
+      const cur = oauth || getCurrentOperatorSession();
       if (!isMounted) return;
       if (cur) {
         setSession(cur);
+        setIsModalOpen(false);
         const saved = getSessionByEmail(cur.email);
         if (saved?.touchedCells) setTouchedCells(new Set(saved.touchedCells));
         try {
@@ -63,11 +66,14 @@ export function useOperatorSession() {
         setIsModalOpen(true);
       }
     };
+    const openModalHandler = () => setIsModalOpen(true);
     sync();
     window.addEventListener('vtvl-operator-changed', sync);
+    window.addEventListener('vtvl-open-session-modal', openModalHandler);
     return () => {
       isMounted = false;
       window.removeEventListener('vtvl-operator-changed', sync);
+      window.removeEventListener('vtvl-open-session-modal', openModalHandler);
     };
   }, []);
 

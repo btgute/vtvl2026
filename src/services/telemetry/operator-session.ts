@@ -9,6 +9,10 @@ export interface OperatorSession {
   title: string;
   startedAt: string;
   lastActiveAt: string;
+  displayName?: string;
+  avatarUrl?: string;
+  authProvider?: 'google' | 'email';
+  accessToken?: string;
 }
 
 export interface EmailSessionRecord {
@@ -103,18 +107,20 @@ export function registerOperatorSession(
 export function saveCurrentOperatorSession(
   email: string,
   unitCode: string,
-  title: string
+  title: string,
+  meta?: { displayName?: string; avatarUrl?: string; authProvider?: 'google' | 'email'; accessToken?: string }
 ): OperatorSession {
   const normEmail = normalizeEmail(email);
   const unit = findHcmuteUnit(unitCode);
   const now = new Date().toLocaleString('vi-VN');
+  const existing = getCurrentOperatorSession();
   const session: OperatorSession = {
-    email: normEmail,
-    unitCode,
-    unitNameVi: unit.nameVi,
-    title: title.trim(),
-    startedAt: now,
-    lastActiveAt: now
+    email: normEmail, unitCode, unitNameVi: unit.nameVi, title: title.trim(),
+    startedAt: now, lastActiveAt: now,
+    displayName: meta?.displayName ?? (existing?.email === normEmail ? existing.displayName : undefined),
+    avatarUrl: meta?.avatarUrl ?? (existing?.email === normEmail ? existing.avatarUrl : undefined),
+    authProvider: meta?.authProvider ?? (existing?.email === normEmail ? existing.authProvider : 'email'),
+    accessToken: meta?.accessToken ?? (existing?.email === normEmail ? existing.accessToken : undefined)
   };
   if (typeof window !== 'undefined') {
     try {

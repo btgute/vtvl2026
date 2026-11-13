@@ -3,26 +3,48 @@ import { findHcmuteUnit } from '@/configs/hcmute-units';
 import { buildDefaultGridWorkbook } from '@/components/excel-grid/excel-grid-defaults';
 
 const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhjodwlvwzlaasvpkhkr.supabase.co').trim();
-const SUPABASE_KEY = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_Jq2OnP0ITDBi0wwBrPj7zw_36qiII2P').trim();
+const SUPABASE_KEY = (
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  ''
+).trim();
 
-function getHeaders(): Record<string, string> {
+const CACHE_TTL_MS = 5000;
+let cachedWorkbooks: ServerWorkbook[] | null = null;
+let lastFetchedAt = 0;
+
+function getHeaders(userToken?: string): Record<string, string> {
+  const bearer = userToken || SUPABASE_KEY;
   return {
     apikey: SUPABASE_KEY,
-    Authorization: `Bearer ${SUPABASE_KEY}`,
+    Authorization: `Bearer ${bearer}`,
     'Content-Type': 'application/json'
   };
 }
 
-export async function fetchWorkbooksFromSupabase(): Promise<ServerWorkbook[]> {
+export function invalidateSupabaseCache(): void {
+  cachedWorkbooks = null;
+  lastFetchedAt = 0;
+}
+
+export async function fetchWorkbooksFromSupabase(forceRefresh = false): Promise<ServerWorkbook[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
+
+  const now = Date.now();
+  if (!forceRefresh && cachedWorkbooks && now - lastFetchedAt < CACHE_TTL_MS) {
+    return cachedWorkbooks;
+  }
+
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?select=*`, {
+    const query =
+      'select=ma_don_vi,ten_don_vi,phien_ban,updated_at,du_lieu_ho_so_json&order=updated_at.desc.nullslast&limit=100';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?${query}`, {
       headers: getHeaders(),
       cache: 'no-store'
     });
-    if (!res.ok) return [];
+    if (!res.ok) return cachedWorkbooks || [];
     const rows = await res.json();
-    if (!Array.isArray(rows)) return [];
+    if (!Array.isArray(rows)) return cachedWorkbooks || [];
 
     const workbooks: ServerWorkbook[] = [];
 
@@ -51,7 +73,8 @@ export async function fetchWorkbooksFromSupabase(): Promise<ServerWorkbook[]> {
         continue;
       }
 
-      // Khôi phục hồ sơ tối thiểu nếu tệp được tạo từ luồng cũ
+      if (r.du_lieu_ho_so_json?.isDeleted) continue;
+
       const unitCode = r.ma_don_vi;
       const unit = findHcmuteUnit(unitCode);
       const email = r.du_lieu_ho_so_json?.actorEmail || 'tcns@hcmute.edu.vn';
@@ -94,14 +117,17 @@ export async function fetchWorkbooksFromSupabase(): Promise<ServerWorkbook[]> {
       });
     }
 
+    cachedWorkbooks = workbooks;
+    lastFetchedAt = Date.now();
     return workbooks;
   } catch {
-    return [];
+    return cachedWorkbooks || [];
   }
 }
 
-export async function persistWorkbookToSupabase(wb: ServerWorkbook): Promise<boolean> {
+export async function persistWorkbookToSupabase(wb: ServerWorkbook, userToken?: string): Promise<boolean> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+  invalidateSupabaseCache();
   try {
     const latestPart = wb.participants[wb.participants.length - 1] || {
       email: 'tcns@hcmute.edu.vn',
@@ -143,7 +169,7 @@ export async function persistWorkbookToSupabase(wb: ServerWorkbook): Promise<boo
     const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?on_conflict=ma_don_vi`, {
       method: 'POST',
       headers: {
-        ...getHeaders(),
+        ...getHeaders(userToken),
         Prefer: 'resolution=merge-duplicates,return=minimal'
       },
       body: JSON.stringify(payload)
@@ -180,8 +206,9 @@ export async function postServerRest(
 
 export async function deleteWorkbookFromSupabase(unitId: string): Promise<boolean> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+  invalidateSupabaseCache();
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?ma_don_vi=eq.${unitId}`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?ma_don_vi=eq.${encodeURIComponent(unitId)}`, {
       method: 'PATCH',
       headers: {
         ...getHeaders(),
