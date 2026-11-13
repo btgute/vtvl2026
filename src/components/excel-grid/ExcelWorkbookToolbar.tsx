@@ -47,6 +47,8 @@ export function ExcelWorkbookToolbar({
 }: ExcelWorkbookToolbarProps) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const isAdmin = session?.role === 'admin';
+  const canChangeUnit = !session || isAdmin;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -65,19 +67,25 @@ export function ExcelWorkbookToolbar({
         {/* Unit Selector */}
         <div className="flex items-center gap-1.5 bg-[#f1f5f9] px-2.5 py-1 rounded-xl border border-[#cbd5e1] min-w-[240px]">
           <span className="text-xs font-bold text-[#004776] shrink-0">Đơn vị:</span>
-          <ShadcnSelect
-            value={unitCode}
-            onValueChange={onUnitChange}
-            options={QD2266_GROUPED_UNITS_CATALOG.flatMap((group) =>
-              group.units.map((u) => ({
-                value: u.code,
-                label: `[${u.code}] ${u.nameVi}${u.plLabel ? ` (${u.plLabel})` : ''}`,
-                group: group.groupLabel
-              }))
-            )}
-            searchable={true}
-            size="sm"
-          />
+          {canChangeUnit ? (
+            <ShadcnSelect
+              value={unitCode}
+              onValueChange={onUnitChange}
+              options={QD2266_GROUPED_UNITS_CATALOG.flatMap((group) =>
+                group.units.map((u) => ({
+                  value: u.code,
+                  label: `[${u.code}] ${u.nameVi}${u.plLabel ? ` (${u.plLabel})` : ''}`,
+                  group: group.groupLabel
+                }))
+              )}
+              searchable={true}
+              size="sm"
+            />
+          ) : (
+            <span className="text-xs font-bold text-[#004776] truncate py-1" title="Đơn vị cố định theo tài khoản">
+              [{unitCode}] {currentUnit.nameVi} (Cố định)
+            </span>
+          )}
         </div>
 
         {/* Khối Cán bộ thực hiện */}
@@ -92,25 +100,22 @@ export function ExcelWorkbookToolbar({
             <span className="text-[#cbd5e1]">|</span>
             <span className="font-semibold text-[#004776]/85">{session.title}</span>
 
-            <button
-              type="button"
-              onClick={onSwitchSession}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold text-white bg-[#004776] hover:bg-[#00385c] active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0 ml-0.5"
-              title="Đổi tài khoản người thực hiện"
-            >
-              <ArrowLeftRight className="w-3 h-3 text-white" />
-              <span>Đổi</span>
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={onSwitchSession}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold text-white bg-[#004776] hover:bg-[#00385c] active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0 ml-0.5"
+                title="Đổi tài khoản người thực hiện (Admin)"
+              >
+                <RefreshCw className="w-2.5 h-2.5" />
+                <span>Đổi</span>
+              </button>
+            )}
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={onSwitchSession}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs cursor-pointer shadow-xs transition-colors shrink-0 animate-pulse"
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            <span>Xác nhận người thực hiện</span>
-          </button>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200 text-xs text-[#476885] shrink-0 font-medium">
+            <span>Chưa đăng nhập (Xem mẫu)</span>
+          </div>
         )}
       </div>
 

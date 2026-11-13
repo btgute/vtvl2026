@@ -79,6 +79,12 @@ export function ExcelWorkbookViewer({ initialUnitCode = 'TCNS' }: ExcelWorkbookV
     exportFullWorkbook, goToNextSheet, goToPrevSheet
   } = useExcelGridState(session?.unitCode || initialUnitCode);
 
+  useEffect(() => {
+    if (session?.unitCode && session.unitCode !== unitCode) {
+      gridHandleUnitChange(session.unitCode);
+    }
+  }, [session?.unitCode, unitCode, gridHandleUnitChange]);
+
   const activeMeta = EXCEL_SHEET_METAS[activeSheet];
   const activeRows = data[activeSheet] || [];
 

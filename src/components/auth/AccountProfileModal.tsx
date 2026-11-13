@@ -59,6 +59,7 @@ export function AccountProfileModal({
   if (!isOpen) return null;
 
   const canChangeRole = isAdmin || session.role === 'admin';
+  const canChangeUnit = canChangeRole;
   const unitOptions = QD2266_GROUPED_UNITS_CATALOG.flatMap((group) =>
     group.units.map((u) => ({
       value: u.code,
@@ -74,7 +75,7 @@ export function AccountProfileModal({
 
     const res = await updateMyAccountOnServer(session, {
       displayName: displayName.trim() || session.email.split('@')[0],
-      unitCode,
+      unitCode: canChangeUnit ? unitCode : session.unitCode,
       title,
       role: canChangeRole ? role : undefined
     });
@@ -173,17 +174,28 @@ export function AccountProfileModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-bold text-[#004776]">
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>Đơn vị công tác</span>
+                <label className="flex items-center justify-between text-xs font-bold text-[#004776]">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Đơn vị công tác</span>
+                  </span>
+                  {!canChangeUnit && (
+                    <span className="text-[11px] text-[#476885] font-semibold">Cố định theo email</span>
+                  )}
                 </label>
-                <ShadcnSelect
-                  value={unitCode}
-                  onValueChange={setUnitCode}
-                  options={unitOptions}
-                  searchable={true}
-                  size="md"
-                />
+                {canChangeUnit ? (
+                  <ShadcnSelect
+                    value={unitCode}
+                    onValueChange={setUnitCode}
+                    options={unitOptions}
+                    searchable={true}
+                    size="md"
+                  />
+                ) : (
+                  <div className="w-full h-11 px-3.5 flex items-center bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-xs font-bold text-[#004776] cursor-not-allowed">
+                    [{session.unitCode}] {session.unitNameVi || session.unitCode}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1.5">

@@ -19,6 +19,7 @@ export interface UserAccountRecord {
   authProvider: 'google' | 'email';
   avatarUrl?: string;
   status: 'active' | 'suspended';
+  hasSelectedUnit?: boolean;
   createdAt: string;
   lastActiveAt: string;
 }
@@ -50,16 +51,18 @@ function normalizeRecord(item: Partial<UserAccountRecord> & { email: string }): 
   const email = normalizeEmail(item.email);
   const unit = findHcmuteUnit(item.unitCode || 'FIT');
   const now = new Date().toLocaleString('vi-VN');
+  const isTcns = email === 'tcns@hcmute.edu.vn';
   return {
     email,
     displayName: (item.displayName || email.split('@')[0]).trim(),
     unitCode: unit.code,
     unitNameVi: unit.nameVi,
-    title: (item.title || 'Chuyên viên').trim(),
-    role: isValidRole(item.role) ? item.role : email === 'tcns@hcmute.edu.vn' ? 'admin' : 'editor',
+    title: (item.title || (isTcns ? 'Trưởng phòng' : 'Chuyên viên')).trim(),
+    role: isValidRole(item.role) ? item.role : isTcns ? 'admin' : 'editor',
     authProvider: item.authProvider === 'google' ? 'google' : 'email',
     avatarUrl: item.avatarUrl,
     status: item.status === 'suspended' ? 'suspended' : 'active',
+    hasSelectedUnit: item.hasSelectedUnit !== undefined ? Boolean(item.hasSelectedUnit) : isTcns,
     createdAt: item.createdAt || now,
     lastActiveAt: item.lastActiveAt || now
   };
@@ -75,6 +78,7 @@ function seedFromWorkbooks(store: Map<string, UserAccountRecord>): boolean {
       unitCode: 'TCNS',
       title: 'Trưởng phòng',
       role: 'admin',
+      hasSelectedUnit: true,
       createdAt: now,
       lastActiveAt: now
     }));

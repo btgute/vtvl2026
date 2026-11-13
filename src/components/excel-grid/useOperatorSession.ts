@@ -42,15 +42,21 @@ export function useOperatorSession() {
     let isMounted = true;
     const sync = async () => {
       const oauth = consumeGoogleOAuthCallback();
-      let cur = oauth || getCurrentOperatorSession();
+      const cur = oauth || getCurrentOperatorSession();
       if (!cur) {
-        cur = saveCurrentOperatorSession('tcns@hcmute.edu.vn', 'TCNS', 'Chuyên viên');
+        if (!isMounted) return;
+        setSession(null);
+        setWorkbookId(null);
+        setDataSource('sample');
+        setSyncStatus('synced');
+        return;
       }
       if (!isMounted) return;
       setSession(cur);
       setIsModalOpen(false);
       const saved = getSessionByEmail(cur.email);
       if (saved?.touchedCells) setTouchedCells(new Set(saved.touchedCells));
+      if (!cur.hasSelectedUnit && cur.role !== 'admin') return;
       try {
         const res = await fetch(`/api/workbooks/wb_${cur.unitCode}_2026`);
         if (res.ok && isMounted) {
@@ -88,6 +94,8 @@ export function useOperatorSession() {
   }, [dataSource]);
 
   const updateSessionUnit = useCallback((newUnitCode: string) => {
+    const cur = getCurrentOperatorSession();
+    if (cur?.hasSelectedUnit && cur.role !== 'admin' && cur.unitCode !== newUnitCode) return;
     const updated = updateOperatorSessionUnit(newUnitCode);
     if (updated) {
       setSession(updated);
@@ -253,7 +261,10 @@ export function useOperatorSession() {
     if (lastDataRef.current) persistDataForSession(lastDataRef.current, true);
   }, [persistDataForSession]);
 
-  const switchSession = useCallback(() => setIsModalOpen(true), []);
+  const switchSession = useCallback(() => {
+    const cur = getCurrentOperatorSession();
+    if (!cur || cur.role === 'admin') setIsModalOpen(true);
+  }, []);
   const closeModal = useCallback(() => setIsModalOpen(false), []);
   const logoutSession = useCallback(() => {
     clearCurrentOperatorSession();
@@ -261,7 +272,7 @@ export function useOperatorSession() {
     setWorkbookId(null);
     setDataSource('sample');
     setTouchedCells(new Set());
-    setIsModalOpen(true);
+    setIsModalOpen(false);
   }, []);
 
   return {

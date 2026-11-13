@@ -14,6 +14,7 @@ export interface OperatorSession {
   authProvider?: 'google' | 'email';
   accessToken?: string;
   role?: 'admin' | 'unit_leader' | 'editor' | 'viewer';
+  hasSelectedUnit?: boolean;
 }
 
 export interface EmailSessionRecord {
@@ -109,6 +110,7 @@ export function saveCurrentOperatorSession(
     authProvider?: 'google' | 'email';
     accessToken?: string;
     role?: 'admin' | 'unit_leader' | 'editor' | 'viewer';
+    hasSelectedUnit?: boolean;
   }
 ): OperatorSession {
   const normEmail = normalizeEmail(email);
@@ -116,13 +118,18 @@ export function saveCurrentOperatorSession(
   const now = new Date().toLocaleString('vi-VN');
   const existing = getCurrentOperatorSession();
   const session: OperatorSession = {
-    email: normEmail, unitCode, unitNameVi: unit.nameVi, title: title.trim(),
-    startedAt: now, lastActiveAt: now,
+    email: normEmail,
+    unitCode,
+    unitNameVi: unit.nameVi,
+    title: title.trim(),
+    startedAt: now,
+    lastActiveAt: now,
     displayName: meta?.displayName ?? (existing?.email === normEmail ? existing.displayName : undefined),
     avatarUrl: meta?.avatarUrl ?? (existing?.email === normEmail ? existing.avatarUrl : undefined),
     authProvider: meta?.authProvider ?? (existing?.email === normEmail ? existing.authProvider : 'email'),
     accessToken: meta?.accessToken ?? (existing?.email === normEmail ? existing.accessToken : undefined),
-    role: meta?.role ?? (existing?.email === normEmail ? existing.role : undefined)
+    role: meta?.role ?? (existing?.email === normEmail ? existing.role : undefined),
+    hasSelectedUnit: meta?.hasSelectedUnit ?? (existing?.email === normEmail ? existing.hasSelectedUnit : undefined)
   };
   if (typeof window !== 'undefined') {
     try {
@@ -134,9 +141,12 @@ export function saveCurrentOperatorSession(
   return session;
 }
 
-export function updateOperatorSessionUnit(unitCode: string): OperatorSession | null {
+export function updateOperatorSessionUnit(unitCode: string, forceAdmin = false): OperatorSession | null {
   const cur = getCurrentOperatorSession();
   if (!cur) return null;
+  if (!forceAdmin && cur.hasSelectedUnit && cur.role !== 'admin' && cur.unitCode !== unitCode) {
+    return cur;
+  }
   const unit = findHcmuteUnit(unitCode);
   const updated: OperatorSession = { ...cur, unitCode, unitNameVi: unit.nameVi, lastActiveAt: new Date().toLocaleString('vi-VN') };
   if (typeof window !== 'undefined') {
@@ -238,14 +248,9 @@ export function saveEmailSessionData(
   }
 
   const newRecord: EmailSessionRecord = {
-    email: normEmail,
-    unitCode,
-    unitNameVi: unit.nameVi,
-    title: title.trim() || 'Chuyên viên',
-    lastSavedAt: now,
-    touchedCells: touchedCells || [],
-    totalRows,
-    sheetSummaries
+    email: normEmail, unitCode, unitNameVi: unit.nameVi,
+    title: title.trim() || 'Chuyên viên', lastSavedAt: now,
+    touchedCells: touchedCells || [], totalRows, sheetSummaries
   };
 
   try {

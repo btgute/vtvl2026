@@ -59,6 +59,7 @@ export function ScientificWorkspaceCard(props: ScientificWorkspaceCardProps) {
         totalSheets={props.totalSheets}
         orderMode={props.orderMode}
         qualityReport={props.qualityReport}
+        session={props.session}
         onSelectSheet={props.onSelectSheet}
         onUnitChange={props.onUnitChange}
         onOpenGuidance={props.onOpenGuidance}

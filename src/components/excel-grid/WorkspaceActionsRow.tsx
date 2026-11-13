@@ -2,21 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Layers,
-  ChevronDown,
-  ShieldCheck,
-  Save,
-  ArrowRight,
-  MoreHorizontal,
-  RefreshCw,
-  Database,
-  BarChart3,
-  Network,
-  Download,
-  KeyRound,
-  FileSpreadsheet,
-  Check,
-  User
+  Layers, ChevronDown, ShieldCheck, Save, ArrowRight, MoreHorizontal,
+  RefreshCw, Database, BarChart3, Network, Download, KeyRound,
+  FileSpreadsheet, Check, User
 } from 'lucide-react';
 import { ExcelSheetKey, SheetOrderMode } from './excel-grid-types';
 import { OperatorSession } from '@/services/telemetry/operator-session';
@@ -45,23 +33,10 @@ interface WorkspaceActionsRowProps {
 }
 
 export function WorkspaceActionsRow({
-  activeSheet,
-  session,
-  orderMode,
-  canNext,
-  isExporting,
-  isC1Unlocked,
-  onSwitchSession,
-  onToggleOrderMode,
-  onOpenQualityModal,
-  onOpenChartModal,
-  onOpenOrgTreeModal,
-  onSaveSheet,
-  onSaveAndNext,
-  onExportWorkbook,
-  onLoadTcnsData,
-  onLoadRecommendedVtvls,
-  onOpenUnlockModal
+  activeSheet, session, orderMode, canNext, isExporting, isC1Unlocked,
+  onSwitchSession, onToggleOrderMode, onOpenQualityModal, onOpenChartModal,
+  onOpenOrgTreeModal, onSaveSheet, onSaveAndNext, onExportWorkbook,
+  onLoadTcnsData, onLoadRecommendedVtvls, onOpenUnlockModal
 }: WorkspaceActionsRowProps) {
   const [showOrderMenu, setShowOrderMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -83,25 +58,36 @@ export function WorkspaceActionsRow({
     <div className="flex flex-wrap items-center justify-between gap-2.5 min-w-0">
       {/* Bên trái: Người thực hiện & đổi phiên (Hiển thị duy nhất tại đây) */}
       <div className="flex flex-wrap items-center gap-2 text-xs text-[#476885] min-w-0 max-w-full">
-        <div
-          className="inline-flex flex-wrap items-center gap-1.5 bg-[#f8fafc] min-h-[36px] py-1 px-2.5 rounded-lg border border-[#e2e8f0] min-w-0 max-w-full"
-          title={`${session?.email || 'tcns@hcmute.edu.vn'} · ${session?.title || 'Chuyên viên'}`}
-        >
-          <User className="w-3.5 h-3.5 text-[#004776] shrink-0" />
-          <span className="font-medium text-[#004776] truncate max-w-[180px] sm:max-w-[260px]">
-            {session?.email || 'tcns@hcmute.edu.vn'}
-          </span>
-          <span className="text-[#94a3b8]">·</span>
-          <span className="truncate max-w-[130px] sm:max-w-[180px]">{session?.title || 'Chuyên viên'}</span>
-          <span className="text-[#cbd5e1]">|</span>
-          <button
-            type="button"
-            onClick={onSwitchSession}
-            className="font-semibold text-[#004776] hover:underline cursor-pointer shrink-0"
+        {session ? (
+          <div
+            className="inline-flex flex-wrap items-center gap-1.5 bg-[#f8fafc] min-h-[36px] py-1 px-2.5 rounded-lg border border-[#e2e8f0] min-w-0 max-w-full"
+            title={`${session.email} · ${session.title || 'Chuyên viên'}`}
           >
-            Đổi phiên
-          </button>
-        </div>
+            <User className="w-3.5 h-3.5 text-[#004776] shrink-0" />
+            <span className="font-medium text-[#004776] truncate max-w-[180px] sm:max-w-[260px]">
+              {session.email}
+            </span>
+            <span className="text-[#94a3b8]">·</span>
+            <span className="truncate max-w-[130px] sm:max-w-[180px]">{session.title || 'Chuyên viên'}</span>
+            {session.role === 'admin' && (
+              <>
+                <span className="text-[#cbd5e1]">|</span>
+                <button
+                  type="button"
+                  onClick={onSwitchSession}
+                  className="font-semibold text-[#004776] hover:underline cursor-pointer shrink-0"
+                >
+                  Đổi phiên
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 bg-[#f8fafc] min-h-[36px] py-1 px-2.5 rounded-lg border border-[#e2e8f0] text-xs font-medium text-[#476885]">
+            <User className="w-3.5 h-3.5 text-[#476885] shrink-0" />
+            <span>Chưa đăng nhập (Xem mẫu)</span>
+          </div>
+        )}
       </div>
 
       {/* Bên phải: Thứ tự biểu · Kiểm tra dữ liệu · Lưu biểu · Lưu & sang biểu tiếp · ⋯ */}

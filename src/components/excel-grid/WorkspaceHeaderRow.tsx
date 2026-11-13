@@ -7,6 +7,7 @@ import { EXCEL_SHEET_METAS } from './excel-sheet-metas';
 import { getActiveHcmuteUnits } from '@/configs/hcmute-units';
 import { HcmuteUnit } from '@/types/vtvl';
 import { ValidationReport } from '@/services/validation';
+import { OperatorSession } from '@/services/telemetry/operator-session';
 import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from '@/components/ui/Popover';
 
 interface WorkspaceHeaderRowProps {
@@ -18,6 +19,7 @@ interface WorkspaceHeaderRowProps {
   totalSheets: number;
   orderMode: SheetOrderMode;
   qualityReport: ValidationReport;
+  session?: OperatorSession | null;
   onSelectSheet: (key: ExcelSheetKey) => void;
   onUnitChange: (code: string) => void;
   onOpenGuidance: () => void;
@@ -33,6 +35,7 @@ export function WorkspaceHeaderRow({
   totalSheets,
   orderMode,
   qualityReport,
+  session,
   onSelectSheet,
   onUnitChange,
   onOpenGuidance,
@@ -40,6 +43,9 @@ export function WorkspaceHeaderRow({
 }: WorkspaceHeaderRowProps) {
   const [unitSearch, setUnitSearch] = useState('');
   const [availableUnits, setAvailableUnits] = useState<HcmuteUnit[]>(() => getActiveHcmuteUnits());
+
+  const isAdmin = session?.role === 'admin';
+  const canChangeUnit = !session || isAdmin;
 
   const activeMeta = EXCEL_SHEET_METAS[activeSheet];
   const fixCount = qualityReport.summary.fixCount;
@@ -109,45 +115,58 @@ export function WorkspaceHeaderRow({
 
         <span className="hidden sm:inline text-[#cbd5e1]">|</span>
 
-        {/* 3. Popover đổi đơn vị công tác */}
-        <Popover>
-          <PopoverTrigger>
-            <span
-              className="inline-flex items-center gap-1.5 h-9 px-3 bg-white hover:bg-[#f4f7fb] border border-[#cbd5e1] hover:border-[#004776] rounded-xl text-[13.5px] font-semibold text-[#004776] transition-colors max-w-[220px] sm:max-w-xs truncate"
-              title={`[${unitCode}] ${currentUnit.nameVi} — Nhấp để đổi đơn vị công tác`}
-            >
-              <Building2 className="w-4 h-4 text-[#004776] shrink-0" />
-              <span className="truncate font-bold">[{unitCode}] {currentUnit.nameVi}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#476885] shrink-0" />
-            </span>
-          </PopoverTrigger>
+        {/* 3. Popover đổi đơn vị công tác (hoặc nhãn cố định nếu đã đăng nhập và không phải Admin) */}
+        {canChangeUnit ? (
+          <Popover>
+            <PopoverTrigger>
+              <span
+                className="inline-flex items-center gap-1.5 h-9 px-3 bg-white hover:bg-[#f4f7fb] border border-[#cbd5e1] hover:border-[#004776] rounded-xl text-[13.5px] font-semibold text-[#004776] transition-colors max-w-[220px] sm:max-w-xs truncate"
+                title={`[${unitCode}] ${currentUnit.nameVi} — Nhấp để đổi đơn vị công tác`}
+              >
+                <Building2 className="w-4 h-4 text-[#004776] shrink-0" />
+                <span className="truncate font-bold">[{unitCode}] {currentUnit.nameVi}</span>
+                <ChevronDown className="w-3.5 h-3.5 text-[#476885] shrink-0" />
+              </span>
+            </PopoverTrigger>
 
-          <PopoverContent align="start" className="w-[min(22rem,calc(100vw-2rem))] p-2.5">
-            <input
-              type="text"
-              value={unitSearch}
-              onChange={(e) => setUnitSearch(e.target.value)}
-              placeholder="Tìm mã hoặc tên đơn vị..."
-              className="w-full h-9 px-3 text-sm rounded-xl border border-[#cbd5e1] mb-2 text-[#004776] font-medium focus:ring-2 focus:ring-[#004776]/25 focus:border-[#004776] outline-hidden"
-            />
-            <div className="max-h-60 overflow-y-auto space-y-0.5">
-              {filteredUnits.map((u: HcmuteUnit) => (
-                <PopoverClose key={u.code} onClick={() => onUnitChange(u.code)}>
-                  <div
-                    className={`w-full text-left px-3 py-2 rounded-lg text-[13px] truncate flex items-center justify-between gap-2 ${
-                      u.code === unitCode
-                        ? 'bg-[#eef5ff] text-[#004776] font-bold'
-                        : 'hover:bg-[#f4f7fb] text-[#004776] font-medium'
-                    }`}
-                  >
-                    <span className="truncate">[{u.code}] {u.nameVi}</span>
-                    {u.code === unitCode && <Check className="w-4 h-4 text-[#004776] shrink-0" />}
-                  </div>
-                </PopoverClose>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+            <PopoverContent align="start" className="w-[min(22rem,calc(100vw-2rem))] p-2.5">
+              <input
+                type="text"
+                value={unitSearch}
+                onChange={(e) => setUnitSearch(e.target.value)}
+                placeholder="Tìm mã hoặc tên đơn vị..."
+                className="w-full h-9 px-3 text-sm rounded-xl border border-[#cbd5e1] mb-2 text-[#004776] font-medium focus:ring-2 focus:ring-[#004776]/25 focus:border-[#004776] outline-hidden"
+              />
+              <div className="max-h-60 overflow-y-auto space-y-0.5">
+                {filteredUnits.map((u: HcmuteUnit) => (
+                  <PopoverClose key={u.code} onClick={() => onUnitChange(u.code)}>
+                    <div
+                      className={`w-full text-left px-3 py-2 rounded-lg text-[13px] truncate flex items-center justify-between gap-2 ${
+                        u.code === unitCode
+                          ? 'bg-[#eef5ff] text-[#004776] font-bold'
+                          : 'hover:bg-[#f4f7fb] text-[#004776] font-medium'
+                      }`}
+                    >
+                      <span className="truncate">[{u.code}] {u.nameVi}</span>
+                      {u.code === unitCode && <Check className="w-4 h-4 text-[#004776] shrink-0" />}
+                    </div>
+                  </PopoverClose>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <span
+            className="inline-flex items-center gap-1.5 h-9 px-3 bg-[#f5f9ff] border border-[#d8e3ef] rounded-xl text-[13.5px] font-bold text-[#004776] max-w-[220px] sm:max-w-xs truncate cursor-default shadow-2xs"
+            title={`[${unitCode}] ${currentUnit.nameVi} · Đơn vị công tác cố định (Chỉ Admin mới có quyền đổi)`}
+          >
+            <Building2 className="w-4 h-4 text-[#004776] shrink-0" />
+            <span className="truncate font-bold">[{unitCode}] {currentUnit.nameVi}</span>
+            <span className="text-[10.5px] px-1.5 py-0.5 rounded-md bg-[#e1edf8] text-[#004776] font-semibold shrink-0">
+              Cố định
+            </span>
+          </span>
+        )}
 
         {/* 4. Trạng thái Bước & Biểu */}
         <span className="hidden md:inline-flex items-center gap-1.5 h-9 px-3 bg-[#f4f7fb] border border-[#e2ecf7] rounded-xl text-[13px] font-semibold text-[#20446c] shrink-0">

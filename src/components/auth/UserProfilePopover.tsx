@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
 import { GoogleLogoSvg, GoogleOAuthButton } from '@/components/auth/GoogleOAuthButton';
 import { AccountProfileModal } from '@/components/auth/AccountProfileModal';
+import { UnitSelectionModal } from '@/components/auth/UnitSelectionModal';
 import {
   OperatorSession,
   getCurrentOperatorSession
@@ -72,6 +73,14 @@ export function UserProfilePopover() {
     }
     setRoleUpdating(false);
   };
+
+  const handleUnitConfirmed = async (unitCode: string, title: string) => {
+    if (!session) return;
+    await updateMyAccountOnServer(session, { unitCode, title, hasSelectedUnit: true });
+    await loadAndSync();
+  };
+
+  const needsUnitSelection = Boolean(session && !session.hasSelectedUnit && session.role !== 'admin');
 
   if (!session) {
     return (
@@ -227,12 +236,14 @@ export function UserProfilePopover() {
               </span>
             </PopoverClose>
 
-            <PopoverClose onClick={handleOpenSwitchModal}>
-              <span className="w-full inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-[#d8e3ef] bg-white hover:bg-[#f4f7fb] text-xs font-semibold text-[#004776] transition-colors">
-                <RefreshCw className="w-3.5 h-3.5 text-[#004776]" />
-                <span>Đổi đơn vị hoặc phiên làm việc</span>
-              </span>
-            </PopoverClose>
+            {canManageAdminRoles && (
+              <PopoverClose onClick={handleOpenSwitchModal}>
+                <span className="w-full inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-[#d8e3ef] bg-white hover:bg-[#f4f7fb] text-xs font-semibold text-[#004776] transition-colors">
+                  <RefreshCw className="w-3.5 h-3.5 text-[#004776]" />
+                  <span>Đổi đơn vị hoặc phiên làm việc</span>
+                </span>
+              </PopoverClose>
+            )}
 
             {canManageAdminRoles && (
               <Link
@@ -260,6 +271,12 @@ export function UserProfilePopover() {
         isAdmin={isAdmin}
         onClose={() => setIsProfileOpen(false)}
         onUpdated={() => loadAndSync()}
+      />
+
+      <UnitSelectionModal
+        isOpen={needsUnitSelection}
+        session={session}
+        onConfirmed={handleUnitConfirmed}
       />
     </>
   );

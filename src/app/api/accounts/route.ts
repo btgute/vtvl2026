@@ -25,10 +25,7 @@ export async function GET(req: NextRequest) {
   }
 
   await syncAccountsFromSupabase();
-  let account = getUserAccountByEmail(email);
-  if (!account) {
-    account = upsertUserAccount({ email });
-  }
+  const account = getUserAccountByEmail(email);
 
   const cookieAdmin = await getServerAdminAuth();
   const bearer = extractBearer(req);
@@ -51,24 +48,34 @@ export async function POST(req: NextRequest) {
     }
 
     await syncAccountsFromSupabase();
-    const account = upsertUserAccount({
-      email,
-      displayName: body.displayName,
-      unitCode: body.unitCode,
-      title: body.title,
-      avatarUrl: body.avatarUrl,
-      authProvider: body.authProvider === 'google' ? 'google' : 'email'
-    });
-
+    const existing = getUserAccountByEmail(email);
     const cookieAdmin = await getServerAdminAuth();
     const bearer = extractBearer(req);
     const verifiedGoogleAdmin = bearer ? await isVerifiedAdminAccount(email, bearer) : false;
+    const isAdmin = cookieAdmin || verifiedGoogleAdmin;
+
+    let targetUnitCode = body.unitCode;
+    let targetHasSelectedUnit = body.hasSelectedUnit ?? Boolean(body.unitCode);
+
+    if (existing?.hasSelectedUnit && !isAdmin) {
+      targetUnitCode = existing.unitCode;
+      targetHasSelectedUnit = true;
+    }
+
+    const account = upsertUserAccount({
+      email,
+      displayName: body.displayName || existing?.displayName,
+      unitCode: targetUnitCode || existing?.unitCode,
+      title: body.title || existing?.title,
+      avatarUrl: body.avatarUrl || existing?.avatarUrl,
+      authProvider: body.authProvider === 'google' ? 'google' : (existing?.authProvider || 'email'),
+      hasSelectedUnit: targetHasSelectedUnit
+    });
 
     if (verifiedGoogleAdmin && !cookieAdmin) {
       await setServerAdminCookie(generateAdminToken());
     }
 
-    const isAdmin = cookieAdmin || verifiedGoogleAdmin;
     return NextResponse.json({ account, isAdmin });
   } catch {
     return NextResponse.json({ error: 'Không thể đồng bộ tài khoản người dùng.' }, { status: 400 });
@@ -84,6 +91,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     await syncAccountsFromSupabase();
+    const existing = getUserAccountByEmail(email);
     const bearer = extractBearer(req);
     const isAdmin = await getServerAdminAuth(email, bearer);
 
@@ -95,14 +103,22 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    if (!isAdmin && existing?.hasSelectedUnit && body.unitCode && body.unitCode !== existing.unitCode) {
+      return NextResponse.json(
+        { error: 'Chỉ Quản trị viên hệ thống mới có quyền thay đổi đơn vị công tác.' },
+        { status: 403 }
+      );
+    }
+
     const account = upsertUserAccount(
       {
         email,
         displayName: body.displayName,
-        unitCode: body.unitCode,
+        unitCode: (!isAdmin && existing?.hasSelectedUnit) ? existing.unitCode : body.unitCode,
         title: body.title,
         avatarUrl: body.avatarUrl,
-        role: isAdmin ? requestedRole : undefined
+        role: isAdmin ? requestedRole : undefined,
+        hasSelectedUnit: existing?.hasSelectedUnit || body.hasSelectedUnit || Boolean(body.unitCode)
       },
       isAdmin && Boolean(requestedRole)
     );

@@ -55,7 +55,7 @@ export function OperatorSessionModal({
         if (COMMON_TITLES.includes(currentSession.title)) setTitle(currentSession.title);
         else { setTitle('Khác (tự nhập)'); setCustomTitle(currentSession.title); }
       } else {
-        setEmail('tcns@hcmute.edu.vn');
+        setEmail('');
         setUnitCode(defaultUnitCode);
       }
     }

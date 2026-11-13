@@ -17,6 +17,7 @@ export interface UserAccountRecord {
   authProvider: 'google' | 'email';
   avatarUrl?: string;
   status: 'active' | 'suspended';
+  hasSelectedUnit?: boolean;
   createdAt: string;
   lastActiveAt: string;
 }
@@ -61,7 +62,8 @@ export async function syncOperatorAccountWithServer(
         unitCode: session.unitCode,
         title: session.title,
         avatarUrl: session.avatarUrl,
-        authProvider: session.authProvider || 'email'
+        authProvider: session.authProvider || 'email',
+        hasSelectedUnit: session.hasSelectedUnit
       })
     });
     if (!res.ok) return { account: null, isAdmin: false };
@@ -72,14 +74,16 @@ export async function syncOperatorAccountWithServer(
         account.role !== session.role ||
         (account.displayName && account.displayName !== session.displayName) ||
         account.unitCode !== session.unitCode ||
-        account.title !== session.title;
+        account.title !== session.title ||
+        account.hasSelectedUnit !== session.hasSelectedUnit;
       if (changed) {
         saveCurrentOperatorSession(account.email, account.unitCode, account.title, {
           displayName: account.displayName,
           avatarUrl: account.avatarUrl || session.avatarUrl,
           authProvider: session.authProvider,
           accessToken: session.accessToken,
-          role: account.role
+          role: account.role,
+          hasSelectedUnit: account.hasSelectedUnit
         });
       }
       return { account, isAdmin: Boolean(json.isAdmin) };
@@ -97,6 +101,7 @@ export async function updateMyAccountOnServer(
     unitCode?: string;
     title?: string;
     role?: UserRole;
+    hasSelectedUnit?: boolean;
   }
 ): Promise<{ ok: boolean; account?: UserAccountRecord; error?: string }> {
   try {
@@ -108,7 +113,8 @@ export async function updateMyAccountOnServer(
         displayName: updates.displayName,
         unitCode: updates.unitCode,
         title: updates.title,
-        role: updates.role
+        role: updates.role,
+        hasSelectedUnit: updates.hasSelectedUnit
       })
     });
     const json = await res.json().catch(() => ({}));
@@ -121,7 +127,8 @@ export async function updateMyAccountOnServer(
       avatarUrl: account.avatarUrl || session.avatarUrl,
       authProvider: session.authProvider,
       accessToken: session.accessToken,
-      role: account.role
+      role: account.role,
+      hasSelectedUnit: account.hasSelectedUnit
     });
     return { ok: true, account };
   } catch {

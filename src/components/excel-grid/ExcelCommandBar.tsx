@@ -116,21 +116,30 @@ export function ExcelCommandBar({
     <div className="min-h-[46px] px-3 sm:px-4 py-2 bg-[#f8fbff] border-b border-[#e2e8f0] flex flex-wrap items-center justify-between gap-2.5 text-[13px]">
       {/* KHỐI TRÁI: Phiên cán bộ · Phiên bản & trạng thái máy chủ · Nút Lưu máy chủ */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 text-[#476885] min-w-0 basis-full lg:basis-auto">
-        {session && (
+        {session ? (
           <div className="inline-flex items-center gap-1.5 font-medium text-[#004776]">
             <User className="w-4 h-4 text-[#004776] shrink-0" />
             <span className="truncate max-w-[160px] sm:max-w-[210px]" title={session.email}>{session.email}</span>
             <span className="text-[#cbd5e1]">·</span>
             <span className="text-[#476885] hidden md:inline truncate max-w-[180px]">{session.title || 'Cán bộ'}</span>
-            <span className="text-[#cbd5e1] hidden md:inline">·</span>
-            <button
-              type="button"
-              onClick={onSwitchSession}
-              className="text-[#004776] hover:underline font-bold cursor-pointer shrink-0"
-              title="Đổi tài khoản hoặc đơn vị công tác"
-            >
-              Đổi phiên
-            </button>
+            {session.role === 'admin' && (
+              <>
+                <span className="text-[#cbd5e1] hidden md:inline">·</span>
+                <button
+                  type="button"
+                  onClick={onSwitchSession}
+                  className="text-[#004776] hover:underline font-bold cursor-pointer shrink-0"
+                  title="Đổi tài khoản hoặc đơn vị công tác (chỉ Admin)"
+                >
+                  Đổi phiên
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 font-medium text-[#476885]">
+            <User className="w-4 h-4 text-[#476885] shrink-0" />
+            <span>Chưa đăng nhập (Xem mẫu)</span>
           </div>
         )}
 
