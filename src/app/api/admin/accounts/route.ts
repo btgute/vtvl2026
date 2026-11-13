@@ -124,3 +124,4 @@ export async function DELETE(req: NextRequest) {
   const ok = deleteUserAccount(email);
   return NextResponse.json({ success: ok });
 }
+

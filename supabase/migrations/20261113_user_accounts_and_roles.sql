@@ -35,3 +35,4 @@ CREATE POLICY "rls_user_accounts_self_upsert" ON public.user_accounts
   FOR ALL TO authenticated
   USING (lower(coalesce(auth.jwt() ->> 'email', '')) = lower(email))
   WITH CHECK (lower(coalesce(auth.jwt() ->> 'email', '')) = lower(email));
+
