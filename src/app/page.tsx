@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Building2, CheckCircle2, History, FileText, BookOpenCheck, Clock, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import { SIDEBAR_FIVE_STEPS } from '@/components/layout/MilestonesBar';
-import { DotPattern } from '@/components/ui/DotPattern';
 import { Badge } from '@/components/ui/Badge';
 import { HCMUTE_UNITS } from '@/configs/hcmute-units';
 import { HD07_12_STEP_ORDER, HD07_CONSTANTS } from '@/configs/hcmute-hd07-catalog';
@@ -92,13 +91,7 @@ export default function HomePage() {
       {/* Khối Workspace tổng quan hợp nhất */}
       <section className="bg-white rounded-2xl border border-[#d8e3ef] overflow-hidden shadow-[0_12px_32px_-8px_rgba(0,71,118,0.08)]">
         <div className="relative px-5 sm:px-7 py-5 bg-gradient-to-b from-[#eef6ff] via-[#f7faff] to-white border-b border-[#e2e8f0] overflow-hidden">
-          <DotPattern
-            width={18}
-            height={18}
-            cr={1.15}
-            className="text-[#006cee]/25 [mask-image:radial-gradient(ellipse_85%_85%_at_80%_20%,white_30%,transparent_100%)]"
-          />
-          <div className="relative z-10 flex items-start gap-4">
+          <div className="flex items-start gap-4">
             <img
               src="/ute_logo.png"
               alt="Logo HCM-UTE"

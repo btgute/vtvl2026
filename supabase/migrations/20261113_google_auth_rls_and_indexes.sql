@@ -42,3 +42,4 @@ END $$;
 -- - Vào Authentication -> Providers -> Google -> Enable
 -- - Google Cloud Console -> Authorized redirect URI:
 --   https://qhjodwlvwzlaasvpkhkr.supabase.co/auth/v1/callback
+

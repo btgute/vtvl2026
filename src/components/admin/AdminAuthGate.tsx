@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { KeyRound, ArrowLeft, Unlock, AlertCircle } from 'lucide-react';
-import { DotPattern } from '@/components/ui/DotPattern';
 import { Button } from '@/components/ui/Button';
 
 interface AdminAuthGateProps {
@@ -49,26 +48,18 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-[0_20px_50px_-15px_rgba(0,71,118,0.16)] border border-[#d8e3ef] overflow-hidden">
-        <div className="relative px-6 pt-7 pb-5 bg-gradient-to-b from-[#eef6ff] via-[#f6faff] to-white border-b border-[#e2e8f0] text-center overflow-hidden">
-          <DotPattern
-            width={18}
-            height={18}
-            cr={1.15}
-            className="text-[#006cee]/25 [mask-image:radial-gradient(ellipse_80%_80%_at_50%_20%,white_35%,transparent_100%)]"
+        <div className="px-6 pt-7 pb-5 bg-gradient-to-b from-[#eef6ff] via-[#f6faff] to-white border-b border-[#e2e8f0] text-center">
+          <img
+            src="/ute_logo.png"
+            alt="Logo HCM-UTE"
+            className="w-14 h-14 object-contain mx-auto mb-3"
           />
-          <div className="relative z-10">
-            <img
-              src="/ute_logo.png"
-              alt="Logo HCM-UTE"
-              className="w-14 h-14 object-contain mx-auto mb-3"
-            />
-            <h2 className="text-xl font-bold text-[#004776] tracking-tight">
-              Cổng xác thực Quản trị viên
-            </h2>
-            <p className="text-sm text-[#476885] mt-1">
-              Phòng Tổ chức – Nhân sự · HCM-UTE
-            </p>
-          </div>
+          <h2 className="text-xl font-bold text-[#004776] tracking-tight">
+            Cổng xác thực Quản trị viên
+          </h2>
+          <p className="text-sm text-[#476885] mt-1">
+            Phòng Tổ chức – Nhân sự · HCM-UTE
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">

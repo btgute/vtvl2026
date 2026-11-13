@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { DotPattern } from '@/components/ui/DotPattern';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -25,14 +24,6 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col overflow-x-clip relative">
-        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-          <DotPattern
-            width={22}
-            height={22}
-            cr={1.25}
-            className="text-[#006cee]/25 [mask-image:radial-gradient(ellipse_85%_60%_at_50%_0%,white_35%,transparent_100%)]"
-          />
-        </div>
         <Header />
         <main className="flex-1 flex flex-col relative z-20">
           {children}

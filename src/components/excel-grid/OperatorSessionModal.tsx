@@ -10,7 +10,6 @@ import {
 } from '@/services/telemetry/operator-session';
 import { Mail, History, ArrowRight, X, Info, AlertCircle } from 'lucide-react';
 import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
-import { DotPattern } from '@/components/ui/DotPattern';
 import { Button } from '@/components/ui/Button';
 import { GoogleOAuthButton } from '@/components/auth/GoogleOAuthButton';
 import {
@@ -128,14 +127,8 @@ export function OperatorSessionModal({
         className="relative w-full max-w-xl max-h-[92dvh] sm:max-h-[88dvh] bg-white rounded-t-3xl sm:rounded-3xl shadow-[0_24px_48px_-12px_rgba(0,71,118,0.22)] border border-[#d8e3ef] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 bg-gradient-to-br from-[#f2f7ff] via-[#f8fbff] to-[#ffffff] border-b border-[#e2ecf7] overflow-hidden shrink-0">
-          <DotPattern
-            width={18}
-            height={18}
-            cr={1.1}
-            className="text-[#006cee]/20 [mask-image:radial-gradient(ellipse_at_top_right,white_25%,transparent_75%)]"
-          />
-          <div className="relative z-10 flex items-center gap-3.5 min-w-0">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 bg-gradient-to-br from-[#f2f7ff] via-[#f8fbff] to-[#ffffff] border-b border-[#e2ecf7] shrink-0">
+          <div className="flex items-center gap-3.5 min-w-0">
             <img src="/ute_logo.png" alt="HCM-UTE Logo" className="h-10 w-auto object-contain shrink-0" />
             <div className="min-w-0">
               <h3 className="text-lg font-bold text-[#004776] tracking-tight">Đăng nhập phiên làm việc</h3>
@@ -149,7 +142,7 @@ export function OperatorSessionModal({
               type="button"
               onClick={onClose}
               aria-label="Đóng cửa sổ"
-              className="relative z-10 text-[#20446c] hover:text-[#004776] p-2 rounded-xl hover:bg-[#e1edf8] transition-colors cursor-pointer"
+              className="text-[#20446c] hover:text-[#004776] p-2 rounded-xl hover:bg-[#e1edf8] transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
