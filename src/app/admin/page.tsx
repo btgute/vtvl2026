@@ -2,18 +2,19 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  FileSpreadsheet, UserCheck, Building2, ShieldCheck, RefreshCw, AlertCircle
+  FileSpreadsheet, UserCheck, Building2, ShieldCheck, RefreshCw, AlertCircle, Users
 } from 'lucide-react';
 import { AdminAuthGate } from '@/components/admin/AdminAuthGate';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminSessionsTab } from '@/components/admin/AdminSessionsTab';
+import { AdminAccountsTab } from '@/components/admin/AdminAccountsTab';
 import { AdminSessionControlTab } from '@/components/admin/AdminSessionControlTab';
 import { AdminUnitsTab } from '@/components/admin/AdminUnitsTab';
 import { UnitOrgTreeModal } from '@/components/admin/UnitOrgTreeModal';
 import { getCurrentOperatorSession } from '@/services/telemetry/operator-session';
 import { getAdminUnits } from '@/services/units/unit-management';
 
-type AdminTabKey = 'sessions' | 'session-control' | 'units';
+type AdminTabKey = 'sessions' | 'accounts' | 'session-control' | 'units';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -21,14 +22,29 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTabKey>('sessions');
 
   const [sessionCount, setSessionCount] = useState(0);
+  const [accountCount, setAccountCount] = useState(0);
   const [activeUnitCode, setActiveUnitCode] = useState('Chưa kích hoạt');
   const [unitCount, setUnitCount] = useState(51);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOrgTreeModalOpen, setIsOrgTreeModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const tabParam = new URLSearchParams(window.location.search).get('tab');
+    if (tabParam === 'accounts' || tabParam === 'sessions' || tabParam === 'session-control' || tabParam === 'units') {
+      setActiveTab(tabParam);
+    }
+  }, []);
+
   const checkAuthAndLoadStats = useCallback(async () => {
     try {
-      const authRes = await fetch('/api/admin/auth');
+      const cur = getCurrentOperatorSession();
+      const headers: Record<string, string> = {};
+      if (cur?.accessToken) headers.Authorization = `Bearer ${cur.accessToken}`;
+      if (cur?.email) headers['x-actor-email'] = cur.email;
+
+      const authQuery = cur?.email ? `?email=${encodeURIComponent(cur.email)}` : '';
+      const authRes = await fetch(`/api/admin/auth${authQuery}`, { headers, cache: 'no-store' });
       if (!authRes.ok) {
         setIsAuthenticated(false);
         setAuthError(null);
@@ -45,17 +61,22 @@ export default function AdminPage() {
       setIsAuthenticated(true);
       setAuthError(null);
 
-      const cur = getCurrentOperatorSession();
       setActiveUnitCode(cur ? `[${cur.unitCode}] ${cur.email}` : 'Chưa kích hoạt');
       setUnitCount(getAdminUnits().length);
 
-      // Số lượng hồ sơ thực tế chỉ lấy từ máy chủ, không lấy fallback localStorage
-      const sessRes = await fetch('/api/admin/sessions');
+      const [sessRes, accRes] = await Promise.all([
+        fetch('/api/admin/sessions', { headers }),
+        fetch('/api/admin/accounts', { headers })
+      ]);
       if (sessRes.ok) {
         const sessJson = await sessRes.json();
         setSessionCount(sessJson.total || 0);
       } else {
         setSessionCount(0);
+      }
+      if (accRes.ok) {
+        const accJson = await accRes.json();
+        setAccountCount(accJson.total || 0);
       }
     } catch {
       setIsAuthenticated(false);
@@ -133,17 +154,13 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-[#f8fafc] py-3 sm:py-5 px-3 sm:px-5 lg:px-6">
       <div className="max-w-[1680px] mx-auto min-w-0">
-        {/* Khối Workspace Admin Thống Nhất */}
-        <div className="bg-white rounded-[14px] border border-[#e2e8f0] shadow-2xs overflow-hidden min-w-0 max-w-full">
-          {/* 1. Phần Tiêu Đề Rút Gọn */}
+        <div className="bg-white rounded-[14px] border border-[#e2e8f0] shadow-2xs overflow-visible min-w-0 max-w-full">
           <AdminHeader
             onLogout={handleLogout}
             onOpenOrgTree={() => setIsOrgTreeModalOpen(true)}
           />
 
-          {/* 2. Hàng Status Chips (KPI Rút Gọn) */}
           <div className="px-4 sm:px-5 py-2.5 bg-slate-50/50 border-b border-[#f1f5f9] flex flex-wrap items-center gap-2 min-w-0">
-            {/* Chip 1: Số hồ sơ */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-[#004776] border border-blue-200/70">
               <FileSpreadsheet className="w-3.5 h-3.5 text-[#004776] shrink-0" />
               <span>{sessionCount} hồ sơ</span>
@@ -157,7 +174,11 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {/* Chip 2: Phiên đang thao tác */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-[#004776] border border-sky-200/70">
+              <Users className="w-3.5 h-3.5 text-[#004776] shrink-0" />
+              <span>{accountCount} tài khoản</span>
+            </div>
+
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/70 max-w-[calc(100vw-3rem)] sm:max-w-md truncate min-w-0"
               title={activeUnitCode}
@@ -166,14 +187,12 @@ export default function AdminPage() {
               <span className="truncate">Phiên: {activeUnitCode}</span>
             </div>
 
-            {/* Chip 3: Số đơn vị đồng bộ */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-800 border border-purple-200/70">
               <Building2 className="w-3.5 h-3.5 text-purple-700 shrink-0" />
               <span>{unitCount} đơn vị</span>
             </div>
           </div>
 
-          {/* 3. Thanh Tab Underline Gọn Gàng */}
           <div className="px-3.5 sm:px-5 border-b border-[#e2e8f0] flex items-center gap-2 sm:gap-6 bg-white overflow-x-auto no-scrollbar">
             <button
               type="button"
@@ -190,6 +209,19 @@ export default function AdminPage() {
 
             <button
               type="button"
+              onClick={() => setActiveTab('accounts')}
+              className={`h-[48px] inline-flex items-center gap-2 text-xs font-bold transition-all cursor-pointer border-b-[3px] -mb-[1px] px-2 whitespace-nowrap ${
+                activeTab === 'accounts'
+                  ? 'text-[#004776] border-[#004776] bg-blue-50/30'
+                  : 'text-[#64748b] border-transparent hover:text-[#004776] hover:bg-slate-50'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>2. Tài khoản &amp; Phân quyền ({accountCount})</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab('session-control')}
               className={`h-[48px] inline-flex items-center gap-2 text-xs font-bold transition-all cursor-pointer border-b-[3px] -mb-[1px] px-2 whitespace-nowrap ${
                 activeTab === 'session-control'
@@ -198,7 +230,7 @@ export default function AdminPage() {
               }`}
             >
               <UserCheck className="w-4 h-4" />
-              <span>2. Quản trị phiên làm việc</span>
+              <span>3. Quản trị phiên làm việc</span>
             </button>
 
             <button
@@ -211,19 +243,18 @@ export default function AdminPage() {
               }`}
             >
               <Building2 className="w-4 h-4" />
-              <span>3. Quản trị đơn vị &amp; Mã đơn vị ({unitCount})</span>
+              <span>4. Quản trị đơn vị &amp; Mã đơn vị ({unitCount})</span>
             </button>
           </div>
 
-          {/* 4. Nội Dung Tab */}
           <div className="p-4 sm:p-5">
             {activeTab === 'sessions' && <AdminSessionsTab />}
+            {activeTab === 'accounts' && <AdminAccountsTab />}
             {activeTab === 'session-control' && <AdminSessionControlTab />}
             {activeTab === 'units' && <AdminUnitsTab />}
           </div>
         </div>
 
-        {/* 5. Modal Sơ đồ VTVL dự kiến & Công việc */}
         <UnitOrgTreeModal
           isOpen={isOrgTreeModalOpen}
           onClose={() => setIsOrgTreeModalOpen(false)}

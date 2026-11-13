@@ -13,6 +13,7 @@ export interface OperatorSession {
   avatarUrl?: string;
   authProvider?: 'google' | 'email';
   accessToken?: string;
+  role?: 'admin' | 'unit_leader' | 'editor' | 'viewer';
 }
 
 export interface EmailSessionRecord {
@@ -75,21 +76,15 @@ export function registerOperatorSession(
   let record: EmailSessionRecord;
   if (existingIdx >= 0) {
     record = {
-      ...all[existingIdx],
-      unitCode,
-      unitNameVi: unit.nameVi,
+      ...all[existingIdx], unitCode, unitNameVi: unit.nameVi,
       title: title.trim() || all[existingIdx].title,
       lastSavedAt: all[existingIdx].lastSavedAt || `Khởi tạo ${now}`
     };
     all[existingIdx] = record;
   } else {
     record = {
-      email: normEmail,
-      unitCode,
-      unitNameVi: unit.nameVi,
-      title: title.trim() || 'Chuyên viên',
-      lastSavedAt: `Khởi tạo ${now}`,
-      touchedCells: []
+      email: normEmail, unitCode, unitNameVi: unit.nameVi,
+      title: title.trim() || 'Chuyên viên', lastSavedAt: `Khởi tạo ${now}`, touchedCells: []
     };
     all.unshift(record);
   }
@@ -108,7 +103,13 @@ export function saveCurrentOperatorSession(
   email: string,
   unitCode: string,
   title: string,
-  meta?: { displayName?: string; avatarUrl?: string; authProvider?: 'google' | 'email'; accessToken?: string }
+  meta?: {
+    displayName?: string;
+    avatarUrl?: string;
+    authProvider?: 'google' | 'email';
+    accessToken?: string;
+    role?: 'admin' | 'unit_leader' | 'editor' | 'viewer';
+  }
 ): OperatorSession {
   const normEmail = normalizeEmail(email);
   const unit = findHcmuteUnit(unitCode);
@@ -120,7 +121,8 @@ export function saveCurrentOperatorSession(
     displayName: meta?.displayName ?? (existing?.email === normEmail ? existing.displayName : undefined),
     avatarUrl: meta?.avatarUrl ?? (existing?.email === normEmail ? existing.avatarUrl : undefined),
     authProvider: meta?.authProvider ?? (existing?.email === normEmail ? existing.authProvider : 'email'),
-    accessToken: meta?.accessToken ?? (existing?.email === normEmail ? existing.accessToken : undefined)
+    accessToken: meta?.accessToken ?? (existing?.email === normEmail ? existing.accessToken : undefined),
+    role: meta?.role ?? (existing?.email === normEmail ? existing.role : undefined)
   };
   if (typeof window !== 'undefined') {
     try {
@@ -136,13 +138,7 @@ export function updateOperatorSessionUnit(unitCode: string): OperatorSession | n
   const cur = getCurrentOperatorSession();
   if (!cur) return null;
   const unit = findHcmuteUnit(unitCode);
-  const now = new Date().toLocaleString('vi-VN');
-  const updated: OperatorSession = {
-    ...cur,
-    unitCode,
-    unitNameVi: unit.nameVi,
-    lastActiveAt: now
-  };
+  const updated: OperatorSession = { ...cur, unitCode, unitNameVi: unit.nameVi, lastActiveAt: new Date().toLocaleString('vi-VN') };
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem(CURRENT_OPERATOR_KEY, JSON.stringify(updated));
@@ -172,7 +168,7 @@ export function getAllEmailSessions(): EmailSessionRecord[] {
       email: normalizeEmail(item.email)
     }));
 
-    // Tự động đồng bộ phiên hiện tại nếu chưa nằm trong danh sách
+    // Đồng bộ phiên hiện tại nếu chưa nằm trong danh sách
     const curRaw = localStorage.getItem(CURRENT_OPERATOR_KEY);
     if (curRaw) {
       try {
@@ -181,12 +177,8 @@ export function getAllEmailSessions(): EmailSessionRecord[] {
         if (curEmail && !list.some((s) => s.email === curEmail)) {
           const unit = findHcmuteUnit(cur.unitCode);
           list.unshift({
-            email: curEmail,
-            unitCode: cur.unitCode,
-            unitNameVi: unit.nameVi,
-            title: cur.title,
-            lastSavedAt: cur.lastActiveAt || cur.startedAt || new Date().toLocaleString('vi-VN'),
-            touchedCells: []
+            email: curEmail, unitCode: cur.unitCode, unitNameVi: unit.nameVi, title: cur.title,
+            lastSavedAt: cur.lastActiveAt || cur.startedAt || new Date().toLocaleString('vi-VN'), touchedCells: []
           });
           localStorage.setItem(EMAIL_RECORDS_KEY, JSON.stringify(list));
         }
@@ -245,7 +237,6 @@ export function saveEmailSessionData(
     }
   }
 
-  // 1. Lưu bản ghi metadata nhẹ (an toàn tuyệt đối, chống QuotaExceededError)
   const newRecord: EmailSessionRecord = {
     email: normEmail,
     unitCode,
@@ -265,7 +256,6 @@ export function saveEmailSessionData(
     window.dispatchEvent(new CustomEvent('vtvl-email-sessions-updated', { detail: trimmed }));
   } catch { /* ignore */ }
 
-  // 2. Lưu chi tiết dữ liệu 15 sheet vào key riêng & key grid
   try {
     localStorage.setItem(`hcmute_vtvl_session_data_${normEmail}`, JSON.stringify(data));
   } catch { /* ignore */ }

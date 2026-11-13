@@ -4,12 +4,33 @@ import {
   generateAdminToken,
   getServerAdminAuth,
   setServerAdminCookie,
-  clearServerAdminCookie
+  clearServerAdminCookie,
+  isVerifiedAdminAccount
 } from '@/services/storage/server-admin-auth';
 
-export async function GET() {
-  const isAuth = await getServerAdminAuth();
-  return NextResponse.json({ authenticated: isAuth });
+function extractBearer(req: NextRequest): string | null {
+  const authHeader = req.headers.get('authorization') || '';
+  return authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : null;
+}
+
+export async function GET(req: NextRequest) {
+  const cookieAuth = await getServerAdminAuth();
+  if (cookieAuth) {
+    return NextResponse.json({ authenticated: true, role: 'admin' });
+  }
+
+  const email = req.nextUrl.searchParams.get('email') || '';
+  const bearer = extractBearer(req);
+  if (email && bearer) {
+    const isGoogleAdmin = await isVerifiedAdminAccount(email, bearer);
+    if (isGoogleAdmin) {
+      const token = generateAdminToken();
+      await setServerAdminCookie(token);
+      return NextResponse.json({ authenticated: true, role: 'admin' });
+    }
+  }
+
+  return NextResponse.json({ authenticated: false });
 }
 
 export async function POST(req: NextRequest) {
@@ -34,4 +55,3 @@ export async function DELETE() {
   await clearServerAdminCookie();
   return NextResponse.json({ success: true, message: 'Đã đăng xuất Quản trị viên.' });
 }
-

@@ -1,0 +1,245 @@
+import fs from 'fs';
+import path from 'path';
+import { findHcmuteUnit } from '@/configs/hcmute-units';
+import {
+  getAllActiveServerWorkbooks,
+  normalizeEmail,
+  syncServerWorkbooksFromSupabase
+} from './server-workbook-store';
+
+export type UserRole = 'admin' | 'unit_leader' | 'editor' | 'viewer';
+
+export interface UserAccountRecord {
+  email: string;
+  displayName: string;
+  unitCode: string;
+  unitNameVi: string;
+  title: string;
+  role: UserRole;
+  authProvider: 'google' | 'email';
+  avatarUrl?: string;
+  status: 'active' | 'suspended';
+  createdAt: string;
+  lastActiveAt: string;
+}
+
+const VALID_ROLES: UserRole[] = ['admin', 'unit_leader', 'editor', 'viewer'];
+const DATA_DIR = process.env.VERCEL ? '/tmp/vtvl_data' : path.join(process.cwd(), '.data');
+const ACCOUNTS_FILE = path.join(DATA_DIR, 'server_accounts.json');
+
+const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
+const SUPABASE_KEY = (
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  ''
+).trim();
+
+let memoryAccounts: Map<string, UserAccountRecord> | null = null;
+let lastSupabaseSyncAt = 0;
+
+function getSupabaseHeaders(): Record<string, string> {
+  return { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+}
+
+function isValidRole(role: unknown): role is UserRole {
+  return typeof role === 'string' && VALID_ROLES.includes(role as UserRole);
+}
+
+function normalizeRecord(item: Partial<UserAccountRecord> & { email: string }): UserAccountRecord {
+  const email = normalizeEmail(item.email);
+  const unit = findHcmuteUnit(item.unitCode || 'FIT');
+  const now = new Date().toLocaleString('vi-VN');
+  return {
+    email,
+    displayName: (item.displayName || email.split('@')[0]).trim(),
+    unitCode: unit.code,
+    unitNameVi: unit.nameVi,
+    title: (item.title || 'Chuyên viên').trim(),
+    role: isValidRole(item.role) ? item.role : email === 'tcns@hcmute.edu.vn' ? 'admin' : 'editor',
+    authProvider: item.authProvider === 'google' ? 'google' : 'email',
+    avatarUrl: item.avatarUrl,
+    status: item.status === 'suspended' ? 'suspended' : 'active',
+    createdAt: item.createdAt || now,
+    lastActiveAt: item.lastActiveAt || now
+  };
+}
+
+function seedFromWorkbooks(store: Map<string, UserAccountRecord>): boolean {
+  let changed = false;
+  const now = new Date().toLocaleString('vi-VN');
+  if (!store.has('tcns@hcmute.edu.vn')) {
+    store.set('tcns@hcmute.edu.vn', normalizeRecord({
+      email: 'tcns@hcmute.edu.vn',
+      displayName: 'Quản trị Phòng Tổ chức – Nhân sự',
+      unitCode: 'TCNS',
+      title: 'Trưởng phòng',
+      role: 'admin',
+      createdAt: now,
+      lastActiveAt: now
+    }));
+    changed = true;
+  }
+  for (const wb of getAllActiveServerWorkbooks()) {
+    for (const p of wb.participants || []) {
+      const email = normalizeEmail(p.emailNormalized || p.email);
+      if (!email || store.has(email)) continue;
+      store.set(email, normalizeRecord({
+        email,
+        displayName: p.displayName || email.split('@')[0],
+        unitCode: wb.unitId || 'FIT',
+        title: p.roleLabel || 'Chuyên viên',
+        createdAt: p.startedAt || now,
+        lastActiveAt: p.updatedAt || now
+      }));
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+function loadStore(): Map<string, UserAccountRecord> {
+  if (memoryAccounts) return memoryAccounts;
+  memoryAccounts = new Map();
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (fs.existsSync(ACCOUNTS_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(ACCOUNTS_FILE, 'utf8'));
+      if (Array.isArray(parsed)) {
+        for (const item of parsed) {
+          const email = normalizeEmail(item?.email || '');
+          if (email) memoryAccounts.set(email, normalizeRecord({ ...item, email }));
+        }
+      }
+    }
+  } catch { /* ignore */ }
+  if (seedFromWorkbooks(memoryAccounts)) persistLocalStore();
+  return memoryAccounts;
+}
+
+function persistLocalStore(): void {
+  if (!memoryAccounts) return;
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(ACCOUNTS_FILE, JSON.stringify(Array.from(memoryAccounts.values()), null, 2), 'utf8');
+  } catch { /* ignore */ }
+}
+
+async function persistAccountsToSupabase(accounts: UserAccountRecord[]): Promise<void> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  try {
+    const existingRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/t_tien_do?ma_don_vi=eq.TCNS&select=du_lieu_ho_so_json,phien_ban,so_nhiem_vu_a1,so_cong_viec_a2,so_vtvl_c1,tong_fte_c3`,
+      { headers: getSupabaseHeaders(), cache: 'no-store' }
+    );
+    const existingRows = existingRes.ok ? await existingRes.json() : [];
+    const existingRow = Array.isArray(existingRows) && existingRows[0] ? existingRows[0] : null;
+    const tcns = findHcmuteUnit('TCNS');
+    await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?on_conflict=ma_don_vi`, {
+      method: 'POST',
+      headers: { ...getSupabaseHeaders(), Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        ma_don_vi: tcns.code,
+        ten_don_vi: tcns.nameVi,
+        phien_ban: existingRow?.phien_ban || 'v1',
+        so_nhiem_vu_a1: existingRow?.so_nhiem_vu_a1 || 0,
+        so_cong_viec_a2: existingRow?.so_cong_viec_a2 || 0,
+        so_vtvl_c1: existingRow?.so_vtvl_c1 || 0,
+        tong_fte_c3: existingRow?.tong_fte_c3 || 0,
+        trang_thai_ra_soat: 'Đã đồng bộ danh mục tài khoản',
+        du_lieu_ho_so_json: {
+          ...(existingRow?.du_lieu_ho_so_json || {}),
+          userAccounts: accounts,
+          accountsUpdatedAt: new Date().toISOString()
+        }
+      })
+    });
+  } catch { /* ignore */ }
+}
+
+export async function syncAccountsFromSupabase(force = false): Promise<void> {
+  const store = loadStore();
+  const now = Date.now();
+  if (!force && now - lastSupabaseSyncAt < 5000) return;
+  lastSupabaseSyncAt = now;
+  try {
+    await syncServerWorkbooksFromSupabase();
+    if (seedFromWorkbooks(store)) persistLocalStore();
+  } catch { /* ignore */ }
+
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?ma_don_vi=eq.TCNS&select=du_lieu_ho_so_json`, {
+      headers: getSupabaseHeaders(),
+      cache: 'no-store'
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    const remoteList = rows?.[0]?.du_lieu_ho_so_json?.userAccounts;
+    if (!Array.isArray(remoteList)) return;
+    let merged = false;
+    for (const item of remoteList) {
+      const email = normalizeEmail(item?.email || '');
+      if (email && !store.has(email)) {
+        store.set(email, normalizeRecord({ ...item, email }));
+        merged = true;
+      }
+    }
+    if (merged) persistLocalStore();
+  } catch { /* ignore */ }
+}
+
+export function getAllUserAccounts(): UserAccountRecord[] {
+  const roleWeight: Record<UserRole, number> = { admin: 0, unit_leader: 1, editor: 2, viewer: 3 };
+  return Array.from(loadStore().values()).sort((a, b) => roleWeight[a.role] - roleWeight[b.role] || a.email.localeCompare(b.email));
+}
+
+export function getUserAccountByEmail(email: string): UserAccountRecord | null {
+  const norm = normalizeEmail(email);
+  return norm ? loadStore().get(norm) || null : null;
+}
+
+export function upsertUserAccount(
+  input: Partial<UserAccountRecord> & { email: string },
+  allowRoleOverride = false
+): UserAccountRecord {
+  const store = loadStore();
+  const norm = normalizeEmail(input.email);
+  const existing = store.get(norm);
+  const resolvedRole: UserRole =
+    allowRoleOverride && isValidRole(input.role)
+      ? input.role
+      : existing?.role || (norm === 'tcns@hcmute.edu.vn' ? 'admin' : isValidRole(input.role) ? input.role : 'editor');
+
+  const record = normalizeRecord({
+    ...existing,
+    ...input,
+    email: norm,
+    role: resolvedRole,
+    createdAt: existing?.createdAt || new Date().toLocaleString('vi-VN'),
+    lastActiveAt: new Date().toLocaleString('vi-VN')
+  });
+
+  store.set(norm, record);
+  persistLocalStore();
+  persistAccountsToSupabase(getAllUserAccounts()).catch(() => {});
+  return record;
+}
+
+export function updateUserAccountRole(
+  email: string,
+  role: UserRole,
+  updates?: Partial<Pick<UserAccountRecord, 'unitCode' | 'title' | 'displayName' | 'status'>>
+): UserAccountRecord | null {
+  const norm = normalizeEmail(email);
+  return !isValidRole(role) || !norm ? null : upsertUserAccount({ email: norm, role, ...updates }, true);
+}
+
+export function deleteUserAccount(email: string): boolean {
+  const store = loadStore();
+  const norm = normalizeEmail(email);
+  if (!norm || !store.delete(norm)) return false;
+  persistLocalStore();
+  persistAccountsToSupabase(getAllUserAccounts()).catch(() => {});
+  return true;
+}

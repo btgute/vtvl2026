@@ -16,6 +16,11 @@ import { getActiveHcmuteUnits } from '@/configs/hcmute-units';
 import { HcmuteUnit } from '@/types/vtvl';
 import { AdminActivityLogsCard } from './AdminActivityLogsCard';
 import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
+import {
+  UserRole,
+  ROLE_OPTIONS,
+  adminUpdateUserRoleOnServer
+} from '@/services/auth/account-client';
 
 const PRESET_TITLES = [
   'Trưởng phòng', 'Phó Trưởng phòng', 'Trưởng khoa', 'Phó Trưởng khoa',
@@ -28,10 +33,10 @@ export function AdminSessionControlTab() {
   const [activityLogs, setActivityLogs] = useState<ActivityLogEntry[]>([]);
   const [availableUnits, setAvailableUnits] = useState<HcmuteUnit[]>([]);
 
-  // Form tạo phiên mới
   const [newEmail, setNewEmail] = useState('tcns@hcmute.edu.vn');
   const [newUnitCode, setNewUnitCode] = useState('TCNS');
   const [newTitle, setNewTitle] = useState('Chuyên viên Tổ chức cán bộ');
+  const [newRole, setNewRole] = useState<UserRole>('editor');
 
   const refreshState = () => {
     setCurrentSession(getCurrentOperatorSession());
@@ -71,13 +76,18 @@ export function AdminSessionControlTab() {
     }
   };
 
-  const handleCreateAndActivate = (e: React.FormEvent) => {
+  const handleCreateAndActivate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail.trim()) {
       alert('Vui lòng nhập email công vụ.');
       return;
     }
-    saveCurrentOperatorSession(newEmail.trim(), newUnitCode, newTitle.trim());
+    const emailTrimmed = newEmail.trim();
+    await adminUpdateUserRoleOnServer(
+      { email: emailTrimmed, role: newRole, unitCode: newUnitCode, title: newTitle.trim() },
+      currentSession
+    );
+    saveCurrentOperatorSession(emailTrimmed, newUnitCode, newTitle.trim(), { role: newRole });
     refreshState();
     router.push('/bang-tinh');
   };
@@ -104,7 +114,7 @@ export function AdminSessionControlTab() {
             </div>
             <div>
               <h2 className="text-sm font-semibold text-[#004776]">
-                Phiên làm việc hiện tại trên trình duyệt (Active Session)
+                Phiên làm việc hiện tại trên trình duyệt
               </h2>
               <p className="text-xs text-[#64748b]">
                 Gắn kết với các thao tác nhập liệu bảng tính cục bộ
@@ -188,9 +198,9 @@ export function AdminSessionControlTab() {
           </div>
         </div>
 
-        <form onSubmit={handleCreateAndActivate} className="pt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <form onSubmit={handleCreateAndActivate} className="pt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[#004776]">Email công vụ:</label>
+            <label className="block text-xs font-medium text-[#004776]">Email công vụ</label>
             <input
               type="email"
               required
@@ -202,7 +212,7 @@ export function AdminSessionControlTab() {
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[#004776]">Đơn vị công tác:</label>
+            <label className="block text-xs font-medium text-[#004776]">Đơn vị công tác</label>
             <ShadcnSelect
               value={newUnitCode}
               onValueChange={setNewUnitCode}
@@ -213,13 +223,23 @@ export function AdminSessionControlTab() {
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[#004776]">Chức vụ người điền:</label>
+            <label className="block text-xs font-medium text-[#004776]">Chức vụ người điền</label>
+            <ShadcnSelect
+              value={newTitle}
+              onValueChange={setNewTitle}
+              options={PRESET_TITLES.map((t) => ({ value: t, label: t }))}
+              size="md"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-medium text-[#004776]">Vai trò hệ thống</label>
             <div className="flex gap-2">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <ShadcnSelect
-                  value={newTitle}
-                  onValueChange={setNewTitle}
-                  options={PRESET_TITLES.map((t) => ({ value: t, label: t }))}
+                  value={newRole}
+                  onValueChange={(val) => setNewRole(val as UserRole)}
+                  options={ROLE_OPTIONS.map((r) => ({ value: r.value, label: r.label }))}
                   size="md"
                 />
               </div>
