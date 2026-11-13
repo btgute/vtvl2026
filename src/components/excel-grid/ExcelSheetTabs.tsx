@@ -54,7 +54,7 @@ export function ExcelSheetTabs({
           <PopoverTrigger className="w-full">
             <span className="w-full flex items-center justify-between gap-2 px-3.5 h-10 bg-white border border-[#d8e3ef] rounded-xl text-sm font-bold text-[#004776] shadow-2xs">
               <span className="flex items-center gap-2 truncate">
-                <FileSpreadsheet className="w-4 h-4 text-[#006cee] shrink-0" />
+                <FileSpreadsheet className="w-4 h-4 text-[#004776] shrink-0" />
                 <span className="truncate">
                   Biểu {activeIndex + 1}/{displayOrder.length} · {activeMeta.sheetName}
                 </span>
@@ -74,13 +74,13 @@ export function ExcelSheetTabs({
                 <PopoverClose key={key} onClick={() => onSelectSheet(key)}>
                   <div
                     className={`w-full text-left px-3 py-2 rounded-lg text-[13.5px] flex items-center justify-between gap-2 ${
-                      isAct ? 'bg-[#eef5ff] text-[#006cee] font-bold' : 'text-[#004776] font-medium hover:bg-[#f4f7fb]'
+                      isAct ? 'bg-[#eef5ff] text-[#004776] font-bold' : 'text-[#004776] font-medium hover:bg-[#f4f7fb]'
                     }`}
                   >
                     <span className="truncate">
                       {idx + 1}. {m.sheetName} — {m.title}
                     </span>
-                    {isAct && <Check className="w-4 h-4 text-[#006cee] shrink-0" />}
+                    {isAct && <Check className="w-4 h-4 text-[#004776] shrink-0" />}
                   </div>
                 </PopoverClose>
               );
@@ -135,7 +135,7 @@ export function ExcelSheetTabs({
                 onClick={() => onSelectSheet(key)}
                 className={`group relative inline-flex items-center gap-1.5 px-3.5 h-11 text-[13.5px] transition-all shrink-0 cursor-pointer border-b-[3px] ${
                   isActive
-                    ? 'bg-white text-[#006cee] border-[#006cee] font-bold shadow-2xs'
+                    ? 'bg-white text-[#004776] border-[#004776] font-bold shadow-2xs'
                     : 'bg-transparent text-[#20446c] border-transparent font-semibold hover:text-[#004776] hover:bg-white/70'
                 }`}
               >
@@ -143,7 +143,7 @@ export function ExcelSheetTabs({
                   <span
                     className={`px-1.5 py-0.5 rounded text-[11px] inline-flex items-center justify-center font-bold ${
                       isActive
-                        ? 'bg-[#006cee] text-white'
+                        ? 'bg-[#004776] text-white'
                         : 'bg-[#e1edf8] text-[#004776] group-hover:bg-[#004776] group-hover:text-white'
                     }`}
                     title={`Bước kỹ thuật ${index + 1}`}
@@ -152,7 +152,7 @@ export function ExcelSheetTabs({
                   </span>
                 ) : (
                   <FileSpreadsheet
-                    className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#006cee]' : 'text-[#476885]'}`}
+                    className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#004776]' : 'text-[#476885]'}`}
                   />
                 )}
 

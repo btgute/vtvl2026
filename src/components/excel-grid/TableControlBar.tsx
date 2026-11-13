@@ -61,7 +61,7 @@ export function TableControlBar({
         <span className="text-[13px] font-medium text-[#476885]">
           Tổng số: <strong className="font-bold text-[#004776] tabular-nums">{rowsCount}</strong> dòng
           {selectedCount > 0 && (
-            <span className="ml-1.5 text-[#006cee] font-bold">· {selectedCount} đã chọn</span>
+            <span className="ml-1.5 text-[#004776] font-bold">· {selectedCount} đã chọn</span>
           )}
         </span>
 
@@ -71,7 +71,7 @@ export function TableControlBar({
               type="button"
               onClick={() => onMobileViewModeChange('table')}
               className={`px-2.5 py-1 rounded-lg font-semibold cursor-pointer transition-colors ${
-                mobileViewMode === 'table' ? 'bg-[#006cee] text-white font-bold' : 'text-[#004776]'
+                mobileViewMode === 'table' ? 'bg-[#004776] text-white font-bold' : 'text-[#004776]'
               }`}
             >
               Bảng
@@ -80,7 +80,7 @@ export function TableControlBar({
               type="button"
               onClick={() => onMobileViewModeChange('cards')}
               className={`px-2.5 py-1 rounded-lg font-semibold cursor-pointer transition-colors ${
-                mobileViewMode === 'cards' ? 'bg-[#006cee] text-white font-bold' : 'text-[#004776]'
+                mobileViewMode === 'cards' ? 'bg-[#004776] text-white font-bold' : 'text-[#004776]'
               }`}
             >
               Phiếu
@@ -98,7 +98,7 @@ export function TableControlBar({
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Tìm trong biểu…"
-            className="h-9 pl-9 pr-8 text-[13.5px] font-medium rounded-xl border border-[#d8e3ef] bg-white text-[#004776] w-full sm:w-52 lg:w-60 focus:ring-2 focus:ring-[#006cee]/25 focus:border-[#006cee] outline-hidden"
+            className="h-9 pl-9 pr-8 text-[13.5px] font-medium rounded-xl border border-[#cbd5e1] bg-white text-[#004776] w-full sm:w-52 lg:w-60 focus:ring-2 focus:ring-[#004776]/25 focus:border-[#004776] outline-hidden"
           />
           {searchTerm && (
             <button
@@ -120,13 +120,13 @@ export function TableControlBar({
               title="Lọc dòng: Tất cả / Đã sửa / Chưa hoàn tất"
               className={`w-9 h-9 inline-flex items-center justify-center rounded-xl border transition-colors relative ${
                 isFiltered
-                  ? 'bg-[#eef5ff] text-[#006cee] border-[#006cee]/30 font-bold'
+                  ? 'bg-[#eef5ff] text-[#004776] border-[#004776] font-bold'
                   : 'border-[#d8e3ef] text-[#004776] hover:bg-[#f4f7fb]'
               }`}
             >
               <Filter className="w-4 h-4" />
               {isFiltered && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#006cee]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#004776]" />
               )}
             </span>
           </PopoverTrigger>
@@ -140,12 +140,12 @@ export function TableControlBar({
                 <div
                   className={`w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center justify-between gap-2 ${
                     filterMode === m
-                      ? 'font-bold text-[#006cee] bg-[#eef5ff]'
+                      ? 'font-bold text-[#004776] bg-[#eef5ff]'
                       : 'text-[#004776] font-medium hover:bg-[#f4f7fb]'
                   }`}
                 >
                   <span>{m === 'all' ? 'Tất cả dòng' : m === 'touched' ? 'Chỉ dòng đã sửa' : 'Chưa hoàn tất'}</span>
-                  {filterMode === m && <Check className="w-4 h-4 text-[#006cee] shrink-0" />}
+                  {filterMode === m && <Check className="w-4 h-4 text-[#004776] shrink-0" />}
                 </div>
               </PopoverClose>
             ))}
@@ -172,24 +172,24 @@ export function TableControlBar({
               <div
                 className={`w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center justify-between gap-2 ${
                   density === 'comfortable'
-                    ? 'font-bold text-[#006cee] bg-[#eef5ff]'
+                    ? 'font-bold text-[#004776] bg-[#eef5ff]'
                     : 'text-[#004776] font-medium hover:bg-[#f4f7fb]'
                 }`}
               >
                 <span>Thoải mái</span>
-                {density === 'comfortable' && <Check className="w-4 h-4 text-[#006cee] shrink-0" />}
+                {density === 'comfortable' && <Check className="w-4 h-4 text-[#004776] shrink-0" />}
               </div>
             </PopoverClose>
             <PopoverClose onClick={() => onDensityChange('compact')}>
               <div
                 className={`w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center justify-between gap-2 ${
                   density === 'compact'
-                    ? 'font-bold text-[#006cee] bg-[#eef5ff]'
+                    ? 'font-bold text-[#004776] bg-[#eef5ff]'
                     : 'text-[#004776] font-medium hover:bg-[#f4f7fb]'
                 }`}
               >
                 <span>Gọn nhiều dữ liệu</span>
-                {density === 'compact' && <Check className="w-4 h-4 text-[#006cee] shrink-0" />}
+                {density === 'compact' && <Check className="w-4 h-4 text-[#004776] shrink-0" />}
               </div>
             </PopoverClose>
           </PopoverContent>

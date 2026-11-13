@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Lock, Unlock, KeyRound, AlertCircle, X, ShieldAlert } from 'lucide-react';
+import { ModalPortal } from '@/components/ui/ModalPortal';
 
 interface C1AdminLockModalProps {
   isOpen: boolean;
@@ -42,13 +43,18 @@ export function C1AdminLockModal({
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="c1-lock-modal-title"
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-xs p-0 sm:p-4"
-    >
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] w-full max-w-md max-h-[90dvh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+    <ModalPortal>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="c1-lock-modal-title"
+        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-[#004776]/35 backdrop-blur-xs p-0 sm:p-4"
+        onClick={onClose}
+      >
+        <div
+          className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] w-full max-w-md max-h-[92dvh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="flex items-center justify-between px-5 py-4 bg-[#f8fafc] border-b border-[#e2e8f0]">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-lg bg-[#004776]/10 flex items-center justify-center text-[#004776]">
@@ -121,8 +127,9 @@ export function C1AdminLockModal({
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }
 

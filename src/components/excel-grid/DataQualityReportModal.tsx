@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Award
 } from 'lucide-react';
+import { ModalPortal } from '@/components/ui/ModalPortal';
 
 interface DataQualityReportModalProps {
   isOpen: boolean;
@@ -42,40 +43,45 @@ export function DataQualityReportModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs select-none"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="quality-modal-title"
-    >
-      <div className="relative w-full max-w-4xl max-h-[92dvh] sm:max-h-[90dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#cbd5e1] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-[#cbd5e1] bg-[#005fa3] text-white shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#004776] text-white flex items-center justify-center shadow-xs">
-              <ShieldCheck className="w-5 h-5 text-emerald-300" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 id="quality-modal-title" className="text-base font-bold text-white">
-                  Kiểm soát chất lượng dữ liệu (Data Quality Checker)
-                </h3>
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#004776] text-white">
-                  Đơn vị: {unitCode}
-                </span>
+    <ModalPortal>
+      <div
+        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#004776]/35 backdrop-blur-xs select-none"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quality-modal-title"
+        onClick={onClose}
+      >
+        <div
+          className="relative w-full max-w-5xl h-[100dvh] sm:h-[90dvh] bg-white rounded-none sm:rounded-2xl shadow-2xl border border-[#cbd5e1] flex flex-col overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#cbd5e1] bg-[#f8fafc] shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-[#004776] text-white flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5" />
               </div>
-              <p className="text-xs text-white/90">{unitName} — Theo chuẩn Hướng dẫn 07-HD/BTCTW</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 id="quality-modal-title" className="text-base font-bold text-[#004776]">
+                    Kiểm soát chất lượng dữ liệu
+                  </h3>
+                  <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-[#004776]/10 text-[#004776] border border-[#004776]/20">
+                    {unitCode}
+                  </span>
+                </div>
+                <p className="text-xs font-medium text-[#476885] truncate">{unitName} · Theo chuẩn Hướng dẫn 07-HD/BTCTW</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Đóng cửa sổ"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-[#476885] hover:text-[#004776] hover:bg-[#e2e8f0]/60 transition-colors cursor-pointer shrink-0"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Đóng cửa sổ"
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white/80 hover:text-white hover:bg-[#004776] transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
 
         {/* Quality Score & KPI Bar */}
         <div className="px-5 py-3.5 bg-white border-b border-[#e2e8f0] grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -170,7 +176,7 @@ export function DataQualityReportModal({
         </div>
 
         {/* Issue list */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-3 min-h-[260px] max-h-[420px]">
+        <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-3">
           {filteredIssues.length === 0 ? (
             <div className="py-12 text-center text-[#64748b]">
               <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-2 opacity-80" />
@@ -237,20 +243,21 @@ export function DataQualityReportModal({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-[#cbd5e1] bg-[#f8fafc] flex items-center justify-between">
-          <span className="text-xs text-[#64748b]">
+        <div className="px-5 py-3.5 border-t border-[#cbd5e1] bg-[#f8fafc] flex items-center justify-between shrink-0">
+          <span className="text-xs font-medium text-[#476885]">
             Dữ liệu kiểm tra: {issues.length} cảnh báo trên {Object.keys(summary.countsBySheet).length} sheet nghiệp vụ.
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#e2e8f0] text-[#004776] hover:bg-[#cbd5e1] transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-[#004776] text-white hover:bg-[#00365c] transition-colors cursor-pointer"
           >
             Đóng
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }
 

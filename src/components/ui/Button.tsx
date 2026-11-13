@@ -19,13 +19,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center whitespace-nowrap rounded-xl font-semibold transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#006cee] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer active:scale-[0.98] select-none';
+      'inline-flex items-center justify-center whitespace-nowrap rounded-xl font-semibold transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#004776] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer active:scale-[0.98] select-none';
 
     const variants: Record<NonNullable<ButtonProps['variant']>, string> = {
-      default: 'bg-[#004776] hover:bg-[#00385c] text-white shadow-xs',
-      slink: 'bg-[#006cee] hover:bg-[#005ecc] text-white shadow-xs hover:shadow-md',
+      default: 'bg-[#004776] hover:bg-[#00365c] text-white shadow-xs',
+      slink: 'bg-[#004776] hover:bg-[#00365c] text-white shadow-xs hover:shadow-md',
       secondary: 'bg-[#e1edf8] hover:bg-[#d0e4f5] text-[#004776]',
-      outline: 'border border-[#d8e3ef] hover:border-[#006cee] bg-white text-[#004776] hover:bg-[#f5f9ff]',
+      outline: 'border border-[#cbd5e1] hover:border-[#004776] bg-white text-[#004776] hover:bg-[#f4f7fb]',
       ghost: 'hover:bg-[#eef5ff] text-[#004776]',
       destructive: 'bg-[#b42318] hover:bg-[#911b12] text-white shadow-xs'
     };

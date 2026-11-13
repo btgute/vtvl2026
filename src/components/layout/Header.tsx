@@ -50,7 +50,7 @@ export function Header() {
   }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#d8e3ef] shadow-[0_2px_12px_-4px_rgba(0,71,118,0.06)]">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#d8e3ef] shadow-[0_2px_12px_-4px_rgba(0,71,118,0.06)]">
       <div className="w-full max-w-none px-3 sm:px-5 lg:px-7 flex h-16 items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0 shrink-0">
           <Link
@@ -94,7 +94,7 @@ export function Header() {
                   aria-current={active ? 'page' : undefined}
                   className={`inline-flex items-center gap-2 px-3.5 h-10 rounded-xl text-[14px] whitespace-nowrap transition-all border ${
                     active
-                      ? 'bg-[#eef5ff] text-[#006cee] border-[#006cee]/25 font-bold shadow-2xs'
+                      ? 'bg-[#004776] text-white border-[#004776] font-bold shadow-xs'
                       : 'text-[#004776] border-transparent font-semibold hover:bg-[#f4f7fb] hover:border-[#d8e3ef]'
                   }`}
                 >
@@ -107,7 +107,7 @@ export function Header() {
 
           <Link
             href="/bang-tinh"
-            className="hidden sm:inline-flex lg:hidden items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold bg-[#eef5ff] text-[#006cee] border border-[#006cee]/25 whitespace-nowrap"
+            className="hidden sm:inline-flex lg:hidden items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold bg-[#004776] text-white whitespace-nowrap"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />
             <span>Bảng tính 15 biểu</span>
@@ -132,7 +132,7 @@ export function Header() {
           role="dialog"
           aria-modal="true"
           aria-label="Danh mục điều hướng"
-          className="lg:hidden fixed inset-0 z-50 bg-[#004776]/35 backdrop-blur-xs flex justify-end"
+          className="lg:hidden fixed inset-0 z-[100] bg-[#004776]/35 backdrop-blur-xs flex justify-end"
           onClick={() => setMobileOpen(false)}
         >
           <div
@@ -171,7 +171,7 @@ export function Header() {
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
                       className={`flex items-center gap-3 px-4 min-h-[46px] rounded-xl text-[15px] ${
-                        active ? 'bg-[#006cee] text-white font-bold' : 'text-[#004776] font-semibold hover:bg-[#eef5ff]'
+                        active ? 'bg-[#004776] text-white font-bold' : 'text-[#004776] font-semibold hover:bg-[#eef5ff]'
                       }`}
                     >
                       <Icon className="w-4 h-4 shrink-0" />

@@ -111,9 +111,9 @@ export default function HomePage() {
 
         <div className="p-5 sm:p-7 flex flex-col gap-5">
           {/* Khối Việc cần làm tiếp theo */}
-          <div className="bg-[#f4f8ff] rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[#006cee]/15">
+          <div className="bg-[#f4f8ff] rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[#004776]/15">
             <div className="space-y-1">
-              <span className="text-[13px] font-bold text-[#006cee]">
+              <span className="text-[13px] font-bold text-[#004776]">
                 Việc cần làm tiếp theo
               </span>
               <p className="text-sm sm:text-[15px] font-semibold text-[#004776]">
@@ -125,12 +125,12 @@ export default function HomePage() {
                 href="/bang-tinh"
                 className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-white hover:bg-[#eef5fc] text-[#004776] border border-[#cbd5e1] text-[13.5px] font-semibold transition-colors"
               >
-                <FileSpreadsheet className="w-4 h-4 text-[#006cee]" />
+                <FileSpreadsheet className="w-4 h-4 text-[#004776]" />
                 <span>Bảng tính 15 sheet</span>
               </Link>
               <Link
                 href={continueHref}
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#006cee] hover:bg-[#005ecc] text-white text-[13.5px] font-bold shadow-[0_2px_8px_rgba(0,108,238,0.22)] transition-colors"
+                className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#004776] hover:bg-[#00365c] text-white text-[13.5px] font-bold shadow-xs transition-colors"
               >
                 <span>Tiếp tục hồ sơ</span>
                 <ArrowRight className="w-4 h-4" />
@@ -143,10 +143,10 @@ export default function HomePage() {
             <div className="space-y-1.5 sm:pr-5">
               <div className="flex items-center justify-between text-[13.5px] font-semibold text-[#476885]">
                 <span className="inline-flex items-center gap-1.5">
-                  <Building2 className="w-4 h-4 text-[#006cee]" />
+                  <Building2 className="w-4 h-4 text-[#004776]" />
                   <span>Đơn vị đang thực hiện</span>
                 </span>
-                <span className="font-bold text-[#006cee]">[{activeUnit.code}]</span>
+                <span className="font-bold text-[#004776]">[{activeUnit.code}]</span>
               </div>
               <div className="text-base font-bold text-[#004776]">
                 {activeUnit.nameVi}
@@ -173,7 +173,7 @@ export default function HomePage() {
                 Bước {currentStepNum}/8 — {currentStepInfo.shortTitle}
               </div>
               <div className="w-full h-2 rounded-full bg-[#e2e8f0] overflow-hidden" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
-                <div className="h-full bg-[#006cee] rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
+                <div className="h-full bg-[#004776] rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-[13.5px] text-[#476885]">
                 <span>Đang đề xuất {session.proposedPositions.length} vị trí việc làm</span>
@@ -193,7 +193,7 @@ export default function HomePage() {
           <div className="border-t border-[#e2e8f0] pt-4 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <History className="w-4 h-4 text-[#006cee]" />
+                <History className="w-4 h-4 text-[#004776]" />
                 <h2 className="text-sm sm:text-base font-bold text-[#004776]">
                   Nhật ký thao tác gần đây
                 </h2>
@@ -211,7 +211,7 @@ export default function HomePage() {
                 {logs.slice(0, 5).map((log) => (
                   <li key={log.id} className="py-2.5 text-[13.5px]">
                     <div className="font-medium text-[#004776]">
-                      <span className="font-bold text-[#006cee] mr-1.5">[{log.unitCode}]</span>
+                      <span className="font-bold text-[#004776] mr-1.5">[{log.unitCode}]</span>
                       <span>{log.details}</span>
                     </div>
                     <div className="text-[12.5px] text-[#476885] mt-0.5">
@@ -230,10 +230,10 @@ export default function HomePage() {
       <details className="bg-white rounded-2xl border border-[#d8e3ef] overflow-hidden shadow-2xs">
         <summary className="cursor-pointer px-5 h-12 text-sm font-bold text-[#004776] flex items-center justify-between hover:bg-[#f8fbff] transition-colors">
           <span className="inline-flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#006cee] shrink-0" />
+            <FileText className="w-4 h-4 text-[#004776] shrink-0" />
             <span>Căn cứ pháp lý &amp; phạm vi {HCMUTE_UNITS.length} đơn vị</span>
           </span>
-          <span className="text-[13px] font-semibold text-[#006cee] shrink-0">Mở / Đóng</span>
+          <span className="text-[13px] font-semibold text-[#004776] shrink-0">Mở / Đóng</span>
         </summary>
         <div className="p-5 border-t border-[#e2e8f0] bg-white space-y-3 text-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-3 border-b border-[#e2e8f0]">
@@ -248,7 +248,7 @@ export default function HomePage() {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[13.5px] text-[#476885]">10 biểu nghiệp vụ A1–D2 ({HD07_12_STEP_ORDER.length} biểu liên kết)</span>
-            <Link href="/huong-dan" className="inline-flex items-center gap-1.5 font-semibold text-[#006cee] hover:underline">
+            <Link href="/huong-dan" className="inline-flex items-center gap-1.5 font-semibold text-[#004776] hover:underline">
               <BookOpenCheck className="w-4 h-4" />
               <span>Xem Phụ lục HD 07</span>
             </Link>

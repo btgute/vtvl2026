@@ -10,7 +10,7 @@ export function Badge({ className = '', variant = 'default', children, ...props 
 
   const variants: Record<NonNullable<BadgeProps['variant']>, string> = {
     default: 'bg-[#004776] text-white',
-    slink: 'bg-[#006cee] text-white',
+    slink: 'bg-[#004776]/10 text-[#004776] border border-[#004776]/20',
     secondary: 'bg-[#e1edf8] text-[#004776] border border-[#c7def4]',
     outline: 'border border-[#d8e3ef] text-[#004776] bg-white',
     success: 'bg-[#e3f5ec] text-[#13653f] border border-[#a3e2c3]',

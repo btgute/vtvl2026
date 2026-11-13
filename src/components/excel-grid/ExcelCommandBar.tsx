@@ -67,7 +67,7 @@ export function ExcelCommandBar({
     if (syncStatus === 'saving') {
       return (
         <span className="inline-flex items-center gap-1.5 text-[#004776] font-medium">
-          <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0 text-[#006cee]" />
+          <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0 text-[#004776]" />
           <span>Đang lưu máy chủ…</span>
         </span>
       );
@@ -118,7 +118,7 @@ export function ExcelCommandBar({
       <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 text-[#476885] min-w-0 basis-full lg:basis-auto">
         {session && (
           <div className="inline-flex items-center gap-1.5 font-medium text-[#004776]">
-            <User className="w-4 h-4 text-[#006cee] shrink-0" />
+            <User className="w-4 h-4 text-[#004776] shrink-0" />
             <span className="truncate max-w-[160px] sm:max-w-[210px]" title={session.email}>{session.email}</span>
             <span className="text-[#cbd5e1]">·</span>
             <span className="text-[#476885] hidden md:inline truncate max-w-[180px]">{session.title || 'Cán bộ'}</span>
@@ -126,7 +126,7 @@ export function ExcelCommandBar({
             <button
               type="button"
               onClick={onSwitchSession}
-              className="text-[#006cee] hover:text-[#004776] hover:underline font-semibold cursor-pointer shrink-0"
+              className="text-[#004776] hover:underline font-bold cursor-pointer shrink-0"
               title="Đổi tài khoản hoặc đơn vị công tác"
             >
               Đổi phiên
@@ -151,7 +151,7 @@ export function ExcelCommandBar({
           type="button"
           onClick={onSaveNow}
           disabled={syncStatus === 'saving'}
-          className="inline-flex items-center gap-1.5 h-8 px-3 bg-white hover:bg-[#eef5fc] border border-[#cbd5e1] hover:border-[#006cee]/40 text-[#006cee] rounded-lg font-semibold text-[12.5px] transition-colors cursor-pointer disabled:opacity-50 shrink-0 shadow-2xs"
+          className="inline-flex items-center gap-1.5 h-9 px-3 bg-white hover:bg-[#eef5fc] border border-[#cbd5e1] hover:border-[#004776] text-[#004776] rounded-xl font-semibold text-[13px] transition-colors cursor-pointer disabled:opacity-50 shrink-0 shadow-2xs"
           title="Lưu đồng bộ toàn bộ 15 bảng tính lên máy chủ HCM-UTE"
         >
           <Save className="w-3.5 h-3.5" />
@@ -168,7 +168,7 @@ export function ExcelCommandBar({
           className="h-9 px-3 text-[13px] font-semibold text-[#004776] hover:bg-[#eef5fc] rounded-xl inline-flex items-center gap-1.5 cursor-pointer transition-colors"
           title="Kiểm tra chất lượng và rà soát lỗi dữ liệu 15 biểu"
         >
-          <ShieldCheck className="w-4 h-4 text-[#006cee]" />
+          <ShieldCheck className="w-4 h-4 text-[#004776]" />
           <span className="sm:hidden">Kiểm tra</span>
           <span className="hidden sm:inline">Kiểm tra dữ liệu</span>
         </button>
@@ -180,7 +180,7 @@ export function ExcelCommandBar({
           className="hidden sm:inline-flex relative h-9 px-3 text-[13px] font-semibold text-[#004776] hover:bg-[#eef5fc] rounded-xl items-center gap-1.5 cursor-pointer transition-colors"
           title="Lưu dữ liệu biểu hiện tại vào bộ nhớ cục bộ"
         >
-          <Save className="w-4 h-4 text-[#006cee]" />
+          <Save className="w-4 h-4 text-[#004776]" />
           <span>Lưu biểu</span>
           {isDirty && (
             <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Có thay đổi chưa lưu" />
@@ -192,7 +192,7 @@ export function ExcelCommandBar({
           type="button"
           onClick={onSaveAndNext}
           disabled={!canNext}
-          className="h-9 px-3.5 text-[13px] font-bold text-white bg-[#006cee] hover:bg-[#005ecc] rounded-xl inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-[0_2px_8px_rgba(0,108,238,0.22)] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="h-9 px-3.5 text-[13px] font-bold text-white bg-[#004776] hover:bg-[#00365c] rounded-xl inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
           title="Lưu biểu này và tự động chuyển sang biểu nghiệp vụ tiếp theo"
         >
           <span className="sm:hidden">Lưu &amp; tiếp</span>

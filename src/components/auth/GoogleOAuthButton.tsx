@@ -29,7 +29,7 @@ export function GoogleOAuthButton({
   loadingLabel = 'Đang chuyển đến Google…',
   redirectPath = '/bang-tinh',
   size = 'lg',
-  className = 'w-full justify-center border-[#cbd5e1] hover:border-[#006cee] font-bold text-[15px]',
+  className = 'w-full justify-center border-[#cbd5e1] hover:border-[#004776] font-bold text-[15px]',
 }: GoogleOAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);

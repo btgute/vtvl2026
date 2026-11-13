@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col overflow-x-clip relative">
         <Header />
-        <main className="flex-1 flex flex-col relative z-20">
+        <main className="flex-1 flex flex-col">
           {children}
         </main>
         <Footer />

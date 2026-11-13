@@ -39,7 +39,7 @@ export function UserProfilePopover() {
     return (
       <Popover>
         <PopoverTrigger>
-          <span className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl border border-[#d8e3ef] bg-white hover:border-[#006cee] hover:bg-[#f5f9ff] text-sm font-semibold text-[#004776] shadow-2xs transition-all">
+          <span className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl border border-[#d8e3ef] bg-white hover:border-[#004776] hover:bg-[#f4f7fb] text-sm font-semibold text-[#004776] shadow-2xs transition-all">
             <GoogleLogoSvg className="w-4 h-4" />
             <span className="hidden sm:inline">Đăng nhập Google</span>
           </span>
@@ -58,13 +58,13 @@ export function UserProfilePopover() {
             loadingLabel="Đang kết nối Google…"
             redirectPath={currentPath}
             size="default"
-            className="w-full justify-center font-bold border-[#cbd5e1] hover:border-[#006cee]"
+            className="w-full justify-center font-bold border-[#cbd5e1] hover:border-[#004776]"
           />
 
           <div className="pt-2 border-t border-[#e8eff7]">
             <PopoverClose onClick={handleOpenSwitchModal}>
               <span className="w-full inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg bg-[#e1edf8] hover:bg-[#d0e4f5] text-xs font-bold text-[#004776] transition-colors">
-                <Building2 className="w-3.5 h-3.5 text-[#006cee]" />
+                <Building2 className="w-3.5 h-3.5 text-[#004776]" />
                 <span>Hoặc khai báo phiên đơn vị</span>
               </span>
             </PopoverClose>
@@ -80,7 +80,7 @@ export function UserProfilePopover() {
   return (
     <Popover>
       <PopoverTrigger>
-        <span className="inline-flex items-center gap-2.5 h-10 pl-1.5 pr-3 rounded-full border border-[#d8e3ef] bg-white hover:border-[#006cee] hover:bg-[#f5f9ff] transition-all shadow-2xs">
+        <span className="inline-flex items-center gap-2.5 h-10 pl-1.5 pr-3 rounded-full border border-[#d8e3ef] bg-white hover:border-[#004776] hover:bg-[#f4f7fb] transition-all shadow-2xs">
           {session.avatarUrl ? (
             <img
               src={session.avatarUrl}
@@ -88,7 +88,7 @@ export function UserProfilePopover() {
               className="w-7 h-7 rounded-full object-cover shrink-0"
             />
           ) : (
-            <span className="w-7 h-7 rounded-full bg-[#006cee] text-white text-xs font-bold inline-flex items-center justify-center shrink-0">
+            <span className="w-7 h-7 rounded-full bg-[#004776] text-white text-xs font-bold inline-flex items-center justify-center shrink-0">
               {initials}
             </span>
           )}
@@ -96,7 +96,7 @@ export function UserProfilePopover() {
             <span className="text-[13px] font-bold text-[#004776] max-w-[130px] truncate">
               {label}
             </span>
-            <span className="text-[11px] font-semibold text-[#006cee]">
+            <span className="text-[11px] font-semibold text-[#476885]">
               [{session.unitCode}]
             </span>
           </span>
@@ -136,7 +136,7 @@ export function UserProfilePopover() {
 
         <div className="p-2.5 rounded-xl bg-[#f5f9ff] border border-[#d8e3ef] space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-bold text-[#004776]">
-            <Building2 className="w-3.5 h-3.5 text-[#006cee]" />
+            <Building2 className="w-3.5 h-3.5 text-[#004776]" />
             <span>Đơn vị [{session.unitCode}]</span>
           </div>
           <p className="text-xs font-medium text-[#20446c] leading-snug pl-5">
@@ -156,8 +156,8 @@ export function UserProfilePopover() {
           )}
 
           <PopoverClose onClick={handleOpenSwitchModal}>
-            <span className="w-full inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-[#d8e3ef] bg-white hover:bg-[#f5f9ff] text-xs font-semibold text-[#004776] transition-colors">
-              <RefreshCw className="w-3.5 h-3.5 text-[#006cee]" />
+            <span className="w-full inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-[#d8e3ef] bg-white hover:bg-[#f4f7fb] text-xs font-semibold text-[#004776] transition-colors">
+              <RefreshCw className="w-3.5 h-3.5 text-[#004776]" />
               <span>Đổi đơn vị hoặc chức danh</span>
             </span>
           </PopoverClose>

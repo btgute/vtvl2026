@@ -6,20 +6,6 @@ import {
   UnitScaleMetrics
 } from '@/types/vtvl';
 
-export const SUPABASE_PROJECT_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
-
-export function getSupabaseAnonKey(): string {
-  if (typeof window !== 'undefined') {
-    const localKey = window.localStorage.getItem('HCMUTE_SUPABASE_ANON_KEY');
-    if (localKey) return localKey.trim();
-  }
-  return (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
-}
-
-export function isSupabaseConfigured(): boolean {
-  return Boolean(SUPABASE_PROJECT_URL && getSupabaseAnonKey());
-}
-
 /**
  * Ghi nhật ký thao tác người dùng lên máy chủ (qua API bảo mật)
  */

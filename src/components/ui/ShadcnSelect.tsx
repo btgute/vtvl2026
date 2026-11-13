@@ -48,6 +48,7 @@ export function ShadcnSelect({
   onFocus
 }: ShadcnSelectProps) {
   const [open, setOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -100,10 +101,24 @@ export function ShadcnSelect({
   const borderClass = hasError
     ? 'border-[var(--fix)] bg-[var(--fix-soft)] text-[var(--fix)] focus:ring-2 focus:ring-[var(--fix)]/25'
     : open
-      ? 'border-[#005fa3] ring-2 ring-[#005fa3]/20 bg-white text-[#004776]'
-      : 'border-[#cbd5e1] bg-white hover:border-[#94a3b8] text-[#004776]';
+      ? 'border-[#004776] ring-2 ring-[#004776]/20 bg-white text-[#004776]'
+      : 'border-[#cbd5e1] bg-white hover:border-[#004776]/50 text-[#004776]';
 
   const showSearch = searchable ?? options.length >= searchableThreshold;
+
+  const handleToggle = () => {
+    if (disabled) return;
+    if (!open) {
+      onFocus?.();
+      if (containerRef.current && typeof window !== 'undefined') {
+        const rect = containerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        setOpenUpward(spaceBelow < 270 && spaceAbove > spaceBelow);
+      }
+    }
+    setOpen((prev) => !prev);
+  };
 
   return (
     <div ref={containerRef} className={`relative w-full min-w-0 ${className}`}>
@@ -117,11 +132,7 @@ export function ShadcnSelect({
         aria-invalid={hasError || undefined}
         aria-describedby={ariaDescribedBy}
         disabled={disabled}
-        onClick={() => {
-          if (disabled) return;
-          if (!open) onFocus?.();
-          setOpen((prev) => !prev);
-        }}
+        onClick={handleToggle}
         className={`w-full inline-flex items-center justify-between gap-1.5 border font-normal transition-all outline-hidden cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${sizeClass} ${borderClass}`}
         title={selectedOption?.label || value || placeholder}
       >
@@ -135,7 +146,9 @@ export function ShadcnSelect({
         <div
           role="listbox"
           aria-label={ariaLabel || placeholder}
-          className="absolute left-0 top-full mt-1 min-w-full w-[max(100%,14rem)] max-w-[min(22rem,calc(100vw-2rem))] bg-white rounded-lg border border-[#cbd5e1] shadow-lg z-50 py-1 max-h-64 flex flex-col"
+          className={`absolute left-0 ${
+            openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
+          } min-w-full w-[max(100%,14rem)] max-w-[min(22rem,calc(100vw-2rem))] bg-white rounded-xl border border-[#cbd5e1] shadow-xl z-[120] py-1 max-h-60 flex flex-col`}
         >
           {showSearch && (
             <div className="px-2 pb-1 pt-0.5 border-b border-[#f1f5f9]">
@@ -146,7 +159,7 @@ export function ShadcnSelect({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Tìm lựa chọn..."
-                  className="w-full h-8 pl-7 pr-2 text-xs rounded-md border border-[#cbd5e1] bg-[#f8fafc] text-[#004776] focus:border-[#005fa3] outline-hidden"
+                  className="w-full h-8 pl-7 pr-2 text-xs rounded-md border border-[#cbd5e1] bg-[#f8fafc] text-[#004776] focus:border-[#004776] outline-hidden"
                 />
               </div>
             </div>
@@ -173,12 +186,12 @@ export function ShadcnSelect({
                     }}
                     className={`w-full text-left px-2.5 py-1.5 text-xs flex items-center justify-between gap-2 transition-colors cursor-pointer ${
                       isSelected
-                        ? 'bg-[#eef5ff] text-[#005fa3] font-semibold'
+                        ? 'bg-[#eef5ff] text-[#004776] font-semibold'
                         : 'text-[#004776] hover:bg-[#f8fafc] font-normal'
                     } disabled:opacity-40 disabled:cursor-not-allowed`}
                   >
                     <span className="truncate">{opt.label}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-[#005fa3] shrink-0" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-[#004776] shrink-0" />}
                   </button>
                 );
               })

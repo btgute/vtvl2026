@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { X, BarChart3, Users, Briefcase, Scale, Search, ArrowUpRight } from 'lucide-react';
 import { ExcelSheetKey, GenericGridRow } from './excel-grid-types';
 import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
+import { ModalPortal } from '@/components/ui/ModalPortal';
 import { useQueryFilter } from '@/services/query/use-query-filter';
 
 interface WorkforceStructureChartModalProps {
@@ -129,30 +130,31 @@ export function WorkforceStructureChartModal({
   if (!isOpen) return null;
 
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="workforce-chart-modal-title" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/55 select-none" onClick={onClose}>
-      <div className="relative w-full max-w-5xl max-h-[92dvh] sm:max-h-[90dvh] bg-white rounded-t-2xl sm:rounded-2xl shadow-xl border border-[#cbd5e1] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-        {/* Header — Solid Primary Fresh Blue (#005fa3), no gradient, no white outline */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3.5 bg-[#005fa3] text-white shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-[#004776] flex items-center justify-center shrink-0"><BarChart3 className="w-5 h-5 text-white" /></div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 id="workforce-chart-modal-title" className="text-base font-semibold text-white">Biểu đồ cơ cấu nhân lực (Biểu C1 &amp; D2)</h2>
-                <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-[#004776] text-white">[{unitCode}] {unitNameVi}</span>
+    <ModalPortal>
+      <div role="dialog" aria-modal="true" aria-labelledby="workforce-chart-modal-title" className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#004776]/35 backdrop-blur-xs select-none" onClick={onClose}>
+        <div className="relative w-full max-w-6xl h-[100dvh] sm:h-[92dvh] bg-white rounded-none sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+          {/* Clean Light Header matching HCM-UTE Design System */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 bg-[#f8fafc] border-b border-[#cbd5e1] shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-[#004776] text-white flex items-center justify-center shrink-0"><BarChart3 className="w-5 h-5" /></div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 id="workforce-chart-modal-title" className="text-base font-bold text-[#004776]">Biểu đồ cơ cấu nhân lực (Biểu C1 &amp; D2)</h2>
+                  <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-[#004776]/10 text-[#004776] border border-[#004776]/20">[{unitCode}] {unitNameVi}</span>
+                </div>
+                <p className="text-xs text-[#476885] truncate">Trực quan hóa danh mục vị trí việc làm (6. C1_VTVL) và phương án bố trí biên chế (10. D2_PhuongAn)</p>
               </div>
-              <p className="text-xs text-white/90 truncate">Trực quan hóa danh mục vị trí việc làm (6. C1_VTVL) và phương án bố trí biên chế (10. D2_PhuongAn)</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {onSelectSheet && (
+                <>
+                  <button type="button" onClick={() => { onSelectSheet('C1'); onClose(); }} className="inline-flex items-center gap-1 h-8.5 px-3 rounded-xl bg-[#004776] hover:bg-[#00365c] text-white text-xs font-bold cursor-pointer transition-colors"><span>Mở Biểu C1</span><ArrowUpRight className="w-3.5 h-3.5" /></button>
+                  <button type="button" onClick={() => { onSelectSheet('D2'); onClose(); }} className="inline-flex items-center gap-1 h-8.5 px-3 rounded-xl bg-[#004776] hover:bg-[#00365c] text-white text-xs font-bold cursor-pointer transition-colors"><span>Mở Biểu D2</span><ArrowUpRight className="w-3.5 h-3.5" /></button>
+                </>
+              )}
+              <button type="button" onClick={onClose} aria-label="Đóng biểu đồ" className="w-9 h-9 rounded-xl text-[#476885] hover:text-[#004776] hover:bg-[#e2e8f0]/60 inline-flex items-center justify-center cursor-pointer transition-colors"><X className="w-5 h-5" /></button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {onSelectSheet && (
-              <>
-                <button type="button" onClick={() => { onSelectSheet('C1'); onClose(); }} className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg bg-[#004776] hover:bg-[#00385c] text-white text-xs font-medium cursor-pointer transition-colors"><span>Mở Biểu C1</span><ArrowUpRight className="w-3.5 h-3.5" /></button>
-                <button type="button" onClick={() => { onSelectSheet('D2'); onClose(); }} className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg bg-[#004776] hover:bg-[#00385c] text-white text-xs font-medium cursor-pointer transition-colors"><span>Mở Biểu D2</span><ArrowUpRight className="w-3.5 h-3.5" /></button>
-              </>
-            )}
-            <button type="button" onClick={onClose} aria-label="Đóng biểu đồ" className="w-8 h-8 rounded-lg bg-[#004776] hover:bg-[#00385c] text-white inline-flex items-center justify-center cursor-pointer transition-colors"><X className="w-4 h-4" /></button>
-          </div>
-        </div>
 
         {/* Filter Bar using queryFn + ShadcnSelect */}
         <div className="px-4 sm:px-6 py-2.5 bg-[#f8fafc] border-b border-[#cbd5e1] grid grid-cols-1 sm:grid-cols-12 gap-2.5 shrink-0">
@@ -180,7 +182,7 @@ export function WorkforceStructureChartModal({
         </div>
 
         {/* Scrollable Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-white">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 min-h-0 bg-white">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="p-3.5 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-[#eef5ff] text-[#005fa3] flex items-center justify-center shrink-0"><Briefcase className="w-4 h-4" /></div>
@@ -245,7 +247,7 @@ export function WorkforceStructureChartModal({
             {filteredItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-[#64748b]">Không có vị trí việc làm nào khớp điều kiện lọc.</div>
             ) : (
-              <div className="space-y-3 max-h-[340px] overflow-y-auto pr-1">
+              <div className="space-y-3">
                 {filteredItems.map((item) => {
                   const reqPct = Math.round((item.canBoTri / stats.maxHeadcount) * 100);
                   const availPct = Math.round((item.coTheBoTri / stats.maxHeadcount) * 100);
@@ -277,7 +279,8 @@ export function WorkforceStructureChartModal({
             )}
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

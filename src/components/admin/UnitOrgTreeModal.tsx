@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { X, Network, Building2, Maximize2, Minimize2 } from 'lucide-react';
 import { QD2266_GROUPED_UNITS_CATALOG } from '@/configs/hcmute-qd2266-missions';
 import { ShadcnSelect } from '@/components/ui/ShadcnSelect';
+import { ModalPortal } from '@/components/ui/ModalPortal';
 import { buildUnitOrgTree } from '@/services/org-chart/unit-org-tree-builder';
 import { GenericGridRow } from '@/components/excel-grid/excel-grid-types';
 import { UnitOrgNode } from '@/services/org-chart/unit-org-tree-types';
@@ -83,42 +84,47 @@ export function UnitOrgTreeModal({
   const currentViewingNode = selectedNode || treeData.rootNode;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs select-none animate-in fade-in duration-150"
-    >
-      <div className="relative w-full max-w-6xl max-h-[92dvh] bg-white rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col">
-        {/* Header Modal chuẩn màu xanh tươi #005fa3 */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#005fa3] text-white shrink-0 border-b border-[#004776]">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#004776] flex items-center justify-center shrink-0">
-              <Network className="w-5 h-5 text-sky-200" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-bold text-white tracking-tight truncate">
-                  Sơ đồ Vị trí việc làm &amp; Công việc dự kiến
-                </h3>
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#004776] text-sky-100">
-                  {treeData.unitCode}
-                </span>
+    <ModalPortal>
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 bg-[#004776]/35 backdrop-blur-xs select-none"
+        onClick={onClose}
+      >
+        <div
+          className="relative w-full max-w-6xl h-[100dvh] sm:h-[92dvh] bg-white rounded-none sm:rounded-2xl shadow-2xl border border-[#cbd5e1] overflow-hidden flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Clean Light Header matching HCM-UTE Design System */}
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 bg-[#f8fafc] border-b border-[#cbd5e1] shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-[#004776] text-white flex items-center justify-center shrink-0">
+                <Network className="w-5 h-5" />
               </div>
-              <p className="text-xs text-white/90 truncate">
-                {treeData.unitNameVi} · Chuẩn hóa theo Hướng dẫn số 07-HD/BTCTW &amp; QĐ 2266/QĐ-ĐHCNKT
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base sm:text-lg font-bold text-[#004776] tracking-tight truncate">
+                    Sơ đồ Vị trí việc làm &amp; Công việc dự kiến
+                  </h3>
+                  <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-[#004776]/10 text-[#004776] border border-[#004776]/20">
+                    {treeData.unitCode}
+                  </span>
+                </div>
+                <p className="text-xs font-medium text-[#476885] truncate">
+                  {treeData.unitNameVi} · Chuẩn hóa theo Hướng dẫn số 07-HD/BTCTW &amp; QĐ 2266/QĐ-ĐHCNKT
+                </p>
+              </div>
             </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-[#004776] transition-colors cursor-pointer"
-            aria-label="Đóng cửa sổ sơ đồ"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-[#476885] hover:text-[#004776] hover:bg-[#e2e8f0]/60 transition-colors cursor-pointer shrink-0"
+              aria-label="Đóng cửa sổ sơ đồ"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
         {/* Action bar: Bộ chọn đơn vị & Thống kê nhanh */}
         <div className="px-4 sm:px-6 py-2.5 bg-[#f8fafc] border-b border-[#cbd5e1] flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -209,12 +215,13 @@ export function UnitOrgTreeModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#004776] text-white hover:bg-[#00385c] transition-colors cursor-pointer shadow-2xs"
+            className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#004776] text-white hover:bg-[#00365c] transition-colors cursor-pointer shadow-2xs"
           >
             Đóng sơ đồ
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

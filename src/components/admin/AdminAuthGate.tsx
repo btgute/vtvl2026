@@ -78,7 +78,7 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
                   if (error) setError('');
                 }}
                 placeholder="Nhập mật khẩu quản trị..."
-                className="w-full h-11 pl-10 pr-4 text-sm bg-[#f8fafc] border border-[#cbd5e1] rounded-xl focus:ring-2 focus:ring-[#006cee] focus:outline-none text-[#004776] font-medium"
+                className="w-full h-11 pl-10 pr-4 text-sm bg-[#f8fafc] border border-[#cbd5e1] rounded-xl focus:ring-2 focus:ring-[#004776] focus:outline-none text-[#004776] font-medium"
               />
               <KeyRound className="w-4 h-4 text-[#476885] absolute left-3.5 top-1/2 -translate-y-1/2" />
             </div>
