@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Filter, SlidersHorizontal, Maximize2, Minimize2, X, Plus } from 'lucide-react';
+import React from 'react';
+import { Search, Filter, SlidersHorizontal, Maximize2, Minimize2, X, Plus, Check } from 'lucide-react';
 import { ExcelSheetMeta } from './excel-grid-types';
+import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from '@/components/ui/Popover';
 
 interface TableControlBarProps {
   meta: ExcelSheetMeta;
@@ -39,56 +40,38 @@ export function TableControlBar({
   onDensityChange,
   onToggleFullscreen
 }: TableControlBarProps) {
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [showDensityMenu, setShowDensityMenu] = useState(false);
-  const filterRef = useRef<HTMLDivElement>(null);
-  const densityRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleOutside = (e: MouseEvent) => {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
-        setShowFilterMenu(false);
-      }
-      if (densityRef.current && !densityRef.current.contains(e.target as Node)) {
-        setShowDensityMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, []);
-
   const isFiltered = filterMode !== 'all';
 
   return (
-    <div className="px-3 sm:px-4 py-1.5 min-h-[44px] bg-white border-b border-[#cbd5e1] flex flex-wrap items-center justify-between gap-2">
-      {/* KHỐI TRÁI: Primary button nhỏ + Thêm dòng & Text phụ Tổng số dòng */}
-      <div className="flex flex-wrap items-center gap-2.5">
+    <div className="px-3.5 sm:px-5 py-2 min-h-[48px] bg-white border-b border-[#d8e3ef] flex flex-wrap items-center justify-between gap-2.5">
+      {/* KHỐI TRÁI: Nút thêm dòng & Tổng số dòng */}
+      <div className="flex flex-wrap items-center gap-3">
         {!isC1Locked && onAddRow && (
           <button
             type="button"
             onClick={onAddRow}
-            className="inline-flex items-center gap-1.5 h-8 px-3 font-semibold text-xs text-white bg-[#004776] hover:bg-[#00385c] rounded-lg cursor-pointer transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 font-bold text-[13px] text-white bg-[#004776] hover:bg-[#00385c] rounded-xl cursor-pointer transition-colors shadow-2xs"
             title="Thêm một dòng mới vào biểu hiện tại"
           >
-            <Plus className="w-3.5 h-3.5 shrink-0" />
-            <span>{meta.key === 'A1' ? '+ Thêm nhiệm vụ' : '+ Thêm dòng mới'}</span>
+            <Plus className="w-4 h-4 shrink-0" />
+            <span>{meta.key === 'A1' ? 'Thêm nhiệm vụ' : 'Thêm dòng mới'}</span>
           </button>
         )}
 
-        <span className="text-xs text-[#64748b]">
-          Tổng số: <strong className="font-semibold text-[#004776]">{rowsCount}</strong> dòng
+        <span className="text-[13px] font-medium text-[#476885]">
+          Tổng số: <strong className="font-bold text-[#004776] tabular-nums">{rowsCount}</strong> dòng
           {selectedCount > 0 && (
-            <span className="ml-1 text-[#005fa3] font-medium">({selectedCount} đã chọn)</span>
+            <span className="ml-1.5 text-[#006cee] font-bold">· {selectedCount} đã chọn</span>
           )}
         </span>
 
         {onMobileViewModeChange && (
-          <div className="inline-flex md:hidden items-center rounded-lg border border-[#cbd5e1] bg-[#f8fafc] p-0.5 text-xs">
+          <div className="inline-flex md:hidden items-center rounded-xl border border-[#d8e3ef] bg-[#f4f7fb] p-0.5 text-xs">
             <button
               type="button"
               onClick={() => onMobileViewModeChange('table')}
-              className={`px-2 py-0.5 rounded-md font-medium cursor-pointer transition-colors ${
-                mobileViewMode === 'table' ? 'bg-[#004776] text-white font-semibold' : 'text-[#004776]'
+              className={`px-2.5 py-1 rounded-lg font-semibold cursor-pointer transition-colors ${
+                mobileViewMode === 'table' ? 'bg-[#006cee] text-white font-bold' : 'text-[#004776]'
               }`}
             >
               Bảng
@@ -96,8 +79,8 @@ export function TableControlBar({
             <button
               type="button"
               onClick={() => onMobileViewModeChange('cards')}
-              className={`px-2 py-0.5 rounded-md font-medium cursor-pointer transition-colors ${
-                mobileViewMode === 'cards' ? 'bg-[#004776] text-white font-semibold' : 'text-[#004776]'
+              className={`px-2.5 py-1 rounded-lg font-semibold cursor-pointer transition-colors ${
+                mobileViewMode === 'cards' ? 'bg-[#006cee] text-white font-bold' : 'text-[#004776]'
               }`}
             >
               Phiếu
@@ -106,111 +89,119 @@ export function TableControlBar({
         )}
       </div>
 
-      {/* KHỐI PHẢI: Ô tìm kiếm + 3 Ghost buttons icon (Lọc, Cột/Mật độ, Toàn màn hình) */}
-      <div className="flex items-center gap-1.5 w-full sm:w-auto">
+      {/* KHỐI PHẢI: Ô tìm kiếm + Popover Lọc, Popover Mật độ, Toàn màn hình */}
+      <div className="flex items-center gap-2 w-full sm:w-auto">
         <div className="relative flex-1 sm:flex-initial">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#476885]" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Tìm trong biểu…"
-            className="h-8 pl-8 pr-7 text-xs rounded-lg border border-[#cbd5e1] bg-white text-[#004776] w-full sm:w-48 lg:w-56 focus:ring-2 focus:ring-[#004776]/20 focus:border-[#004776] outline-hidden"
+            className="h-9 pl-9 pr-8 text-[13.5px] font-medium rounded-xl border border-[#d8e3ef] bg-white text-[#004776] w-full sm:w-52 lg:w-60 focus:ring-2 focus:ring-[#006cee]/25 focus:border-[#006cee] outline-hidden"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Xóa tìm kiếm"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#004776] cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#476885] hover:text-[#004776] cursor-pointer"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* 1. Icon Lọc (Ghost button) */}
-        <div className="relative" ref={filterRef}>
-          <button
-            type="button"
-            onClick={() => setShowFilterMenu(!showFilterMenu)}
-            aria-label="Lọc dữ liệu"
-            title="Lọc dòng: Tất cả / Đã sửa / Chưa hoàn tất"
-            className={`w-9 h-8 inline-flex items-center justify-center rounded-lg text-[#004776] hover:bg-slate-100 cursor-pointer transition-colors relative ${
-              isFiltered ? 'bg-sky-50 text-[#005fa3] font-bold' : ''
-            }`}
-          >
-            <Filter className="w-4 h-4" />
-            {isFiltered && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#005fa3]" />
-            )}
-          </button>
-          {showFilterMenu && (
-            <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl border border-[#cbd5e1] shadow-lg z-30 py-1 text-xs animate-in fade-in duration-100">
-              <div className="px-3 py-1 text-[11px] font-bold text-[#64748b] border-b border-slate-100">
-                Bộ lọc dòng dữ liệu
-              </div>
-              {(['all', 'touched', 'incomplete'] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => { onFilterModeChange(m); setShowFilterMenu(false); }}
-                  className={`w-full text-left px-3 py-2 hover:bg-[#f8fafc] cursor-pointer ${
-                    filterMode === m ? 'font-semibold text-[#004776] bg-[#f0f9ff]' : 'text-[#476885]'
+        {/* 1. Popover Lọc */}
+        <Popover>
+          <PopoverTrigger>
+            <span
+              aria-label="Lọc dữ liệu"
+              title="Lọc dòng: Tất cả / Đã sửa / Chưa hoàn tất"
+              className={`w-9 h-9 inline-flex items-center justify-center rounded-xl border transition-colors relative ${
+                isFiltered
+                  ? 'bg-[#eef5ff] text-[#006cee] border-[#006cee]/30 font-bold'
+                  : 'border-[#d8e3ef] text-[#004776] hover:bg-[#f4f7fb]'
+              }`}
+            >
+              <Filter className="w-4 h-4" />
+              {isFiltered && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#006cee]" />
+              )}
+            </span>
+          </PopoverTrigger>
+
+          <PopoverContent align="end" className="w-52 p-2 space-y-0.5">
+            <div className="px-3 py-1.5 text-xs font-bold text-[#476885] border-b border-[#e8eff7] mb-1">
+              Bộ lọc dòng dữ liệu
+            </div>
+            {(['all', 'touched', 'incomplete'] as const).map((m) => (
+              <PopoverClose key={m} onClick={() => onFilterModeChange(m)}>
+                <div
+                  className={`w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center justify-between gap-2 ${
+                    filterMode === m
+                      ? 'font-bold text-[#006cee] bg-[#eef5ff]'
+                      : 'text-[#004776] font-medium hover:bg-[#f4f7fb]'
                   }`}
                 >
-                  {m === 'all' ? 'Tất cả dòng' : m === 'touched' ? 'Chỉ dòng đã sửa' : 'Chỉ dòng chưa hoàn tất'}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                  <span>{m === 'all' ? 'Tất cả dòng' : m === 'touched' ? 'Chỉ dòng đã sửa' : 'Chưa hoàn tất'}</span>
+                  {filterMode === m && <Check className="w-4 h-4 text-[#006cee] shrink-0" />}
+                </div>
+              </PopoverClose>
+            ))}
+          </PopoverContent>
+        </Popover>
 
-        {/* 2. Icon Chọn cột / Mật độ (Ghost button) */}
-        <div className="relative" ref={densityRef}>
-          <button
-            type="button"
-            onClick={() => setShowDensityMenu(!showDensityMenu)}
-            aria-label="Tùy chỉnh mật độ hiển thị bảng"
-            title="Tùy chỉnh mật độ: Thoải mái hoặc Gọn"
-            className="w-9 h-8 inline-flex items-center justify-center rounded-lg text-[#004776] hover:bg-slate-100 cursor-pointer transition-colors"
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-          </button>
-          {showDensityMenu && (
-            <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl border border-[#cbd5e1] shadow-lg z-30 py-1 text-xs animate-in fade-in duration-100">
-              <div className="px-3 py-1 text-[11px] font-bold text-[#64748b] border-b border-slate-100">
-                Mật độ hiển thị ô
+        {/* 2. Popover Mật độ */}
+        <Popover>
+          <PopoverTrigger>
+            <span
+              aria-label="Tùy chỉnh mật độ hiển thị bảng"
+              title="Tùy chỉnh mật độ: Thoải mái hoặc Gọn"
+              className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-[#d8e3ef] text-[#004776] hover:bg-[#f4f7fb] transition-colors"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+            </span>
+          </PopoverTrigger>
+
+          <PopoverContent align="end" className="w-52 p-2 space-y-0.5">
+            <div className="px-3 py-1.5 text-xs font-bold text-[#476885] border-b border-[#e8eff7] mb-1">
+              Mật độ hiển thị ô
+            </div>
+            <PopoverClose onClick={() => onDensityChange('comfortable')}>
+              <div
+                className={`w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center justify-between gap-2 ${
+                  density === 'comfortable'
+                    ? 'font-bold text-[#006cee] bg-[#eef5ff]'
+                    : 'text-[#004776] font-medium hover:bg-[#f4f7fb]'
+                }`}
+              >
+                <span>Thoải mái</span>
+                {density === 'comfortable' && <Check className="w-4 h-4 text-[#006cee] shrink-0" />}
               </div>
-              <button
-                type="button"
-                onClick={() => { onDensityChange('comfortable'); setShowDensityMenu(false); }}
-                className={`w-full text-left px-3 py-2 hover:bg-[#f8fafc] cursor-pointer ${
-                  density === 'comfortable' ? 'font-semibold text-[#004776] bg-[#f0f9ff]' : 'text-[#476885]'
+            </PopoverClose>
+            <PopoverClose onClick={() => onDensityChange('compact')}>
+              <div
+                className={`w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center justify-between gap-2 ${
+                  density === 'compact'
+                    ? 'font-bold text-[#006cee] bg-[#eef5ff]'
+                    : 'text-[#004776] font-medium hover:bg-[#f4f7fb]'
                 }`}
               >
-                Mật độ: Thoải mái
-              </button>
-              <button
-                type="button"
-                onClick={() => { onDensityChange('compact'); setShowDensityMenu(false); }}
-                className={`w-full text-left px-3 py-2 hover:bg-[#f8fafc] cursor-pointer ${
-                  density === 'compact' ? 'font-semibold text-[#004776] bg-[#f0f9ff]' : 'text-[#476885]'
-                }`}
-              >
-                Mật độ: Gọn (nhiều dữ liệu)
-              </button>
-            </div>
-          )}
-        </div>
+                <span>Gọn nhiều dữ liệu</span>
+                {density === 'compact' && <Check className="w-4 h-4 text-[#006cee] shrink-0" />}
+              </div>
+            </PopoverClose>
+          </PopoverContent>
+        </Popover>
 
-        {/* 3. Icon Toàn màn hình (Ghost button) */}
+        {/* 3. Toàn màn hình */}
         <button
           type="button"
           onClick={onToggleFullscreen}
           aria-label={isFullscreen ? 'Thu nhỏ cửa sổ' : 'Toàn màn hình'}
           title={isFullscreen ? 'Thu nhỏ cửa sổ' : 'Toàn màn hình'}
-          className="w-9 h-8 inline-flex items-center justify-center rounded-lg text-[#004776] hover:bg-slate-100 cursor-pointer transition-colors"
+          className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-[#d8e3ef] text-[#004776] hover:bg-[#f4f7fb] cursor-pointer transition-colors"
         >
           {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
         </button>

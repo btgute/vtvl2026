@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShieldAlert, KeyRound, ArrowLeft, Unlock, AlertCircle } from 'lucide-react';
+import { KeyRound, ArrowLeft, Unlock, AlertCircle } from 'lucide-react';
+import { DotPattern } from '@/components/ui/DotPattern';
+import { Button } from '@/components/ui/Button';
 
 interface AdminAuthGateProps {
   onSuccess: () => void;
@@ -46,20 +48,33 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-[#cbd5e1] overflow-hidden">
-        <div className="bg-[#005fa3] p-6 text-white text-center relative border-b border-[#004776]">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-[#004776] flex items-center justify-center text-amber-300 shadow-inner mb-3">
-            <ShieldAlert className="w-7 h-7" />
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-[0_20px_50px_-15px_rgba(0,71,118,0.16)] border border-[#d8e3ef] overflow-hidden">
+        <div className="relative px-6 pt-7 pb-5 bg-gradient-to-b from-[#eef6ff] via-[#f6faff] to-white border-b border-[#e2e8f0] text-center overflow-hidden">
+          <DotPattern
+            width={18}
+            height={18}
+            cr={1.15}
+            className="text-[#006cee]/25 [mask-image:radial-gradient(ellipse_80%_80%_at_50%_20%,white_35%,transparent_100%)]"
+          />
+          <div className="relative z-10">
+            <img
+              src="/ute_logo.png"
+              alt="Logo HCM-UTE"
+              className="w-14 h-14 object-contain mx-auto mb-3"
+            />
+            <h2 className="text-xl font-bold text-[#004776] tracking-tight">
+              Cổng xác thực Quản trị viên
+            </h2>
+            <p className="text-sm text-[#476885] mt-1">
+              Phòng Tổ chức – Nhân sự · HCM-UTE
+            </p>
           </div>
-          <h2 className="text-lg font-bold text-white tracking-tight">
-            Cổng xác thực Quản trị viên
-          </h2>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="admin-auth-pass" className="block text-xs font-bold text-[#004776]">
-              Mật khẩu Quản trị hệ thống:
+          <div className="space-y-2">
+            <label htmlFor="admin-auth-pass" className="block text-sm font-bold text-[#004776]">
+              Mật khẩu quản trị hệ thống
             </label>
             <div className="relative">
               <input
@@ -72,34 +87,36 @@ export function AdminAuthGate({ onSuccess }: AdminAuthGateProps) {
                   if (error) setError('');
                 }}
                 placeholder="Nhập mật khẩu quản trị..."
-                className="w-full pl-10 pr-4 py-2.5 text-sm bg-[#f8fafc] border border-[#cbd5e1] rounded-xl focus:ring-2 focus:ring-[#004776] focus:outline-none text-[#004776] font-medium"
+                className="w-full h-11 pl-10 pr-4 text-sm bg-[#f8fafc] border border-[#cbd5e1] rounded-xl focus:ring-2 focus:ring-[#006cee] focus:outline-none text-[#004776] font-medium"
               />
-              <KeyRound className="w-4 h-4 text-[#64748b] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <KeyRound className="w-4 h-4 text-[#476885] absolute left-3.5 top-1/2 -translate-y-1/2" />
             </div>
             {error && (
               <p className="flex items-center gap-1.5 text-xs text-red-600 font-semibold pt-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </p>
             )}
           </div>
 
-          <div className="pt-2 flex flex-col gap-2">
-            <button
+          <div className="pt-2 flex flex-col gap-2.5">
+            <Button
               type="submit"
+              variant="slink"
+              size="lg"
               disabled={isVerifying}
-              className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-[#004776] hover:bg-[#00385c] text-white font-bold rounded-xl text-sm transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+              className="w-full"
             >
               <Unlock className="w-4 h-4" />
-              <span>{isVerifying ? 'Đang kiểm tra...' : 'Đăng nhập Quản trị viên'}</span>
-            </button>
+              <span>{isVerifying ? 'Đang kiểm tra...' : 'Đăng nhập quản trị viên'}</span>
+            </Button>
 
             <Link
               href="/bang-tinh"
-              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-4 text-xs font-semibold text-[#64748b] hover:text-[#004776] hover:bg-[#f1f5f9] rounded-xl transition-colors cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-semibold text-[#476885] hover:text-[#004776] hover:bg-[#f1f5f9] rounded-xl transition-colors cursor-pointer"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Quay lại Bảng tính 15 sheet</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span>Quay lại bảng tính 15 sheet</span>
             </Link>
           </div>
         </form>
