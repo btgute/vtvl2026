@@ -1,0 +1,34 @@
+name: Auto Deploy HCM-UTE VTVL 360 on VPS (14.225.254.3)
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: vps-deploy-utevtvl
+  cancel-in-progress: true
+
+jobs:
+  deploy-to-vps:
+    name: SSH & Deploy on VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Build & Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST || '14.225.254.3' }}
+          username: ${{ secrets.SERVER_USER || 'root' }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            set -e
+            cd ${{ secrets.WORK_DIR || '/root/ute.vtvl' }}
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+            chmod +x deploy.sh auto-deploy-check.sh
+            ./deploy.sh
+

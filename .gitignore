@@ -35,3 +35,7 @@ next-env.d.ts
 *.pdf
 .vercel
 .env*
+!.env.example
+.deployed_sha
+auto-deploy.log
+/postgres_data/
