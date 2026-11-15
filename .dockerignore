@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.github
+.data
+postgres_data
+auto-deploy.log
+.deployed_sha
+.env*
+!.env.example
+20skill-van-phong-main*
+Tai lieu huong dan*
+outputs
+
