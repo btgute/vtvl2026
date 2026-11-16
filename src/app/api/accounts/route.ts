@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  syncAccountsFromSupabase,
+  syncAccountsFromPostgres,
   getUserAccountByEmail,
   upsertUserAccount,
   UserRole
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Thiếu email người dùng.' }, { status: 400 });
   }
 
-  await syncAccountsFromSupabase();
+  await syncAccountsFromPostgres();
   const account = getUserAccountByEmail(email);
 
   const cookieAdmin = await getServerAdminAuth();
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email công vụ không hợp lệ.' }, { status: 400 });
     }
 
-    await syncAccountsFromSupabase();
+    await syncAccountsFromPostgres();
     const existing = getUserAccountByEmail(email);
     const cookieAdmin = await getServerAdminAuth();
     const bearer = extractBearer(req);
@@ -90,7 +90,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Email công vụ không hợp lệ.' }, { status: 400 });
     }
 
-    await syncAccountsFromSupabase();
+    await syncAccountsFromPostgres();
     const existing = getUserAccountByEmail(email);
     const bearer = extractBearer(req);
     const isAdmin = await getServerAdminAuth(email, bearer);

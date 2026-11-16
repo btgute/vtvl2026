@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
+import { isPostgresConfigured, pgQuery } from './postgres-pool';
 import {
   getAllActiveServerWorkbooks,
   normalizeEmail,
-  syncServerWorkbooksFromSupabase
+  syncServerWorkbooksFromPostgres
 } from './server-workbook-store';
 
 export type UserRole = 'admin' | 'unit_leader' | 'editor' | 'viewer';
@@ -28,20 +29,8 @@ const VALID_ROLES: UserRole[] = ['admin', 'unit_leader', 'editor', 'viewer'];
 const DATA_DIR = process.env.VERCEL ? '/tmp/vtvl_data' : path.join(process.cwd(), '.data');
 const ACCOUNTS_FILE = path.join(DATA_DIR, 'server_accounts.json');
 
-const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
-const SUPABASE_KEY = (
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  ''
-).trim();
-
 let memoryAccounts: Map<string, UserAccountRecord> | null = null;
-let lastSupabaseSyncAt = 0;
-
-function getSupabaseHeaders(): Record<string, string> {
-  return { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
-}
+let lastPgSyncAt = 0;
 
 function isValidRole(role: unknown): role is UserRole {
   return typeof role === 'string' && VALID_ROLES.includes(role as UserRole);
@@ -78,6 +67,7 @@ function seedFromWorkbooks(store: Map<string, UserAccountRecord>): boolean {
       unitCode: 'TCNS',
       title: 'Trưởng phòng',
       role: 'admin',
+      authProvider: 'google',
       hasSelectedUnit: true,
       createdAt: now,
       lastActiveAt: now
@@ -129,68 +119,102 @@ function persistLocalStore(): void {
   } catch { /* ignore */ }
 }
 
-async function persistAccountsToSupabase(accounts: UserAccountRecord[]): Promise<void> {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+async function persistAccountToPostgres(acc: UserAccountRecord): Promise<void> {
+  if (!isPostgresConfigured()) return;
   try {
-    const existingRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/t_tien_do?ma_don_vi=eq.TCNS&select=du_lieu_ho_so_json,phien_ban,so_nhiem_vu_a1,so_cong_viec_a2,so_vtvl_c1,tong_fte_c3`,
-      { headers: getSupabaseHeaders(), cache: 'no-store' }
+    await pgQuery(
+      `INSERT INTO public.user_accounts (
+         email, display_name, unit_code, unit_name_vi, title, role,
+         auth_provider, avatar_url, status, has_selected_unit, last_active_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
+       ON CONFLICT (email) DO UPDATE SET
+         display_name = EXCLUDED.display_name,
+         unit_code = EXCLUDED.unit_code,
+         unit_name_vi = EXCLUDED.unit_name_vi,
+         title = EXCLUDED.title,
+         role = EXCLUDED.role,
+         auth_provider = EXCLUDED.auth_provider,
+         avatar_url = COALESCE(EXCLUDED.avatar_url, public.user_accounts.avatar_url),
+         status = EXCLUDED.status,
+         has_selected_unit = EXCLUDED.has_selected_unit,
+         last_active_at = now()`,
+      [
+        acc.email,
+        acc.displayName,
+        acc.unitCode,
+        acc.unitNameVi,
+        acc.title,
+        acc.role,
+        acc.authProvider,
+        acc.avatarUrl || null,
+        acc.status,
+        Boolean(acc.hasSelectedUnit)
+      ]
     );
-    const existingRows = existingRes.ok ? await existingRes.json() : [];
-    const existingRow = Array.isArray(existingRows) && existingRows[0] ? existingRows[0] : null;
-    const tcns = findHcmuteUnit('TCNS');
-    await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?on_conflict=ma_don_vi`, {
-      method: 'POST',
-      headers: { ...getSupabaseHeaders(), Prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({
-        ma_don_vi: tcns.code,
-        ten_don_vi: tcns.nameVi,
-        phien_ban: existingRow?.phien_ban || 'v1',
-        so_nhiem_vu_a1: existingRow?.so_nhiem_vu_a1 || 0,
-        so_cong_viec_a2: existingRow?.so_cong_viec_a2 || 0,
-        so_vtvl_c1: existingRow?.so_vtvl_c1 || 0,
-        tong_fte_c3: existingRow?.tong_fte_c3 || 0,
-        trang_thai_ra_soat: 'Đã đồng bộ danh mục tài khoản',
-        du_lieu_ho_so_json: {
-          ...(existingRow?.du_lieu_ho_so_json || {}),
-          userAccounts: accounts,
-          accountsUpdatedAt: new Date().toISOString()
-        }
-      })
-    });
-  } catch { /* ignore */ }
+  } catch (err) {
+    console.error('[persistAccountToPostgres]', err);
+  }
 }
 
-export async function syncAccountsFromSupabase(force = false): Promise<void> {
+export async function syncAccountsFromPostgres(force = false): Promise<void> {
   const store = loadStore();
   const now = Date.now();
-  if (!force && now - lastSupabaseSyncAt < 5000) return;
-  lastSupabaseSyncAt = now;
+  if (!force && now - lastPgSyncAt < 2000) return;
+  lastPgSyncAt = now;
+
   try {
-    await syncServerWorkbooksFromSupabase();
+    await syncServerWorkbooksFromPostgres();
     if (seedFromWorkbooks(store)) persistLocalStore();
   } catch { /* ignore */ }
 
-  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  if (!isPostgresConfigured()) return;
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/t_tien_do?ma_don_vi=eq.TCNS&select=du_lieu_ho_so_json`, {
-      headers: getSupabaseHeaders(),
-      cache: 'no-store'
-    });
-    if (!res.ok) return;
-    const rows = await res.json();
-    const remoteList = rows?.[0]?.du_lieu_ho_so_json?.userAccounts;
-    if (!Array.isArray(remoteList)) return;
-    let merged = false;
-    for (const item of remoteList) {
-      const email = normalizeEmail(item?.email || '');
-      if (email && !store.has(email)) {
-        store.set(email, normalizeRecord({ ...item, email }));
-        merged = true;
-      }
+    const res = await pgQuery<{
+      email: string;
+      display_name: string;
+      unit_code: string;
+      unit_name_vi: string;
+      title: string;
+      role: UserRole;
+      auth_provider: 'google' | 'email';
+      avatar_url: string | null;
+      status: 'active' | 'suspended';
+      has_selected_unit: boolean;
+      created_at: Date;
+      last_active_at: Date;
+    }>(`
+      SELECT email, display_name, unit_code, unit_name_vi, title, role,
+             auth_provider, avatar_url, status,
+             coalesce(has_selected_unit, false) AS has_selected_unit,
+             created_at, last_active_at
+      FROM public.user_accounts
+      ORDER BY last_active_at DESC
+    `);
+
+    let changed = false;
+    for (const row of res?.rows || []) {
+      const email = normalizeEmail(row.email);
+      if (!email) continue;
+      store.set(email, normalizeRecord({
+        email,
+        displayName: row.display_name,
+        unitCode: row.unit_code,
+        unitNameVi: row.unit_name_vi,
+        title: row.title,
+        role: row.role,
+        authProvider: row.auth_provider,
+        avatarUrl: row.avatar_url || undefined,
+        status: row.status,
+        hasSelectedUnit: row.has_selected_unit,
+        createdAt: new Date(row.created_at).toLocaleString('vi-VN'),
+        lastActiveAt: new Date(row.last_active_at).toLocaleString('vi-VN')
+      }));
+      changed = true;
     }
-    if (merged) persistLocalStore();
-  } catch { /* ignore */ }
+    if (changed) persistLocalStore();
+  } catch (err) {
+    console.error('[syncAccountsFromPostgres]', err);
+  }
 }
 
 export function getAllUserAccounts(): UserAccountRecord[] {
@@ -226,7 +250,7 @@ export function upsertUserAccount(
 
   store.set(norm, record);
   persistLocalStore();
-  persistAccountsToSupabase(getAllUserAccounts()).catch(() => {});
+  persistAccountToPostgres(record).catch(() => {});
   return record;
 }
 
@@ -244,6 +268,8 @@ export function deleteUserAccount(email: string): boolean {
   const norm = normalizeEmail(email);
   if (!norm || !store.delete(norm)) return false;
   persistLocalStore();
-  persistAccountsToSupabase(getAllUserAccounts()).catch(() => {});
+  if (isPostgresConfigured()) {
+    pgQuery('DELETE FROM public.user_accounts WHERE email = $1', [norm]).catch(() => {});
+  }
   return true;
 }

@@ -38,4 +38,5 @@ next-env.d.ts
 !.env.example
 .deployed_sha
 auto-deploy.log
+migrations.log
 /postgres_data/

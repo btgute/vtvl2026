@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
-import { postServerRest } from '@/services/storage/server-supabase-store';
+import { upsertTableRowsPostgres } from '@/services/storage/postgres-table-sync';
 import { AuditReportResult } from '@/types/vtvl';
 
 export async function POST(req: Request) {
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         ket_luan: errCount === 0 ? 'ĐẠT' : 'CẦN RÀ SOÁT'
       };
     });
-    await postServerRest('k_kiem_tra', kRows, 'ma_don_vi,stt_chi_tieu');
+    await upsertTableRowsPostgres('k_kiem_tra', kRows, 'ma_don_vi,stt_chi_tieu');
 
     const evidenceRows = (report?.evidenceItems || []).slice(0, 50).map((ev) => ({
       ma_don_vi: unitCode,
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     }));
 
     if (evidenceRows.length > 0) {
-      await postServerRest('ra_soat_chua_du_can_cu', evidenceRows);
+      await upsertTableRowsPostgres('ra_soat_chua_du_can_cu', evidenceRows);
     }
 
     return NextResponse.json({ success: true, message: 'Đồng bộ kết quả rà soát thành công.' });

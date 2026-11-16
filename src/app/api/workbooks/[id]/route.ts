@@ -5,7 +5,7 @@ import {
   saveServerWorkbook,
   deleteServerWorkbook,
   normalizeEmail,
-  syncServerWorkbooksFromSupabase
+  syncServerWorkbooksFromPostgres
 } from '@/services/storage/server-workbook-store';
 import { getServerAdminAuth } from '@/services/storage/server-admin-auth';
 
@@ -19,7 +19,7 @@ export async function GET(_req: Request, context: RouteContext) {
     let workbook = getWorkbookById(id);
 
     if (!workbook) {
-      await syncServerWorkbooksFromSupabase();
+      await syncServerWorkbooksFromPostgres();
       workbook = getWorkbookById(id);
     }
 
@@ -64,7 +64,7 @@ export async function PUT(req: Request, context: RouteContext) {
     // Kiểm tra bảo mật máy chủ độc lập cho Biểu C1:
     let existingWb = getWorkbookById(id);
     if (!existingWb) {
-      await syncServerWorkbooksFromSupabase();
+      await syncServerWorkbooksFromPostgres();
       existingWb = getWorkbookById(id);
     }
 

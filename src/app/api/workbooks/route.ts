@@ -3,12 +3,12 @@ import {
   getAllActiveServerWorkbooks,
   getOrCreateWorkbook,
   normalizeEmail,
-  syncServerWorkbooksFromSupabase
+  syncServerWorkbooksFromPostgres
 } from '@/services/storage/server-workbook-store';
 
 export async function GET() {
   try {
-    await syncServerWorkbooksFromSupabase();
+    await syncServerWorkbooksFromPostgres();
     const list = getAllActiveServerWorkbooks();
     const summary = list.map((w) => ({
       id: w.id,

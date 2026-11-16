@@ -97,3 +97,14 @@ erDiagram
 | **Giai đoạn 3**<br>Đo định mức thời gian | Bấm giờ trực tiếp hoặc nhập thời lượng thực tế cho từng đầu việc A2/B1 của các VTVL đã chọn. | Đọc danh sách `positions` của đơn vị từ Giai đoạn 1 (khớp `selectedVtvlSuffix` thực tế) + `timeSessions` đã lưu. | Lưu bền vững `timeSessions` vào `ActiveUnitSession`, tự động đóng gói tệp `PhieuBamGio_...xlsx` (`buildPersonalTimerWorkbookFile`) chuyển thẳng sang Giai đoạn 4. |
 | **Giai đoạn 4**<br>Gộp phiếu khảo sát | Nạp bộ biểu gốc + các phiếu khảo sát cá nhân/bấm giờ để cập nhật cột `Phút/SP đo thực tế` (`B1`) và nâng phiên bản `v1 -> v2`. | Tự động nhận `rootFile` (hoặc tái tạo từ cấu hình Giai đoạn 1) và `formFiles` (tự động khôi phục từ `session.timeSessions` của Giai đoạn 3 kể cả khi F5). | Lưu `cachedMergedWorkbookFile`, `lastMergedFileName`, `lastMergedVersion`; đồng bộ phiên bản mới lên `t_tien_do` và `s_nhat_ky`. |
 | **Giai đoạn 5**<br>Thẩm định hồ sơ | Kiểm tra chéo 6 chỉ tiêu (`K_KiemTra`), phân loại 3 mức cảnh báo, trích xuất `Chua_du_can_cu` & `Gop_y_bieu_mau`. | Tự động nạp tệp đã gộp từ Giai đoạn 4 (`mergedFile`) hoặc bộ biểu gốc từ Giai đoạn 1–2. | Cập nhật `lastAuditFixCount` vào `ActiveUnitSession`; đồng bộ kết quả thẩm định lên `k_kiem_tra`, `ra_soat_chua_du_can_cu`, `t_tien_do` và `s_nhat_ky`. |
+
+
+---
+
+## 5. Vận hành PostgreSQL 16 độc lập, Nhật ký Migration & Google OAuth 2.0 trực tiếp
+
+- **Kết nối PostgreSQL 100% nội bộ (`postgres-pool.ts`):** Toàn bộ tầng lưu trữ máy chủ (`server-postgres-store.ts`, `postgres-table-sync.ts`, `server-account-store.ts`, `server-audit-store.ts`) giao tiếp trực tiếp qua TCP Pool (`pg`) tới container `utevtvl-postgres` (`postgres:16-alpine`, ràng buộc nội bộ `127.0.0.1:5436`), loại bỏ hoàn toàn sự phụ thuộc vào dịch vụ đám mây bên thứ ba.
+- **Bộ máy quản lý phiên bản lược đồ (`scripts/migrate-postgres.mjs` & `public.schema_migrations`):**
+  - Mỗi lần `git push` lên nhánh `main`, `deploy.sh` tự động kích hoạt `migrate-postgres.mjs` với khóa tư vấn `pg_advisory_lock(20260731)`.
+  - Mỗi tệp `.sql` mới trong `supabase/migrations/` (hoặc `db/migrations/`) được thực thi trong một giao dịch nguyên tử (`BEGIN ... COMMIT`), đo thời gian thực thi (`execution_ms`), băm kiểm chứng `checksum_sha256`, lưu vết vào bảng `public.schema_migrations` và xuất nhật ký ra `migrations.log`.
+- **Xác thực Google OAuth 2.0 trực tiếp (`/api/auth/google` & `/api/auth/google/callback`):** Sử dụng luồng Authorization Code chuẩn OAuth 2.0 với cookie chống giả mạo `state` (`HMAC-SHA256`), lưu hồ sơ vào `public.user_accounts` và cấp phát JWT nội bộ ký số bằng `ADMIN_SERVER_SECRET`.

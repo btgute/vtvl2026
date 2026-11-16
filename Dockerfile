@@ -12,10 +12,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_SUPABASE_URL=""
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=""
-ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+ARG NEXT_PUBLIC_APP_URL="https://vtvl.utehub.vn"
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
@@ -34,6 +32,9 @@ RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/scripts/migrate-postgres.mjs ./scripts/migrate-postgres.mjs
+COPY --from=builder /app/deploy/postgres ./deploy/postgres
+COPY --from=builder /app/supabase/migrations ./supabase/migrations
 
 RUN mkdir -p .next .data \
   && chown -R nextjs:nodejs .next .data
@@ -46,4 +47,3 @@ USER nextjs
 EXPOSE 3360
 
 CMD ["node", "server.js"]
-

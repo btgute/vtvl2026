@@ -49,7 +49,7 @@ export async function GET(req: Request) {
     const workbookId = url.searchParams.get('workbookId') || undefined;
     const limit = Number(url.searchParams.get('limit')) || 100;
 
-    const logs = getAuditLogs({ unitCode, workbookId, limit });
+    const logs = await getAuditLogs({ unitCode, workbookId, limit });
     return NextResponse.json({ success: true, logs, total: logs.length });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Lỗi khi đọc nhật ký.';

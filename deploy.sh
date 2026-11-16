@@ -1,7 +1,7 @@
 #!/bin/bash
 # =======================================================
-# Script Tự Động Build, Khởi Tạo PostgreSQL & Deploy trên VPS
-# Hệ thống: HCM-UTE VTVL 360 (ute.vtvl)
+# Script Tự Động Build, Chạy Migration PostgreSQL & Deploy trên VPS
+# Hệ thống: HCM-UTE VTVL 360 (https://vtvl.utehub.vn)
 # Server VPS: 14.225.254.3 (App: 127.0.0.1:3360, DB: 127.0.0.1:5436)
 # =======================================================
 set -e
@@ -28,6 +28,7 @@ if [ -d .git ]; then
   git checkout main
   git pull --ff-only origin main
 fi
+GIT_SHORT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "local")
 
 echo "📦 [2/6] Kiểm tra cấu hình môi trường (.env)..."
 if [ -f .env.production ]; then
@@ -36,10 +37,10 @@ elif [ ! -f .env ]; then
   GEN_DB_PASS=$(openssl rand -hex 18)
   GEN_ADMIN_SECRET=$(openssl rand -hex 24)
   cat > .env <<EOF
-# Tự động khởi tạo lần đầu trên VPS (có thể chỉnh sửa hoặc tạo .env.production)
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_APP_URL=https://vtvl.utehub.vn
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_ALLOWED_HD=hcmute.edu.vn
 ADMIN_SERVER_SECRET=${GEN_ADMIN_SECRET}
 
 POSTGRES_USER=utevtvl_admin
@@ -50,6 +51,12 @@ EOF
   chmod 600 .env
   echo "✓ Đã khởi tạo tệp .env mặc định với mật khẩu PostgreSQL riêng biệt."
 fi
+
+# Bổ sung biến Google OAuth / App URL nếu tệp .env cũ chưa có
+grep -q "^NEXT_PUBLIC_APP_URL=" .env || echo "NEXT_PUBLIC_APP_URL=https://vtvl.utehub.vn" >> .env
+grep -q "^GOOGLE_CLIENT_ID=" .env || echo "GOOGLE_CLIENT_ID=" >> .env
+grep -q "^GOOGLE_CLIENT_SECRET=" .env || echo "GOOGLE_CLIENT_SECRET=" >> .env
+grep -q "^GOOGLE_ALLOWED_HD=" .env || echo "GOOGLE_ALLOWED_HD=hcmute.edu.vn" >> .env
 
 set -a
 # shellcheck disable=SC1091
@@ -87,7 +94,7 @@ else
   exit 1
 fi
 
-echo "🗄️ [4/6] Đồng bộ lược đồ PostgreSQL từ supabase/migrations/..."
+echo "🗄️ [4/6] Thực thi bộ máy PostgreSQL Migration & ghi nhật ký (migrations.log + schema_migrations)..."
 PG_USER="${POSTGRES_USER:-utevtvl_admin}"
 PG_DB="${POSTGRES_DB:-utevtvl_db}"
 
@@ -98,37 +105,15 @@ for _ in {1..15}; do
   sleep 2
 done
 
-if [ -f "deploy/postgres/00-supabase-compat.sql" ]; then
-  docker exec -i utevtvl-postgres psql -v ON_ERROR_STOP=1 -U "$PG_USER" -d "$PG_DB" < deploy/postgres/00-supabase-compat.sql >/dev/null
-fi
+set -o pipefail
+docker exec -e GIT_COMMIT="$GIT_SHORT_SHA" utevtvl-app node scripts/migrate-postgres.mjs 2>&1 | tee -a "$WORK_DIR/migrations.log"
 
-TABLE_COUNT=$(docker exec utevtvl-postgres psql -U "$PG_USER" -d "$PG_DB" -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';" 2>/dev/null || echo "0")
-if [ "${TABLE_COUNT:-0}" -lt 25 ]; then
-  echo "📥 Khởi tạo các bảng quan hệ VTVL 360 từ supabase/migrations/..."
-  ORDERED_MIGRATIONS=(
-    "supabase/migrations/20261107_init_vtvl_hcmute.sql"
-    "supabase/migrations/20261110_vtvl_server_workbooks.sql"
-    "supabase/migrations/20261110_lockdown_supabase_rls.sql"
-    "supabase/migrations/20261113_google_auth_rls_and_indexes.sql"
-    "supabase/migrations/20261113_user_accounts_and_roles.sql"
-  )
-  for sql_file in "${ORDERED_MIGRATIONS[@]}"; do
-    if [ -f "$sql_file" ]; then
-      echo "   → Áp dụng $sql_file"
-      docker exec -i utevtvl-postgres psql -v ON_ERROR_STOP=1 -U "$PG_USER" -d "$PG_DB" < "$sql_file" >/dev/null
-    fi
-  done
-  for sql_file in $(ls -1 supabase/migrations/*.sql 2>/dev/null | sort); do
-    case " ${ORDERED_MIGRATIONS[*]} " in
-      *" $sql_file "*) ;;
-      *)
-        echo "   → Áp dụng bổ sung $sql_file"
-        docker exec -i utevtvl-postgres psql -v ON_ERROR_STOP=1 -U "$PG_USER" -d "$PG_DB" < "$sql_file" >/dev/null
-        ;;
-    esac
-  done
-else
-  echo "✓ Cơ sở dữ liệu $PG_DB đã có $TABLE_COUNT bảng hoạt động."
+if [ -d "/etc/nginx/sites-available" ] && [ -f "deploy/nginx/vtvl.utehub.vn.conf" ] && [ -f "/etc/letsencrypt/live/vtvl.utehub.vn/fullchain.pem" ]; then
+  if ! cmp -s deploy/nginx/vtvl.utehub.vn.conf /etc/nginx/sites-available/vtvl.utehub.vn.conf || [ ! -L "/etc/nginx/sites-enabled/vtvl.utehub.vn.conf" ]; then
+    cp deploy/nginx/vtvl.utehub.vn.conf /etc/nginx/sites-available/vtvl.utehub.vn.conf
+    ln -sf /etc/nginx/sites-available/vtvl.utehub.vn.conf /etc/nginx/sites-enabled/vtvl.utehub.vn.conf
+    nginx -t && systemctl reload nginx
+  fi
 fi
 
 echo "🩺 [5/6] Kiểm tra phản hồi HTTP máy chủ ứng dụng (127.0.0.1:3360)..."
@@ -152,4 +137,4 @@ echo "🧹 [6/6] Dọn dẹp Docker image & bộ nhớ đệm cũ để tiết k
 docker image prune -f >/dev/null 2>&1 || true
 docker builder prune -f --keep-storage 512MB >/dev/null 2>&1 || true
 
-echo "✅ Deploy HCM-UTE VTVL 360 hoàn tất thành công!"
+echo "✅ Deploy HCM-UTE VTVL 360 (https://vtvl.utehub.vn) hoàn tất thành công!"

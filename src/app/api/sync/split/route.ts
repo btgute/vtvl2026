@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
 import { ND232_2026_VTVL_CATALOG } from '@/configs/hcmute-nd232-catalog';
 import { MISSIONS_BY_GROUP } from '@/configs/hcmute-hd07-catalog';
-import { postServerRest } from '@/services/storage/server-supabase-store';
+import { upsertTableRowsPostgres } from '@/services/storage/postgres-table-sync';
 import { SplitResultSummary, UnitScaleMetrics, NgachAllocationRow, ProposedVtvlRow } from '@/types/vtvl';
 
 export async function POST(req: Request) {
@@ -73,13 +73,13 @@ export async function POST(req: Request) {
       nguoi_can_bo_tri: p.recommendedFte
     }));
 
-    await postServerRest('c1_vtvl', c1Rows, 'ma_vtvl');
-    await postServerRest('a1_nhiem_vu', a1Rows, 'ma_nhiem_vu');
-    await postServerRest('c3_nhu_cau', c3Rows, 'ma_vtvl');
+    await upsertTableRowsPostgres('c1_vtvl', c1Rows, 'ma_vtvl');
+    await upsertTableRowsPostgres('a1_nhiem_vu', a1Rows, 'ma_nhiem_vu');
+    await upsertTableRowsPostgres('c3_nhu_cau', c3Rows, 'ma_vtvl');
 
     if (extra?.scaleMetrics) {
       const sm = extra.scaleMetrics;
-      await postServerRest(
+      await upsertTableRowsPostgres(
         'sldv_quy_mo_don_vi',
         {
           ma_don_vi: summary.unitCode,
@@ -110,11 +110,11 @@ export async function POST(req: Request) {
         }))
         .filter((r) => c1Rows.some((c) => c.ma_vtvl === r.ma_vtvl_xep_vao));
       if (ngachRows.length > 0) {
-        await postServerRest('sldv_phan_bo_ngach', ngachRows, 'id');
+        await upsertTableRowsPostgres('sldv_phan_bo_ngach', ngachRows, 'id');
       }
     }
 
-    await postServerRest(
+    await upsertTableRowsPostgres(
       't_tien_do',
       {
         ma_don_vi: summary.unitCode,

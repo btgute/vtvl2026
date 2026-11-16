@@ -1,7 +1,11 @@
 import { ExcelSheetKey, GenericGridRow } from '@/components/excel-grid/excel-grid-types';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
 import { buildDefaultGridWorkbook } from '@/components/excel-grid/excel-grid-defaults';
-import { fetchWorkbooksFromSupabase, persistWorkbookToSupabase, deleteWorkbookFromSupabase } from './server-supabase-store';
+import {
+  fetchWorkbooksFromPostgres,
+  persistWorkbookToPostgres,
+  deleteWorkbookFromPostgres
+} from './server-postgres-store';
 import { getInitialSeedWorkbooks } from './server-seed-workbooks';
 import fs from 'fs';
 import path from 'path';
@@ -35,6 +39,7 @@ export function normalizeEmail(raw: string): string {
 const DATA_DIR = process.env.VERCEL ? '/tmp/vtvl_data' : path.join(process.cwd(), '.data');
 const STORE_FILE = path.join(DATA_DIR, 'server_workbooks.json');
 let memoryWorkbooks: Map<string, ServerWorkbook> | null = null;
+let seededToPostgres = false;
 
 function ensureDataDir(): void {
   try { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true }); } catch { /* ignore */ }
@@ -70,15 +75,22 @@ function persistStore(): void {
   } catch { /* ignore */ }
 }
 
-export async function syncServerWorkbooksFromSupabase(): Promise<void> {
+export async function syncServerWorkbooksFromPostgres(): Promise<void> {
   const store = loadStore();
   try {
-    const supaWorkbooks = await fetchWorkbooksFromSupabase();
-    for (const sw of supaWorkbooks) {
-      if (!sw.id) continue;
-      const local = store.get(sw.id);
-      if (!local || (sw.currentRevision && sw.currentRevision >= local.currentRevision)) {
-        store.set(sw.id, sw);
+    const pgWorkbooks = await fetchWorkbooksFromPostgres();
+    if (pgWorkbooks.length === 0 && !seededToPostgres && store.size > 0) {
+      seededToPostgres = true;
+      for (const wb of store.values()) {
+        if (!wb.isDeleted) await persistWorkbookToPostgres(wb);
+      }
+      return;
+    }
+    for (const pw of pgWorkbooks) {
+      if (!pw.id) continue;
+      const local = store.get(pw.id);
+      if (!local || (pw.currentRevision && pw.currentRevision >= local.currentRevision)) {
+        store.set(pw.id, pw);
       }
     }
     persistStore();
@@ -98,7 +110,7 @@ export function getOrCreateWorkbook(
   );
   const now = new Date().toLocaleString('vi-VN');
   if (existing) {
-    let p = existing.participants.find((x) => x.emailNormalized === normEmail);
+    const p = existing.participants.find((x) => x.emailNormalized === normEmail);
     if (!p) {
       existing.participants.push({
         id: `part_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -107,16 +119,16 @@ export function getOrCreateWorkbook(
         roleLabel, startedAt: now, updatedAt: now
       });
       persistStore();
-      persistWorkbookToSupabase(existing).catch(() => {});
+      persistWorkbookToPostgres(existing).catch(() => {});
     }
     return existing;
   }
 
   const unit = findHcmuteUnit(unitId);
-  const id = `wb_${unitId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-  const defaultData = buildDefaultGridWorkbook(unitId);
+  const id = `wb_${unit.code}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const defaultData = buildDefaultGridWorkbook(unit.code);
   const newWorkbook: ServerWorkbook = {
-    id, unitId, unitNameVi: unit.nameVi, reportingPeriod, status: 'draft',
+    id, unitId: unit.code, unitNameVi: unit.nameVi, reportingPeriod, status: 'draft',
     currentRevision: 1, data: defaultData, touchedCells: [],
     createdAt: now, updatedAt: now,
     participants: [{
@@ -132,7 +144,7 @@ export function getOrCreateWorkbook(
   };
   store.set(id, newWorkbook);
   persistStore();
-  persistWorkbookToSupabase(newWorkbook).catch(() => {});
+  persistWorkbookToPostgres(newWorkbook).catch(() => {});
   return newWorkbook;
 }
 
@@ -223,7 +235,7 @@ export function saveServerWorkbook(params: {
     if (params.actorTitle) p.roleLabel = params.actorTitle;
   }
 
-  const revItem: ServerRevision = {
+  wb.revisions.unshift({
     id: `rev_${wb.id}_${nextRev}`,
     workbookId: wb.id,
     revision: nextRev,
@@ -232,12 +244,11 @@ export function saveServerWorkbook(params: {
     actorTitle: params.actorTitle,
     changeSummary: params.changeSummary || `Cập nhật lần ${nextRev}`,
     createdAt: now
-  };
-  wb.revisions.unshift(revItem);
+  });
   if (wb.revisions.length > 15) wb.revisions = wb.revisions.slice(0, 15);
 
   persistStore();
-  persistWorkbookToSupabase(wb).catch(() => {});
+  persistWorkbookToPostgres(wb).catch(() => {});
   return { success: true, currentRevision: nextRev, serverWorkbook: wb };
 }
 
@@ -271,7 +282,7 @@ export function rollbackServerWorkbookRevision(
   });
 
   persistStore();
-  persistWorkbookToSupabase(wb).catch(() => {});
+  persistWorkbookToPostgres(wb).catch(() => {});
   return { success: true, currentRevision: nextRev };
 }
 
@@ -281,6 +292,6 @@ export function deleteServerWorkbook(workbookId: string): boolean {
   if (!wb) return false;
   wb.isDeleted = true;
   persistStore();
-  deleteWorkbookFromSupabase(wb.unitId).catch(() => {});
+  deleteWorkbookFromPostgres(wb.id, wb.unitId).catch(() => {});
   return true;
 }

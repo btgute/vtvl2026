@@ -3,7 +3,7 @@ import { getServerAdminAuth } from '@/services/storage/server-admin-auth';
 import {
   getAllActiveServerWorkbooks,
   deleteServerWorkbook,
-  syncServerWorkbooksFromSupabase
+  syncServerWorkbooksFromPostgres
 } from '@/services/storage/server-workbook-store';
 
 export async function GET() {
@@ -15,7 +15,7 @@ export async function GET() {
     );
   }
 
-  await syncServerWorkbooksFromSupabase();
+  await syncServerWorkbooksFromPostgres();
   const workbooks = getAllActiveServerWorkbooks();
   const summary = workbooks.map((w) => {
     const parts = Array.isArray(w.participants) ? w.participants : [];

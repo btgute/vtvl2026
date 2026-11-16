@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  syncAccountsFromSupabase,
+  syncAccountsFromPostgres,
   getAllUserAccounts,
   upsertUserAccount,
   updateUserAccountRole,
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  await syncAccountsFromSupabase(true);
+  await syncAccountsFromPostgres(true);
   const accounts = getAllUserAccounts();
   return NextResponse.json({ accounts, total: accounts.length });
 }

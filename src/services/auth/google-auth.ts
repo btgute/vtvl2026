@@ -15,8 +15,7 @@ export interface GoogleLoginCheckResult {
 }
 
 /**
- * Khởi chạy đăng nhập Google OAuth qua API máy chủ Next.js (/api/auth/google)
- * Giúp ẩn hoàn toàn khóa Supabase và cấu hình OAuth khỏi trình duyệt
+ * Khởi chạy đăng nhập Google OAuth 2.0 trực tiếp qua API máy chủ Next.js (/api/auth/google)
  */
 export async function startGoogleOAuthLogin(redirectPath = '/bang-tinh'): Promise<GoogleLoginCheckResult> {
   if (typeof window === 'undefined') {
@@ -48,16 +47,23 @@ export async function startGoogleOAuthLogin(redirectPath = '/bang-tinh'): Promis
 }
 
 /**
- * Xử lý token trả về từ Supabase (#access_token=...) hoặc Google OAuth (#id_token=...)
+ * Xử lý JWT đã ký trả về từ máy chủ (/api/auth/google/callback#access_token=...)
  */
 export function consumeGoogleOAuthCallback(defaultUnitCode = 'FIT'): OperatorSession | null {
   if (typeof window === 'undefined') return null;
   const rawHash = window.location.hash;
-  if (!rawHash || (!rawHash.includes('access_token=') && !rawHash.includes('id_token='))) {
+  if (!rawHash) return null;
+
+  const params = new URLSearchParams(rawHash.slice(1));
+  const authError = params.get('auth_error');
+  if (authError) {
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    if (typeof window.alert === 'function') {
+      window.alert(authError);
+    }
     return null;
   }
 
-  const params = new URLSearchParams(rawHash.slice(1));
   const token = params.get('access_token') || params.get('id_token');
   if (!token) return null;
 
@@ -79,29 +85,29 @@ export function consumeGoogleOAuthCallback(defaultUnitCode = 'FIT'): OperatorSes
 
     const existing = getCurrentOperatorSession();
     const isSameEmail = existing && existing.email === email;
-    const isTcnsAdmin = email === 'tcns@hcmute.edu.vn';
+    const isTcnsAdmin = email === 'tcns@hcmute.edu.vn' || payload.role === 'admin';
 
-    const hasSelectedUnit = isTcnsAdmin ? true : (isSameEmail ? Boolean(existing.hasSelectedUnit) : false);
-    const unitCode = isTcnsAdmin ? 'TCNS' : (isSameEmail && existing.hasSelectedUnit ? existing.unitCode : defaultUnitCode);
-    const title = isTcnsAdmin ? 'Trưởng phòng' : (isSameEmail ? existing.title : 'Chuyên viên');
+    const hasSelectedUnit =
+      payload.has_selected_unit !== undefined
+        ? Boolean(payload.has_selected_unit)
+        : isTcnsAdmin
+          ? true
+          : isSameEmail
+            ? Boolean(existing.hasSelectedUnit)
+            : false;
 
-    const displayName =
-      payload.user_metadata?.full_name ||
-      payload.user_metadata?.name ||
-      payload.name ||
-      email.split('@')[0];
-    const avatarUrl =
-      payload.user_metadata?.avatar_url ||
-      payload.user_metadata?.picture ||
-      payload.picture ||
-      '';
+    const unitCode = payload.unit_code || (isTcnsAdmin ? 'TCNS' : isSameEmail && existing.hasSelectedUnit ? existing.unitCode : defaultUnitCode);
+    const title = isTcnsAdmin ? (existing?.title || 'Trưởng phòng') : isSameEmail ? existing.title : 'Chuyên viên';
+
+    const displayName = payload.name || email.split('@')[0];
+    const avatarUrl = payload.picture || '';
 
     const session = saveCurrentOperatorSession(email, unitCode, title, {
       displayName,
       avatarUrl,
       authProvider: 'google',
       accessToken: token,
-      role: isTcnsAdmin ? 'admin' : (existing?.role || 'editor'),
+      role: payload.role || (isTcnsAdmin ? 'admin' : existing?.role || 'editor'),
       hasSelectedUnit
     });
 
@@ -114,5 +120,7 @@ export function consumeGoogleOAuthCallback(defaultUnitCode = 'FIT'): OperatorSes
 
 export function signOutGoogleSession(): void {
   clearCurrentOperatorSession();
+  if (typeof window !== 'undefined') {
+    fetch('/api/admin/auth', { method: 'DELETE' }).catch(() => {});
+  }
 }
-
