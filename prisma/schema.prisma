@@ -216,3 +216,4 @@ model TTienDo {
   @@index([updatedAt(sort: Desc)], map: "idx_t_tien_do_updated_at")
   @@map("t_tien_do")
 }
+

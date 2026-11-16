@@ -236,3 +236,4 @@ export const authOptions: AuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET || process.env.ADMIN_SERVER_SECRET || 'hcmute_vtvl_nextauth_secret_2026'
 };
+
