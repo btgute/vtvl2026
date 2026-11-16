@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { findHcmuteUnit } from '@/configs/hcmute-units';
-import { isPostgresConfigured, pgQuery } from './postgres-pool';
+import prisma, { isDatabaseConfigured } from './prisma';
 import {
   getAllActiveServerWorkbooks,
   normalizeEmail,
@@ -119,40 +119,38 @@ function persistLocalStore(): void {
   } catch { /* ignore */ }
 }
 
-async function persistAccountToPostgres(acc: UserAccountRecord): Promise<void> {
-  if (!isPostgresConfigured()) return;
+async function persistAccountToPrisma(acc: UserAccountRecord): Promise<void> {
+  if (!isDatabaseConfigured()) return;
   try {
-    await pgQuery(
-      `INSERT INTO public.user_accounts (
-         email, display_name, unit_code, unit_name_vi, title, role,
-         auth_provider, avatar_url, status, has_selected_unit, last_active_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
-       ON CONFLICT (email) DO UPDATE SET
-         display_name = EXCLUDED.display_name,
-         unit_code = EXCLUDED.unit_code,
-         unit_name_vi = EXCLUDED.unit_name_vi,
-         title = EXCLUDED.title,
-         role = EXCLUDED.role,
-         auth_provider = EXCLUDED.auth_provider,
-         avatar_url = COALESCE(EXCLUDED.avatar_url, public.user_accounts.avatar_url),
-         status = EXCLUDED.status,
-         has_selected_unit = EXCLUDED.has_selected_unit,
-         last_active_at = now()`,
-      [
-        acc.email,
-        acc.displayName,
-        acc.unitCode,
-        acc.unitNameVi,
-        acc.title,
-        acc.role,
-        acc.authProvider,
-        acc.avatarUrl || null,
-        acc.status,
-        Boolean(acc.hasSelectedUnit)
-      ]
-    );
+    await prisma.userAccount.upsert({
+      where: { email: acc.email },
+      update: {
+        displayName: acc.displayName,
+        unitCode: acc.unitCode,
+        unitNameVi: acc.unitNameVi,
+        title: acc.title,
+        role: acc.role,
+        authProvider: acc.authProvider,
+        ...(acc.avatarUrl ? { avatarUrl: acc.avatarUrl } : {}),
+        status: acc.status,
+        hasSelectedUnit: Boolean(acc.hasSelectedUnit),
+        lastActiveAt: new Date()
+      },
+      create: {
+        email: acc.email,
+        displayName: acc.displayName,
+        unitCode: acc.unitCode,
+        unitNameVi: acc.unitNameVi,
+        title: acc.title,
+        role: acc.role,
+        authProvider: acc.authProvider,
+        avatarUrl: acc.avatarUrl || null,
+        status: acc.status,
+        hasSelectedUnit: Boolean(acc.hasSelectedUnit)
+      }
+    });
   } catch (err) {
-    console.error('[persistAccountToPostgres]', err);
+    console.error('[persistAccountToPrisma]', err);
   }
 }
 
@@ -167,53 +165,35 @@ export async function syncAccountsFromPostgres(force = false): Promise<void> {
     if (seedFromWorkbooks(store)) persistLocalStore();
   } catch { /* ignore */ }
 
-  if (!isPostgresConfigured()) return;
+  if (!isDatabaseConfigured()) return;
   try {
-    const res = await pgQuery<{
-      email: string;
-      display_name: string;
-      unit_code: string;
-      unit_name_vi: string;
-      title: string;
-      role: UserRole;
-      auth_provider: 'google' | 'email';
-      avatar_url: string | null;
-      status: 'active' | 'suspended';
-      has_selected_unit: boolean;
-      created_at: Date;
-      last_active_at: Date;
-    }>(`
-      SELECT email, display_name, unit_code, unit_name_vi, title, role,
-             auth_provider, avatar_url, status,
-             coalesce(has_selected_unit, false) AS has_selected_unit,
-             created_at, last_active_at
-      FROM public.user_accounts
-      ORDER BY last_active_at DESC
-    `);
+    const rows = await prisma.userAccount.findMany({
+      orderBy: { lastActiveAt: 'desc' }
+    });
 
     let changed = false;
-    for (const row of res?.rows || []) {
+    for (const row of rows) {
       const email = normalizeEmail(row.email);
       if (!email) continue;
       store.set(email, normalizeRecord({
         email,
-        displayName: row.display_name,
-        unitCode: row.unit_code,
-        unitNameVi: row.unit_name_vi,
+        displayName: row.displayName,
+        unitCode: row.unitCode,
+        unitNameVi: row.unitNameVi,
         title: row.title,
-        role: row.role,
-        authProvider: row.auth_provider,
-        avatarUrl: row.avatar_url || undefined,
-        status: row.status,
-        hasSelectedUnit: row.has_selected_unit,
-        createdAt: new Date(row.created_at).toLocaleString('vi-VN'),
-        lastActiveAt: new Date(row.last_active_at).toLocaleString('vi-VN')
+        role: row.role as UserRole,
+        authProvider: row.authProvider === 'google' ? 'google' : 'email',
+        avatarUrl: row.avatarUrl || undefined,
+        status: row.status === 'suspended' ? 'suspended' : 'active',
+        hasSelectedUnit: row.hasSelectedUnit,
+        createdAt: new Date(row.createdAt).toLocaleString('vi-VN'),
+        lastActiveAt: new Date(row.lastActiveAt).toLocaleString('vi-VN')
       }));
       changed = true;
     }
     if (changed) persistLocalStore();
   } catch (err) {
-    console.error('[syncAccountsFromPostgres]', err);
+    console.error('[syncAccountsFromPostgres:Prisma]', err);
   }
 }
 
@@ -250,7 +230,7 @@ export function upsertUserAccount(
 
   store.set(norm, record);
   persistLocalStore();
-  persistAccountToPostgres(record).catch(() => {});
+  persistAccountToPrisma(record).catch(() => {});
   return record;
 }
 
@@ -268,8 +248,8 @@ export function deleteUserAccount(email: string): boolean {
   const norm = normalizeEmail(email);
   if (!norm || !store.delete(norm)) return false;
   persistLocalStore();
-  if (isPostgresConfigured()) {
-    pgQuery('DELETE FROM public.user_accounts WHERE email = $1', [norm]).catch(() => {});
+  if (isDatabaseConfigured()) {
+    prisma.userAccount.delete({ where: { email: norm } }).catch(() => {});
   }
   return true;
 }

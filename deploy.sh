@@ -52,11 +52,15 @@ EOF
   echo "✓ Đã khởi tạo tệp .env mặc định với mật khẩu PostgreSQL riêng biệt."
 fi
 
-# Bổ sung biến Google OAuth / App URL nếu tệp .env cũ chưa có
+# Bổ sung biến NextAuth / Google OAuth / App URL nếu tệp .env cũ chưa có
 grep -q "^NEXT_PUBLIC_APP_URL=" .env || echo "NEXT_PUBLIC_APP_URL=https://vtvl.utehub.vn" >> .env
+grep -q "^NEXTAUTH_URL=" .env || echo "NEXTAUTH_URL=https://vtvl.utehub.vn" >> .env
+if ! grep -q "^NEXTAUTH_SECRET=" .env; then
+  echo "NEXTAUTH_SECRET=$(openssl rand -hex 32)" >> .env
+fi
 grep -q "^GOOGLE_CLIENT_ID=" .env || echo "GOOGLE_CLIENT_ID=" >> .env
 grep -q "^GOOGLE_CLIENT_SECRET=" .env || echo "GOOGLE_CLIENT_SECRET=" >> .env
-grep -q "^GOOGLE_ALLOWED_HD=" .env || echo "GOOGLE_ALLOWED_HD=hcmute.edu.vn" >> .env
+grep -q "^GOOGLE_ALLOWED_HD=" .env || echo "GOOGLE_ALLOWED_HD=hcmute.edu.vn,student.hcmute.edu.vn" >> .env
 
 set -a
 # shellcheck disable=SC1091

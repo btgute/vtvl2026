@@ -1,10 +1,11 @@
 FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat openssl
 
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+COPY prisma ./prisma
 RUN npm ci
 
 FROM base AS builder
@@ -14,9 +15,11 @@ COPY . .
 
 ARG NEXT_PUBLIC_APP_URL="https://vtvl.utehub.vn"
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
+RUN npx prisma generate
 RUN npm run generate:templates
 RUN npm run build
 
@@ -32,6 +35,7 @@ RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/scripts/migrate-postgres.mjs ./scripts/migrate-postgres.mjs
 COPY --from=builder /app/deploy/postgres ./deploy/postgres
 COPY --from=builder /app/supabase/migrations ./supabase/migrations

@@ -7,16 +7,12 @@ import {
 } from '@/services/storage/server-account-store';
 import {
   getServerAdminAuth,
+  getVerifiedNextAuthEmail,
   isVerifiedAdminAccount,
   generateAdminToken,
   setServerAdminCookie
 } from '@/services/storage/server-admin-auth';
 import { normalizeEmail } from '@/services/storage/server-workbook-store';
-
-function extractBearer(req: NextRequest): string | null {
-  const authHeader = req.headers.get('authorization') || '';
-  return authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : null;
-}
 
 export async function GET(req: NextRequest) {
   const email = normalizeEmail(req.nextUrl.searchParams.get('email') || '');
@@ -28,8 +24,7 @@ export async function GET(req: NextRequest) {
   const account = getUserAccountByEmail(email);
 
   const cookieAdmin = await getServerAdminAuth();
-  const bearer = extractBearer(req);
-  const verifiedGoogleAdmin = bearer ? await isVerifiedAdminAccount(email, bearer) : false;
+  const verifiedGoogleAdmin = await isVerifiedAdminAccount(email);
 
   if (verifiedGoogleAdmin && !cookieAdmin) {
     await setServerAdminCookie(generateAdminToken());
@@ -50,9 +45,20 @@ export async function POST(req: NextRequest) {
     await syncAccountsFromPostgres();
     const existing = getUserAccountByEmail(email);
     const cookieAdmin = await getServerAdminAuth();
-    const bearer = extractBearer(req);
-    const verifiedGoogleAdmin = bearer ? await isVerifiedAdminAccount(email, bearer) : false;
+    const verifiedEmail = await getVerifiedNextAuthEmail();
+    const verifiedGoogleAdmin = await isVerifiedAdminAccount(email);
     const isAdmin = cookieAdmin || verifiedGoogleAdmin;
+
+    const wantsGoogle = body.authProvider === 'google' || existing?.authProvider === 'google';
+    if (wantsGoogle && !isAdmin && verifiedEmail !== email) {
+      if (existing) {
+        return NextResponse.json({ account: existing, isAdmin: false });
+      }
+      return NextResponse.json(
+        { error: 'Yêu cầu đăng nhập Google hợp lệ qua NextAuth để đồng bộ tài khoản này.' },
+        { status: 401 }
+      );
+    }
 
     let targetUnitCode = body.unitCode;
     let targetHasSelectedUnit = body.hasSelectedUnit ?? Boolean(body.unitCode);
@@ -68,7 +74,7 @@ export async function POST(req: NextRequest) {
       unitCode: targetUnitCode || existing?.unitCode,
       title: body.title || existing?.title,
       avatarUrl: body.avatarUrl || existing?.avatarUrl,
-      authProvider: body.authProvider === 'google' ? 'google' : (existing?.authProvider || 'email'),
+      authProvider: verifiedEmail === email ? 'google' : (existing?.authProvider || 'email'),
       hasSelectedUnit: targetHasSelectedUnit
     });
 
@@ -92,8 +98,15 @@ export async function PATCH(req: NextRequest) {
 
     await syncAccountsFromPostgres();
     const existing = getUserAccountByEmail(email);
-    const bearer = extractBearer(req);
-    const isAdmin = await getServerAdminAuth(email, bearer);
+    const verifiedEmail = await getVerifiedNextAuthEmail();
+    const isAdmin = await getServerAdminAuth(email);
+
+    if (existing?.authProvider === 'google' && !isAdmin && verifiedEmail !== email) {
+      return NextResponse.json(
+        { error: 'Không có quyền sửa thông tin tài khoản Google của người dùng khác.' },
+        { status: 403 }
+      );
+    }
 
     const requestedRole = body.role as UserRole | undefined;
     if (requestedRole && !isAdmin) {
@@ -114,7 +127,7 @@ export async function PATCH(req: NextRequest) {
       {
         email,
         displayName: body.displayName,
-        unitCode: (!isAdmin && existing?.hasSelectedUnit) ? existing.unitCode : body.unitCode,
+        unitCode: !isAdmin && existing?.hasSelectedUnit ? existing.unitCode : body.unitCode,
         title: body.title,
         avatarUrl: body.avatarUrl,
         role: isAdmin ? requestedRole : undefined,
@@ -128,4 +141,3 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Không thể cập nhật thông tin tài khoản.' }, { status: 400 });
   }
 }
-

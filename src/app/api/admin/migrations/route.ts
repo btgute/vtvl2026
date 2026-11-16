@@ -12,11 +12,24 @@ export async function GET() {
   }
 
   if (!isPostgresConfigured()) {
-    return NextResponse.json({ configured: false, migrations: [] });
+    return NextResponse.json({ configured: false, prismaMigrations: [], sqlMigrations: [] });
   }
 
   try {
-    const res = await pgQuery<{
+    const prismaRes = await pgQuery<{
+      id: string;
+      migration_name: string;
+      checksum: string;
+      started_at: Date;
+      finished_at: Date | null;
+      applied_steps_count: number;
+    }>(`
+      SELECT id, migration_name, checksum, started_at, finished_at, applied_steps_count
+      FROM public."_prisma_migrations"
+      ORDER BY started_at ASC
+    `).catch(() => null);
+
+    const sqlRes = await pgQuery<{
       id: number;
       filename: string;
       checksum_sha256: string;
@@ -30,12 +43,12 @@ export async function GET() {
       SELECT id, filename, checksum_sha256, execution_ms, status, applied_by, git_commit, error_message, applied_at
       FROM public.schema_migrations
       ORDER BY id ASC
-    `);
+    `).catch(() => null);
 
     return NextResponse.json({
       configured: true,
-      total: res?.rowCount || 0,
-      migrations: res?.rows || []
+      prismaMigrations: prismaRes?.rows || [],
+      sqlMigrations: sqlRes?.rows || []
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Lỗi truy vấn nhật ký migration.';

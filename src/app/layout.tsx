@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { AuthSessionProvider } from '@/components/auth/AuthSessionProvider';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -24,11 +25,13 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col overflow-x-clip relative">
-        <Header />
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
-        <Footer />
+        <AuthSessionProvider>
+          <Header />
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
+          <Footer />
+        </AuthSessionProvider>
       </body>
     </html>
   );

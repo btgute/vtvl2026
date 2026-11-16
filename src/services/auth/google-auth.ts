@@ -1,9 +1,8 @@
 'use client';
 
+import { signIn, signOut } from 'next-auth/react';
 import {
   OperatorSession,
-  normalizeEmail,
-  saveCurrentOperatorSession,
   clearCurrentOperatorSession,
   getCurrentOperatorSession
 } from '@/services/telemetry/operator-session';
@@ -15,7 +14,7 @@ export interface GoogleLoginCheckResult {
 }
 
 /**
- * Khởi chạy đăng nhập Google OAuth 2.0 trực tiếp qua API máy chủ Next.js (/api/auth/google)
+ * Khởi chạy đăng nhập Google OAuth qua NextAuth (/api/auth/callback/google)
  */
 export async function startGoogleOAuthLogin(redirectPath = '/bang-tinh'): Promise<GoogleLoginCheckResult> {
   if (typeof window === 'undefined') {
@@ -23,104 +22,51 @@ export async function startGoogleOAuthLogin(redirectPath = '/bang-tinh'): Promis
   }
 
   try {
-    const query = `redirect=${encodeURIComponent(redirectPath)}&origin=${encodeURIComponent(window.location.origin)}`;
-    const res = await fetch(`/api/auth/google?${query}`, { cache: 'no-store' });
-    const data = await res.json().catch(() => ({}));
+    const checkRes = await fetch('/api/auth/google', { cache: 'no-store' });
+    const checkData = await checkRes.json().catch(() => ({}));
 
-    if (res.ok && data.ok && data.authorizeUrl) {
-      window.location.href = data.authorizeUrl;
-      return { ok: true };
+    if (!checkRes.ok || !checkData.ok) {
+      return {
+        ok: false,
+        reason: checkData.reason || 'MISSING_CONFIG',
+        message: checkData.message || 'Máy chủ chưa cấu hình Google OAuth (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).'
+      };
     }
 
-    return {
-      ok: false,
-      reason: data.reason || 'NETWORK_ERROR',
-      message: data.message || 'Không thể khởi tạo phiên đăng nhập Google từ máy chủ.'
-    };
+    const safeCallback = redirectPath.startsWith('/') ? redirectPath : '/bang-tinh';
+    await signIn('google', { callbackUrl: safeCallback });
+    return { ok: true };
   } catch {
     return {
       ok: false,
       reason: 'NETWORK_ERROR',
-      message: 'Lỗi kết nối đến máy chủ xác thực (/api/auth/google).'
+      message: 'Lỗi kết nối đến dịch vụ xác thực NextAuth (/api/auth).'
     };
   }
 }
 
 /**
- * Xử lý JWT đã ký trả về từ máy chủ (/api/auth/google/callback#access_token=...)
+ * Tương thích ngược cho các component đọc phiên đăng nhập hiện hành
  */
-export function consumeGoogleOAuthCallback(defaultUnitCode = 'FIT'): OperatorSession | null {
+export function consumeGoogleOAuthCallback(): OperatorSession | null {
   if (typeof window === 'undefined') return null;
-  const rawHash = window.location.hash;
-  if (!rawHash) return null;
-
-  const params = new URLSearchParams(rawHash.slice(1));
-  const authError = params.get('auth_error');
-  if (authError) {
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  const params = new URLSearchParams(window.location.search);
+  const authErr = params.get('error');
+  if (authErr === 'AccessDenied') {
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState(null, '', cleanUrl);
     if (typeof window.alert === 'function') {
-      window.alert(authError);
+      window.alert('Tài khoản Google không thuộc tên miền được phép (@hcmute.edu.vn) hoặc chưa được cấp quyền.');
     }
     return null;
   }
-
-  const token = params.get('access_token') || params.get('id_token');
-  if (!token) return null;
-
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const jsonStr = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`)
-        .join('')
-    );
-    const payload = JSON.parse(jsonStr);
-
-    const email = normalizeEmail(payload.email || '');
-    if (!email) return null;
-
-    const existing = getCurrentOperatorSession();
-    const isSameEmail = existing && existing.email === email;
-    const isTcnsAdmin = email === 'tcns@hcmute.edu.vn' || payload.role === 'admin';
-
-    const hasSelectedUnit =
-      payload.has_selected_unit !== undefined
-        ? Boolean(payload.has_selected_unit)
-        : isTcnsAdmin
-          ? true
-          : isSameEmail
-            ? Boolean(existing.hasSelectedUnit)
-            : false;
-
-    const unitCode = payload.unit_code || (isTcnsAdmin ? 'TCNS' : isSameEmail && existing.hasSelectedUnit ? existing.unitCode : defaultUnitCode);
-    const title = isTcnsAdmin ? (existing?.title || 'Trưởng phòng') : isSameEmail ? existing.title : 'Chuyên viên';
-
-    const displayName = payload.name || email.split('@')[0];
-    const avatarUrl = payload.picture || '';
-
-    const session = saveCurrentOperatorSession(email, unitCode, title, {
-      displayName,
-      avatarUrl,
-      authProvider: 'google',
-      accessToken: token,
-      role: payload.role || (isTcnsAdmin ? 'admin' : existing?.role || 'editor'),
-      hasSelectedUnit
-    });
-
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    return session;
-  } catch {
-    return null;
-  }
+  return getCurrentOperatorSession();
 }
 
 export function signOutGoogleSession(): void {
   clearCurrentOperatorSession();
   if (typeof window !== 'undefined') {
     fetch('/api/admin/auth', { method: 'DELETE' }).catch(() => {});
+    signOut({ redirect: false }).catch(() => {});
   }
 }

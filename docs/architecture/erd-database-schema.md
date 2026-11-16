@@ -101,10 +101,10 @@ erDiagram
 
 ---
 
-## 5. Vận hành PostgreSQL 16 độc lập, Nhật ký Migration & Google OAuth 2.0 trực tiếp
+## 5. Vận hành PostgreSQL 16 độc lập, Prisma ORM, Nhật ký Migration & NextAuth Google OAuth
 
-- **Kết nối PostgreSQL 100% nội bộ (`postgres-pool.ts`):** Toàn bộ tầng lưu trữ máy chủ (`server-postgres-store.ts`, `postgres-table-sync.ts`, `server-account-store.ts`, `server-audit-store.ts`) giao tiếp trực tiếp qua TCP Pool (`pg`) tới container `utevtvl-postgres` (`postgres:16-alpine`, ràng buộc nội bộ `127.0.0.1:5436`), loại bỏ hoàn toàn sự phụ thuộc vào dịch vụ đám mây bên thứ ba.
-- **Bộ máy quản lý phiên bản lược đồ (`scripts/migrate-postgres.mjs` & `public.schema_migrations`):**
+- **Tầng ORM & CSDL độc lập (`prisma/schema.prisma`, `prisma.ts`, `postgres-pool.ts`):** Toàn bộ dữ liệu máy chủ (`server-postgres-store.ts`, `server-account-store.ts`, `server-audit-store.ts`, `postgres-table-sync.ts`) lưu trữ 100% trên PostgreSQL 16 (`utevtvl-postgres` ràng buộc nội bộ `127.0.0.1:5436`) thông qua Prisma Client (`@prisma/client`) và TCP Pool (`pg`), loại bỏ hoàn toàn sự phụ thuộc vào Supabase.
+- **Bộ máy quản lý phiên bản lược đồ kép (`scripts/migrate-postgres.mjs`, `_prisma_migrations` & `schema_migrations`):**
   - Mỗi lần `git push` lên nhánh `main`, `deploy.sh` tự động kích hoạt `migrate-postgres.mjs` với khóa tư vấn `pg_advisory_lock(20260731)`.
-  - Mỗi tệp `.sql` mới trong `supabase/migrations/` (hoặc `db/migrations/`) được thực thi trong một giao dịch nguyên tử (`BEGIN ... COMMIT`), đo thời gian thực thi (`execution_ms`), băm kiểm chứng `checksum_sha256`, lưu vết vào bảng `public.schema_migrations` và xuất nhật ký ra `migrations.log`.
-- **Xác thực Google OAuth 2.0 trực tiếp (`/api/auth/google` & `/api/auth/google/callback`):** Sử dụng luồng Authorization Code chuẩn OAuth 2.0 với cookie chống giả mạo `state` (`HMAC-SHA256`), lưu hồ sơ vào `public.user_accounts` và cấp phát JWT nội bộ ký số bằng `ADMIN_SERVER_SECRET`.
+  - Mọi migration trong `prisma/migrations/` và `supabase/migrations/` được thực thi nguyên tử (`BEGIN ... COMMIT`), băm kiểm chứng `SHA-256`, ghi nhận đầy đủ vào cả hai bảng `public."_prisma_migrations"` và `public.schema_migrations`, đồng thời xuất nhật ký ra `migrations.log`.
+- **Xác thực chuẩn NextAuth v4 + Google Login + PrismaAdapter (`/api/auth/[...nextauth]`):** Sử dụng `GoogleProvider` và `PrismaAdapter` đồng bộ chuẩn hệ sinh thái HCM-UTE (`User`, `Account`, `Session`, `VerificationToken` + `user_accounts`), lưu phiên JWT mã hóa (`__Secure-utevtvl.session-token`) với đường dẫn callback chuẩn `https://vtvl.utehub.vn/api/auth/callback/google`.

@@ -56,6 +56,7 @@ services:
       - PORT=3360
       - HOSTNAME=0.0.0.0
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-https://vtvl.utehub.vn}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-https://vtvl.utehub.vn}
       - DATABASE_URL=${DATABASE_URL:-postgresql://utevtvl_admin:UteVtvl_Secure_2026_xP9@postgres:5432/utevtvl_db?schema=public}
     env_file:
       - .env

@@ -1,0 +1,218 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// 1. NEXTAUTH STANDARD AUTHENTICATION MODELS (Google OAuth 2.0 + Session/JWT)
+// =============================================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("editor")
+  unitCode      String    @default("FIT")
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// =============================================================================
+// 2. HCM-UTE VTVL 360 OPERATIONAL MODELS (PostgreSQL Native)
+// =============================================================================
+
+model DmDonVi {
+  maDonVi             String        @id @map("ma_don_vi")
+  tenDonViVi          String        @map("ten_don_vi_vi")
+  tenDonViEn          String        @map("ten_don_vi_en")
+  khoiDonVi           String        @map("khoi_don_vi")
+  linhVuc             String?       @map("linh_vuc")
+  chucDanhThuTruongVi String?       @map("chuc_danh_thu_truong_vi")
+  chucDanhThuTruongEn String?       @map("chuc_danh_thu_truong_en")
+  soNhanSuMacDinh     Int           @default(10) @map("so_nhan_su_mac_dinh")
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  userAccounts        UserAccount[]
+  workbooks           Workbook[]
+  tTienDo             TTienDo?
+
+  @@map("dm_don_vi")
+}
+
+model UserAccount {
+  email           String   @id
+  displayName     String   @default("Cán bộ HCM-UTE") @map("display_name")
+  unitCode        String   @default("FIT") @map("unit_code")
+  unitNameVi      String   @default("Khoa Công nghệ Thông tin") @map("unit_name_vi")
+  title           String   @default("Chuyên viên")
+  role            String   @default("editor")
+  authProvider    String   @default("google") @map("auth_provider")
+  avatarUrl       String?  @map("avatar_url")
+  status          String   @default("active")
+  hasSelectedUnit Boolean  @default(false) @map("has_selected_unit")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastActiveAt    DateTime @default(now()) @map("last_active_at") @db.Timestamptz(6)
+
+  unit DmDonVi @relation(fields: [unitCode], references: [maDonVi], onDelete: Restrict)
+
+  @@index([unitCode], map: "idx_user_accounts_unit_code")
+  @@index([role], map: "idx_user_accounts_role")
+  @@map("user_accounts")
+}
+
+model Workbook {
+  id               String               @id
+  unitId           String               @map("unit_id")
+  reportingPeriod  String               @default("01/10/2025–30/9/2026") @map("reporting_period")
+  status           String               @default("draft")
+  currentRevision  Int                  @default(1) @map("current_revision")
+  data             Json                 @default("{}")
+  touchedCells     Json                 @default("[]") @map("touched_cells")
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  createdBySession String?              @map("created_by_session")
+  updatedAt        DateTime             @default(now()) @map("updated_at") @db.Timestamptz(6)
+  updatedBySession String?              @map("updated_by_session")
+  isDeleted        Boolean              @default(false) @map("is_deleted")
+  unit             DmDonVi              @relation(fields: [unitId], references: [maDonVi], onDelete: Restrict)
+  sessions         WorkbookSession[]
+  participants     SessionParticipant[]
+  revisions        WorkbookRevision[]
+
+  @@index([unitId, reportingPeriod], map: "idx_workbooks_unit_period")
+  @@index([updatedAt(sort: Desc)], map: "idx_workbooks_updated_at")
+  @@map("workbooks")
+}
+
+model WorkbookSession {
+  id           String               @id
+  workbookId   String               @map("workbook_id")
+  accessScope  String               @default("editor") @map("access_scope")
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt    DateTime?            @map("expires_at") @db.Timestamptz(6)
+  revokedAt    DateTime?            @map("revoked_at") @db.Timestamptz(6)
+  lastActiveAt DateTime             @default(now()) @map("last_active_at") @db.Timestamptz(6)
+  workbook     Workbook             @relation(fields: [workbookId], references: [id], onDelete: Cascade)
+  participants SessionParticipant[]
+
+  @@index([workbookId], map: "idx_workbook_sessions_wb")
+  @@map("workbook_sessions")
+}
+
+model SessionParticipant {
+  id              String          @id
+  sessionId       String          @map("session_id")
+  workbookId      String          @map("workbook_id")
+  displayName     String?         @map("display_name")
+  email           String
+  emailNormalized String          @map("email_normalized")
+  roleLabel       String          @default("Chuyên viên") @map("role_label")
+  startedAt       DateTime        @default(now()) @map("started_at") @db.Timestamptz(6)
+  updatedAt       DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
+  session         WorkbookSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  workbook        Workbook        @relation(fields: [workbookId], references: [id], onDelete: Cascade)
+
+  @@index([emailNormalized], map: "idx_participants_email_norm")
+  @@index([workbookId], map: "idx_participants_wb")
+  @@map("session_participants")
+}
+
+model WorkbookRevision {
+  id            String   @id
+  workbookId    String   @map("workbook_id")
+  revision      Int
+  data          Json
+  checksum      String?
+  actorEmail    String   @map("actor_email")
+  actorTitle    String?  @map("actor_title")
+  sessionId     String?  @map("session_id")
+  changeSummary String?  @map("change_summary")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  workbook      Workbook @relation(fields: [workbookId], references: [id], onDelete: Cascade)
+
+  @@index([workbookId, revision(sort: Desc)], map: "idx_revisions_wb_rev")
+  @@map("workbook_revisions")
+}
+
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  workbookId String?  @map("workbook_id")
+  sessionId  String?  @map("session_id")
+  actorEmail String?  @map("actor_email")
+  action     String
+  sheetId    String?  @map("sheet_id")
+  recordId   String?  @map("record_id")
+  metadata   Json?    @default("{}")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([actorEmail], map: "idx_audit_logs_actor")
+  @@index([createdAt(sort: Desc)], map: "idx_audit_logs_created")
+  @@index([workbookId], map: "idx_audit_logs_wb")
+  @@map("audit_logs")
+}
+
+model TTienDo {
+  maDonVi             String   @id @map("ma_don_vi")
+  tenDonVi            String   @map("ten_don_vi")
+  phienBan            String   @default("v1") @map("phien_ban")
+  soNhiemVuA1         Int      @default(0) @map("so_nhiem_vu_a1")
+  soCongViecA2        Int      @default(0) @map("so_cong_viec_a2")
+  soVtvlC1            Int      @default(0) @map("so_vtvl_c1")
+  tongFteC3           Decimal  @default(0) @map("tong_fte_c3") @db.Decimal(10, 2)
+  emailNguoiThucHien  String?  @map("email_nguoi_thuc_hien")
+  chucVuNguoiThucHien String?  @map("chuc_vu_nguoi_thuc_hien")
+  trangThaiRaSoat     String   @default("Đã khởi tạo trực tuyến") @map("trang_thai_ra_soat")
+  duLieuHoSoJson      Json     @default("{}") @map("du_lieu_ho_so_json")
+  updatedAt           DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  unit                DmDonVi  @relation(fields: [maDonVi], references: [maDonVi], onDelete: Cascade)
+
+  @@index([updatedAt(sort: Desc)], map: "idx_t_tien_do_updated_at")
+  @@map("t_tien_do")
+}
